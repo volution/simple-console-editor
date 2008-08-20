@@ -14,41 +14,80 @@ import traceback
 class Scroll :
 	
 	def __init__ (self) :
-		self._lines = [u'']
+		self._lines = None
 	
 	def is_empty (self) :
-		return len (self._lines) == 0
+		return self._lines == None
 	
 	def get_length (self) :
+		if self._lines == None :
+			return 1
 		return len (self._lines)
 	
 	def select (self, _index) :
+		if self._lines == None :
+			return u''
 		return self._lines[_index]
 	
 	def update (self, _index, _string) :
-		self._lines.add (unicode (_string))
+		_string = unicode (_string)
+		if self._lines == None :
+			self._lines = [_string]
+		else :
+			self._lines[_index] = _string
 	
 	def append (self, _string) :
-		if (len (self._lines) == 1) and (len (self._lines[0]) == 0) :
-			self._lines[0] = _string
+		_string = unicode (_string)
+		if self._lines == None :
+			self._lines = [_string]
 		else :
-			self._lines.append (unicode (_string))
+			self._lines.append (_string)
 	
 	def include_before (self, _index, _string) :
-		self._lines.insert (_index, unicode (_string))
+		_string = unicode (_string)
+		if self._lines == None :
+			self._lines = [_string]
+		else :
+			self._lines.insert (_index, _string)
 	
 	def include_after (self, _index, _string) :
-		self._lines.insert (_index + 1, unicode (_string))
+		_string = unicode (_string)
+		if self._lines == None :
+			self._lines = [_string]
+		else :
+			self._lines.insert (_index + 1, _string)
 	
 	def exclude (self, _index) :
 		del self._lines[_index]
 		if len (self._lines) == 0 :
-			self._lines = [u'']
+			self._lines = None
+	
+	def include_all_before (self, _index, _strings) :
+		if self._lines == None :
+			self._lines = []
+		for _string in _strings :
+			self._lines.insert (_index, unicode (_string))
+			_index += 1
+	
+	def include_all_after (self, _index, _strings) :
+		if self._lines == None :
+			self._lines = []
+		for _string in _strings :
+			self._lines.insert (_index + 1, unicode (_string))
+			_index += 1
+	
+	def append_all (self, _string) :
+		if self._lines == None :
+			self._lines = []
+		for _string in _strings :
+			self._lines.append (unicode (_string))
 	
 	def empty (self) :
-		self._lines = [u'']
+		self._lines = None
 	
 	def split (self, _index, _column) :
+		if self._lines == None :
+			self._lines = [u'']
 		if (_column == 0) :
 			self._lines.insert (_index, u'')
 		else :
@@ -57,6 +96,8 @@ class Scroll :
 			self._lines.insert (_index + 1, _line[_column :])
 	
 	def unsplit (self, _index) :
+		if self._lines == None :
+			self._lines = [u'']
 		_line_0 = self._lines[_index]
 		_line_1 = self._lines[_index + 1]
 		_line = _line_0 + _line_1
@@ -64,6 +105,8 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def insert (self, _index, _column, _string) :
+		if self._lines == None :
+			self._lines = [u'']
 		_line = self._lines[_index]
 		if (_column == 0) :
 			_line = unicode (_string) + _line
@@ -76,6 +119,8 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def delete (self, _index, _column, _length) :
+		if self._lines == None :
+			self._lines = [u'']
 		_line = self._lines[_index]
 		if (_column > len (_line)) :
 			pass
@@ -941,8 +986,7 @@ def yank_lines_command (_shell, _arguments) :
 	_cursor = _view.get_cursor ()
 	_cursor_line = _cursor.get_line ()
 	if isinstance(_yank_buffer, list) :
-		for _line in _yank_buffer :
-			_scroll.include_before (_cursor_line, _line)
+		_scroll.include_all_before (_cursor_line, _yank_buffer)
 	else :
 		_visual_column = _cursor.get_column ()
 		_real_column = _view.select_real_column (_cursor_line, _visual_column)
@@ -955,7 +999,6 @@ def copy_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('copy-lines: wrong syntax: copy-lines')
 		return
-	_yank_buffer = []
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
@@ -973,12 +1016,12 @@ def copy_lines_command (_shell, _arguments) :
 		else :
 			_first_line = min (_mark_line, _cursor_line)
 			_last_line = max (_mark_line, _cursor_line)
+			_yank_buffer = []
 			for _line in xrange (_first_line, _last_line + 1) :
 				_yank_buffer.append (_scroll.select (_line))
-			_yank_buffer.reverse ()
 		_view.set_mark_enabled (False)
 	else :
-		_yank_buffer.append (_scroll.select (_cursor_line))
+		_yank_buffer = [_scroll.select (_cursor_line)]
 
 
 def delete_lines_command (_shell, _arguments) :
@@ -986,24 +1029,34 @@ def delete_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('delete-lines: wrong syntax: delete-lines')
 		return
-	_yank_buffer = []
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
 	_cursor_line = _cursor.get_line ()
 	if _view.is_mark_enabled () :
-		_mark_line = _view.get_mark () .get_line ()
-		_first_line = min (_mark_line, _cursor_line)
-		_last_line = max (_mark_line, _cursor_line)
-		for _line in xrange (_first_line, _last_line + 1) :
-			_yank_buffer.append (_scroll.select (_first_line))
-			_scroll.exclude (_first_line)
+		_mark = _view.get_mark ()
+		_mark_line = _mark.get_line ()
+		if _mark_line == _cursor_line :
+			_cursor_real_column = _view.select_real_column (_cursor_line, _cursor.get_column ())
+			_mark_real_column = _view.select_real_column (_cursor_line, _mark.get_column ())
+			_first_real_column = min (_mark_real_column, _cursor_real_column)
+			_last_real_column = max (_mark_real_column, _cursor_real_column)
+			_string = _scroll.select (_cursor_line)
+			_yank_buffer = _string[_first_real_column : _last_real_column]
+			_scroll.delete (_cursor_line, _first_real_column, _last_real_column - _first_real_column)
+			_cursor.set_column (_view.select_visual_column (_cursor_line, _first_real_column))
+		else :
+			_first_line = min (_mark_line, _cursor_line)
+			_last_line = max (_mark_line, _cursor_line)
+			_yank_buffer = []
+			for _line in xrange (_first_line, _last_line + 1) :
+				_yank_buffer.append (_scroll.select (_line))
+				_scroll.exclude (_first_line)
+			_cursor.set_line (_first_line)
 		_view.set_mark_enabled (False)
-		_cursor.set_line (_first_line)
 	else :
-		_yank_buffer.append (_scroll.select (_cursor_line))
+		_yank_buffer = [_scroll.select (_cursor_line)]
 		_scroll.exclude (_cursor_line)
-	_yank_buffer.reverse ()
 
 
 def load_command (_shell, _arguments) :
@@ -1073,9 +1126,9 @@ def _handle_file_lines (_shell, _type, _lines) :
 	elif _type == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
 	elif _type == 'a' :
-		_insert_line = _scroll.get_length () - 1
+		_insert_line = _scroll.get_length ()
 	else :
-		_insert_line = _scroll.get_length () - 1
+		_insert_line = _scroll.get_length ()
 	_lines.reverse ()
 	for _line in _lines :
 		_line = _line.rstrip ('\r\n')
