@@ -384,6 +384,11 @@ class Shell :
 	def __init__ (self, _view, _handler) :
 		self._view = _view
 		self._handler = _handler
+		self._messages = []
+		self._messages_touched = False
+		self._max_message_lines = 10
+		self._inputs = []
+		self._max_input_lines = 3
 	
 	def get_view (self) :
 		return self._view
@@ -410,11 +415,6 @@ class Shell :
 		self._color_message = curses.color_pair (4)
 		self._color_input = curses.color_pair (5)
 		
-		self._messages = []
-		self._messages_touched = False
-		self._max_message_lines = 10
-		self._max_input_lines = 3
-		
 		self.show ()
 	
 	def close (self) :
@@ -428,10 +428,6 @@ class Shell :
 		del self._color_markup
 		del self._color_message
 		del self._color_input
-		del self._messages
-		del self._messages_touched
-		del self._max_message_lines
-		del self._max_input_lines
 	
 	def show (self) :
 		self._window = curses.initscr ()
@@ -487,26 +483,68 @@ class Shell :
 	
 	def input (self, _format, *_arguments) :
 		
-		self._window.move (self._window_lines - self._max_input_lines, 0)
-		self._window.clrtobot ()
-		self._window.attrset (self._color_input)
-		self._window.addstr ('[??] ')
-		self._window.addstr (_format % _arguments)
-		self._window.move (self._window_lines - self._max_input_lines + 1, 0)
-		self._window.addstr ('[>>] ')
-		self._window.refresh ()
+		_window = self._window
+		_line = self._window_lines - self._max_input_lines
 		
-		#curses.nocbreak ()
-		curses.noraw ()
-		curses.echo ()
-		try :
-			_string = self._window.getstr ()
-		except :
-			_string = None
+		_window.move (_line, 0)
+		_window.clrtobot ()
+		_window.attrset (self._color_input)
+		_window.addstr ('[??] ')
+		_window.addstr ((_format % _arguments) .encode ('utf-8'))
+		_window.move (_line + 1, 0)
+		_window.addstr ('[>>] ')
+		_window.refresh ()
 		
-		curses.raw ()
-		#curses.cbreak ()
-		curses.noecho ()
+		_buffer = []
+		_inputs = self._inputs
+		_input = len (_inputs) - 1
+		while True :
+			_string = u''.join (_buffer)
+			_window.move (_line + 1, 5)
+			_window.clrtobot ()
+			_window.addstr (_string .encode ('utf-8'))
+			_window.refresh ()
+			_code = _window.getch ()
+			if (_code >= 32) and (_code < 127) :
+				_buffer.append (chr (_code))
+			elif (_code >= 194) and (_code < 224) :
+				_buffer.append ((chr (_code) + chr (_window.scan ())) .decode ('utf-8'))
+			elif (_code == curses.KEY_BACKSPACE) or (_code == 8) :
+				if len (_buffer) > 0 :
+					_buffer.pop ()
+				else :
+					curses.beep ()
+			elif (_code == curses.KEY_ENTER) or (_code == 10) or (_code == 13) :
+				if len (_buffer) > 0 :
+					_inputs.append (_string)
+				else :
+					_string = None
+				break
+			elif (_code == curses.KEY_DC) :
+				if len (_buffer) == 0 :
+					break
+				else :
+					_buffer = []
+			elif (_code == curses.KEY_UP) :
+				if _input == -1 :
+					curses.beep ()
+					continue
+				_input -= 1
+				if _input < 0 :
+					_input = len (_inputs) -1
+				_buffer = []
+				_buffer.extend (_inputs[_input])
+			elif (_code == curses.KEY_DOWN) :
+				if _input == -1 :
+					curses.beep ()
+					continue
+				_input += 1
+				if _input >= len (_inputs) :
+					_input = 0
+				_buffer = []
+				_buffer.extend (_inputs[_input])
+			else :
+				curses.beep ()
 		
 		return _string
 	
@@ -553,7 +591,7 @@ class Shell :
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
 				for _code in _buffer :
 					if _code >= 0 :
-						_window.addstr (chr (_code) .encode ('utf-8'))
+						_window.addstr (unichr (_code) .encode ('utf-8'))
 					elif _code == -1 :
 						_window.attrset (_color_text)
 					elif _code == -2 :
@@ -576,7 +614,7 @@ class Shell :
 				_window.move (_max_lines - _index - 1, 0)
 				_window.clrtoeol ()
 				_window.addstr ('[..] ')
-				_window.addstr (_message)
+				_window.addstr (_message.encode ('utf-8'))
 				_index += 1
 			_window.move (_max_lines - 1, _max_columns - 1)
 		
@@ -598,7 +636,7 @@ class Handler :
 			self.handle_key_character (_shell, chr (_code))
 		elif (_code >= 194) and (_code < 224) :
 			_char = (chr (_code) + chr (_shell.scan ())) .decode ('utf-8')
-			self.handle_key_character (_shell, chr (_code))
+			self.handle_key_character (_shell, _char)
 		
 		elif _code == 8 : # Backspace
 			self.handle_key_backspace (_shell)
@@ -1048,7 +1086,7 @@ def sce (_arguments) :
 	_scroll = Scroll ()
 	_view = ScrollView (_scroll)
 	_handler = ScrollHandler ()
-	_handler.register_control ('X', exit_command)
+	#_handler.register_control ('X', exit_command)
 	_handler.register_control ('@', mark_command)
 	_handler.register_control ('R', _handler.handle_command)
 	_handler.register_control ('Y', yank_lines_command)
