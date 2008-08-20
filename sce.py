@@ -86,57 +86,6 @@ class Scroll :
 		else :
 			_line = _line[: _column] + _line[_column + _length :]
 		self._lines[_index] = _line
-	
-	def select_real_column (self, _index, _column) :
-		return self.compute_real_column (self._lines[_index], _column)
-	
-	def select_visual_column (self, _index, _column) :
-		return self.compute_visual_column (self._lines[_index], _column)
-	
-	def select_visual_length (self, _index) :
-		return self.compute_visual_length (self._lines[_index])
-	
-	def compute_real_column (self, _string, _column) :
-		_index = 0
-		_length = 0
-		for _character in _string :
-			_code = ord (_character)
-			if _code == 9 :
-				_length = ((_length / 4) + 1) * 4
-			else :
-				_length += 1
-			if _length > _column :
-				break
-			_index += 1
-		if _length < _column :
-			_index += _column - _length
-		return _index
-	
-	def compute_visual_column (self, _string, _column) :
-		_index = 0
-		_length = 0
-		for _character in _string :
-			_code = ord (_character)
-			if _index == _column :
-				break
-			if _code == 9 :
-				_length = ((_length / 4) + 1) * 4
-			else :
-				_length += 1
-			_index += 1
-		if _index < _column :
-			_length += _column - _index
-		return _length
-	
-	def compute_visual_length (self, _string) :
-		_length = 0
-		for _character in _string :
-			_code = ord (_character)
-			if _code == 9 :
-				_length = ((_length / 4) + 1) * 4
-			else :
-				_length += 1
-		return _length
 #
 
 
@@ -163,37 +112,41 @@ class Mark :
 	
 	def increment_column (self, _increment) :
 		self._column += _increment
-	
-	def correct (self) :
-		pass
-#
-
-
-class ViewMark (Mark) :
-	
-	def __init__ (self, _view) :
-		Mark.__init__ (self)
-		self._view = _view
-	
-	def correct (self) :
-		self._view.correct_marks ()
 #
 
 
 class View :
 	
-	def __init__ (self, _scroll) :
-		self._scroll = _scroll
-		self._cursor = ViewMark (self)
-		self._head = ViewMark (self)
-		self._tail = ViewMark (self)
-		self._mark = ViewMark (self)
-		self._mark_enabled = False
-		self._max_lines = 25
-		self._max_columns = 80
+	def __init__ (self) :
+		self._cursor = Mark ()
+		self._head = Mark ()
+		self._tail = Mark ()
+		self._max_lines = 1
+		self._max_columns = 1
 	
-	def get_scroll (self) :
-		return self._scroll
+	def get_lines (self) :
+		return 1
+	
+	def select_real_string (self, _line) :
+		return ''
+	
+	def select_visual_string (self, _line, _head_column, _tail_column) :
+		return []
+	
+	def select_real_column (self, _line, _visual_column) :
+		return _visual_column
+	
+	def select_visual_column (self, _line, _real_column) :
+		return _real_column
+	
+	def select_real_length (self, _line) :
+		return 0
+	
+	def select_visual_length (self, _line) :
+		return 0
+	
+	def select_tagged (self, _line) :
+		return False
 	
 	def get_cursor (self) :
 		return self._cursor
@@ -204,20 +157,19 @@ class View :
 	def get_tail (self) :
 		return self._tail
 	
-	def get_mark (self) :
-		return self._mark
+	def get_max_lines (self) :
+		return self._max_lines
 	
-	def is_mark_enabled (self) :
-		return self._mark_enabled
-	
-	def set_mark_enabled (self, _enabled) :
-		self._mark_enabled = _enabled
-	
-	def set_max (self, _lines, _columns) :
+	def set_max_lines (self, _lines) :
 		self._max_lines = _lines
+	
+	def get_max_columns (self) :
+		return self._max_columns
+	
+	def set_max_columns (self, _columns) :
 		self._max_columns = _columns
 	
-	def correct_marks (self) :
+	def refresh (self) :
 		
 		_cursor_line = self._cursor._line
 		_cursor_column = self._cursor._column
@@ -227,27 +179,18 @@ class View :
 		_tail_column = self._tail._column
 		_max_lines = self._max_lines
 		_max_columns = self._max_columns
-		_mark_line = self._mark._line
-		_mark_column = self._mark._column
-		_scroll_lines = self._scroll.get_length ()
+		_lines = self.get_lines ()
 		
 		if _cursor_line < 0 :
 			_cursor_line = 0
-		elif _cursor_line >= _scroll_lines :
-			_cursor_line = _scroll_lines - 1
+		elif _cursor_line >= _lines :
+			_cursor_line = _lines - 1
 		if _cursor_column < 0 :
 			_cursor_column = 0
 		
-		if _mark_line < 0 :
-			_mark_line = 0
-		elif _mark_line >= _scroll_lines :
-			_mark_line = _scroll_lines - 1
-		if _mark_column < 0 :
-			_mark_column = 0
-		
-		if _scroll_lines <= _max_lines :
+		if _lines <= _max_lines :
 			_head_line = 0
-			_tail_line = _scroll_lines - 1
+			_tail_line = _lines - 1
 		else :
 			if _cursor_line <= (_head_line + 5) :
 				_head_line = _cursor_line - 5
@@ -256,8 +199,8 @@ class View :
 				_tail_line = _head_line + _max_lines - 1
 			if _cursor_line >= (_tail_line - 5) :
 				_tail_line = _cursor_line + 5
-				if _tail_line >= _scroll_lines :
-					_tail_line = _scroll_lines - 1
+				if _tail_line >= _lines :
+					_tail_line = _lines - 1
 				_head_line = _tail_line - _max_lines + 1
 		
 		if _tail_column - _head_column < _max_columns :
@@ -277,8 +220,162 @@ class View :
 		self._head._column = _head_column
 		self._tail._line = _tail_line
 		self._tail._column = _tail_column
+#
+
+
+class ScrollView (View) :
+	
+	def __init__ (self, _scroll) :
+		View.__init__ (self)
+		self._scroll = _scroll
+		self._mark = Mark ()
+		self._mark_enabled = False
+		self._tab_columns = 4
+	
+	def get_scroll (self) :
+		return self._scroll
+	
+	def get_lines (self) :
+		return self._scroll.get_length ()
+	
+	def get_mark (self) :
+		return self._mark
+	
+	def is_mark_enabled (self) :
+		return self._mark_enabled
+	
+	def set_mark_enabled (self, _enabled) :
+		self._mark_enabled = _enabled
+	
+	def select_real_string (self, _line) :
+		return self._scroll.select (_line)
+	
+	def select_visual_string (self, _line, _head_column, _tail_column) :
+		return self.compute_visual_string (self._scroll.select (_line), _head_column, _tail_column)
+	
+	def select_real_column (self, _line, _visual_column) :
+		return self.compute_real_column (self._scroll.select (_line), _visual_column)
+	
+	def select_visual_column (self, _line, _real_column) :
+		return self.compute_visual_column (self._scroll.select (_line), _real_column)
+	
+	def select_real_length (self, _line) :
+		return len (self._scroll.select (_line))
+	
+	def select_visual_length (self, _line) :
+		return self.compute_visual_length (self._scroll.select (_line))
+	
+	def select_tagged (self, _line) :
+		_cursor_line = self._cursor.get_line ()
+		_mark_line = self._mark.get_line ()
+		return self._mark_enabled and ((_cursor_line <= _line <= _mark_line) or (_mark_line <= _line <= _cursor_line))
+	
+	def refresh (self) :
+		
+		View.refresh (self)
+		
+		_mark_line = self._mark._line
+		_mark_column = self._mark._column
+		_lines = self.get_lines ()
+		
+		if _mark_line < 0 :
+			_mark_line = 0
+		elif _mark_line >= _lines :
+			_mark_line = _lines - 1
+		if _mark_column < 0 :
+			_mark_column = 0
+		
 		self._mark._line = _mark_line
 		self._mark._column = _mark_column
+	
+	def compute_real_column (self, _string, _column) :
+		_tab_columns = self._tab_columns
+		_index = 0
+		_length = 0
+		for _character in _string :
+			_code = ord (_character)
+			if _code == 9 :
+				_length = ((_length / _tab_columns) + 1) * _tab_columns
+			else :
+				_length += 1
+			if _length > _column :
+				break
+			_index += 1
+		if _length < _column :
+			_index += _column - _length
+		return _index
+	
+	def compute_visual_column (self, _string, _column) :
+		_tab_columns = self._tab_columns
+		_index = 0
+		_length = 0
+		for _character in _string :
+			_code = ord (_character)
+			if _index == _column :
+				break
+			if _code == 9 :
+				_length = ((_length / _tab_columns) + 1) * _tab_columns
+			else :
+				_length += 1
+			_index += 1
+		if _index < _column :
+			_length += _column - _index
+		return _length
+	
+	def compute_visual_length (self, _string) :
+		_tab_columns = self._tab_columns
+		_length = 0
+		for _character in _string :
+			_code = ord (_character)
+			if _code == 9 :
+				_length = ((_length / _tab_columns) + 1) * _tab_columns
+			else :
+				_length += 1
+		return _length
+
+	def compute_visual_string (self, _string, _head_column, _tail_column) :
+		_tab_columns = self._tab_columns
+		_buffer = []
+		_column = 0
+		_code = 0
+		_h_code = ord ('-')
+		_g_code = ord ('>')
+		_e_code = ord ('!')
+		_last_mode = None
+		_last_code = None
+		for _character in _string :
+			_code = ord (_character)
+			if _code == 9 :
+				_delta = (((_column / _tab_columns) + 1) * _tab_columns) - _column
+				if ((_column + _delta) > _head_column) and (_column <= _tail_column) :
+					if _last_mode != -2 :
+						_buffer.append (-2)
+						_last_mode = -2
+					if (_column >= _head_column) and ((_column + _delta) <= _tail_column) :
+						_buffer.extend ([_h_code] * (_delta - 1))
+					else :
+						if _column < _head_column :
+							_buffer.extend ([_h_code] * (_column + _delta - _head_column - 1))
+						if _column + _delta > _tail_column :
+							_buffer.extend ([_h_code] * (_tail_column - _column))
+					_buffer.append (_g_code)
+				_column += _delta
+			else :
+				if (_column >= _head_column) and (_column <= _tail_column) :
+					if _last_mode != -1 :
+						_buffer.append (-1)
+						_last_mode = -1
+					_buffer.append (_code)
+				_column += 1
+			_last_code = _code
+			if _column >= _tail_column :
+				break
+		if _column <= _tail_column and _last_code == 32 :
+			if _last_mode != -3 :
+				_buffer.append (-3)
+				_last_mode = -3
+			_buffer.append (_e_code)
+		return _buffer
 #
 
 
@@ -304,17 +401,19 @@ class Shell :
 		curses.use_default_colors ()
 		curses.init_pair (1, curses.COLOR_WHITE, -1)
 		curses.init_pair (2, curses.COLOR_BLUE, -1)
-		curses.init_pair (3, curses.COLOR_MAGENTA, -1)
-		curses.init_pair (4, curses.COLOR_GREEN, -1)
+		curses.init_pair (3, curses.COLOR_RED, -1)
+		curses.init_pair (4, curses.COLOR_MAGENTA, -1)
+		curses.init_pair (5, curses.COLOR_GREEN, -1)
 		self._color_text = curses.color_pair (1)
 		self._color_markup = curses.color_pair (2)
-		self._color_message = curses.color_pair (3)
-		self._color_input = curses.color_pair (4)
+		self._color_error = curses.color_pair (3)
+		self._color_message = curses.color_pair (4)
+		self._color_input = curses.color_pair (5)
 		
 		self._messages = []
 		self._messages_touched = False
-		self._max_message_lines = 5
-		self._max_input_lines = 5
+		self._max_message_lines = 10
+		self._max_input_lines = 3
 		
 		self.show ()
 	
@@ -337,18 +436,22 @@ class Shell :
 	def show (self) :
 		self._window = curses.initscr ()
 		curses.raw ()
+		#curses.cbreak ()
 		curses.noecho ()
 		curses.nonl ()
 		self._window.keypad (1)
 		self._window.leaveok (0)
 		(self._window_lines, self._window_columns) = self._window.getmaxyx ()
-		self._view.set_max (self._window_lines, self._window_columns - 1)
+		self._view.set_max_lines (self._window_lines)
+		self._view.set_max_columns (self._window_columns - 1)
+		self._view.refresh ()
 	
 	def hide (self) :
 		self._window.keypad (0)
 		self._window.leaveok (1)
 		curses.nl ()
 		curses.echo ()
+		#curses.nocbreak ()
 		curses.noraw ()
 		curses.endwin ()
 	
@@ -393,6 +496,7 @@ class Shell :
 		self._window.addstr ('[>>] ')
 		self._window.refresh ()
 		
+		#curses.nocbreak ()
 		curses.noraw ()
 		curses.echo ()
 		try :
@@ -401,6 +505,7 @@ class Shell :
 			_string = None
 		
 		curses.raw ()
+		#curses.cbreak ()
 		curses.noecho ()
 		
 		return _string
@@ -408,23 +513,19 @@ class Shell :
 	def refresh (self) :
 		
 		_view = self._view
-		_view.correct_marks ()
+		_view.refresh ()
 		
-		_scroll = _view.get_scroll ()
 		_cursor = _view.get_cursor ()
 		_head = _view.get_head ()
 		_tail = _view.get_tail ()
-		_mark = _view.get_mark ()
 		
-		_scroll_lines = _scroll.get_length ()
+		_lines = _view.get_lines ()
 		_cursor_line = _cursor.get_line ()
 		_cursor_column = _cursor.get_column ()
 		_head_line = _head.get_line ()
 		_head_column = _head.get_column ()
 		_tail_line = _tail.get_line ()
 		_tail_column = _tail.get_column ()
-		_mark_line = _mark.get_line ()
-		_mark_enabled = _view.is_mark_enabled ()
 		_max_lines = self._window_lines
 		_max_columns = self._window_columns - 1
 		
@@ -435,60 +536,34 @@ class Shell :
 		_window = self._window
 		_color_text = self._color_text
 		_color_markup = self._color_markup
+		_color_error = self._color_error
 		_color_message = self._color_message
 		
 		_window.erase ()
 		
-		_color_current = None
 		for i in xrange (0, _max_lines) :
 			_window.move (i, 0)
-			if _color_current != _color_markup :
+			_line = _head_line + i
+			if _line < _lines :
 				_window.attrset (_color_markup)
-				_color_current = _color_markup
-			_scroll_line = _head_line + i
-			if _scroll_line < _scroll_lines :
-				if _mark_enabled and (
-						(_cursor_line <= _scroll_line <= _mark_line)
-						or (_mark_line <= _scroll_line <= _cursor_line)) :
+				if _view.select_tagged (_line) :
 					_window.addstr ('#')
 				else :
 					_window.addstr (' ')
-				_string = _scroll.select (_scroll_line)
-				_column = 0
-				_code = 0
-				for _character in _string :
-					_code = ord (_character)
-					if _code == 9 :
-						_delta = (((_column / 4) + 1) * 4) - _column
-						if ((_column + _delta) > _head_column) and (_column <= _tail_column) :
-							if _color_current != _color_markup :
-								_window.attrset (_color_markup)
-								_color_current = _color_markup
-							if (_column >= _head_column) and ((_column + _delta) <= _tail_column) :
-								_window.addstr ('-' * (_delta - 1))
-							else :
-								if _column < _head_column :
-									_window.addstr ('-' * (_column + _delta - _head_column - 1))
-								if _column + _delta > _tail_column :
-									_window.addstr ('-' * (_tail_column - _column))
-							_window.addstr ('>')
-						_column += _delta
-					else :
-						if _color_current != _color_text :
-							_window.attrset (_color_text)
-							_color_current = _color_text
-						if (_column >= _head_column) and (_column <= _tail_column) :
-							_window.addstr (_character.encode ('utf-8'))
-						_column += 1
-				if _column <= _tail_column and _code == 32 :
-					if _color_current != _color_markup :
+				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
+				for _code in _buffer :
+					if _code >= 0 :
+						_window.addstr (chr (_code) .encode ('utf-8'))
+					elif _code == -1 :
+						_window.attrset (_color_text)
+					elif _code == -2 :
 						_window.attrset (_color_markup)
-						_color_current = _color_markup
-					_window.addstr ('.')
+					elif _code == -3 :
+						_window.attrset (_color_error)
+					else :
+						_window.addstr ('?')
 			else :
-				if _color_current != _color_markup :
-					_window.attrset (_color_markup)
-					_color_current = _color_markup
+				_window.attrset (_color_markup)
 				_window.addstr ('-----')
 				break
 		
@@ -497,10 +572,9 @@ class Shell :
 		if _messages_touched :
 			_index = 0
 			_window.attrset (_color_message)
-			_window.move (_max_lines - len (_messages), 0)
-			_window.clrtobot ()
 			for _message in _messages :
 				_window.move (_max_lines - _index - 1, 0)
+				_window.clrtoeol ()
 				_window.addstr ('[..] ')
 				_window.addstr (_message)
 				_index += 1
@@ -635,16 +709,12 @@ class Handler :
 #
 
 
-class ScrollHandler (Handler) :
+class BasicHandler (Handler) :
 	
 	def __init__ (self) :
 		Handler.__init__ (self)
 		self._commands = dict ()
 		self._controls = dict ()
-		self.key_control_code_for_mark = ord ('@') - 64 # or Space
-		self.key_control_code_for_command = ord ('R') - 64
-		self.key_control_code_for_exit = ord ('X') - 64
-		self.key_control_code_for_delete_line = ord ('D') - 64
 	
 	def handle_key_up (self, _shell) :
 		_shell.get_view () .get_cursor () .increment_line (-1)
@@ -657,85 +727,22 @@ class ScrollHandler (Handler) :
 	
 	def handle_key_right (self, _shell) :
 		_shell.get_view () .get_cursor () .increment_column (1)
-
+	
 	def handle_key_home (self, _shell) :
 		_shell.get_view () .get_cursor () .set_column (0)
 	
 	def handle_key_end (self, _shell) :
 		_view = _shell.get_view ()
 		_cursor = _view.get_cursor ()
-		_cursor.set_column (_view.get_scroll () .select_visual_length (_cursor.get_line ()))
+		_cursor.set_column (_view.select_visual_length (_cursor.get_line ()))
 	
 	def handle_key_page_up (self, _shell) :
-		_shell.get_view () .get_cursor () .increment_line (-32)
+		_view = _shell.get_view ()
+		_view.get_cursor () .increment_line (- _view.get_max_lines ())
 	
 	def handle_key_page_down (self, _shell) :
-		_shell.get_view () .get_cursor () .increment_line (32)
-	
-	def handle_key_backspace (self, _shell) :
 		_view = _shell.get_view ()
-		_scroll = _view.get_scroll ()
-		_cursor = _view.get_cursor ()
-		_line = _cursor.get_line ()
-		_visual_column = _cursor.get_column ()
-		_length = _scroll.select_visual_length (_line)
-		if _visual_column > _length :
-			_cursor.set_column (_length)
-		elif _visual_column > 0 :
-			_real_column = _scroll.select_real_column (_line, _visual_column - 1)
-			_scroll.delete (_line, _real_column, 1)
-			_cursor.set_column (_scroll.select_visual_column (_line, _real_column))
-		elif _line > 0 :
-			_length = _scroll.select_visual_length (_line - 1)
-			_scroll.unsplit (_line - 1)
-			_cursor.increment_line (-1)
-			_cursor.set_column (_length)
-		else :
-			_shell.alert ()
-	
-	def handle_key_tab (self, _shell) :
-		self._insert_character (_shell, '\t')
-	
-	def handle_key_enter (self, _shell) :
-		_view = _shell.get_view ()
-		_scroll = _view.get_scroll ()
-		_cursor = _view.get_cursor ()
-		_line = _cursor.get_line ()
-		_scroll.split (_line, _scroll.select_real_column (_line, _cursor.get_column ()))
-		_cursor.increment_line (1)
-		_cursor.set_column (0)
-	
-	def handle_key_delete (self, _shell) :
-		_view = _shell.get_view ()
-		_scroll = _view.get_scroll ()
-		_cursor = _view.get_cursor ()
-		_line = _cursor.get_line ()
-		_visual_column = _cursor.get_column ()
-		_length = _scroll.select_visual_length (_line)
-		if _visual_column > _length :
-			_cursor.set_column (_length)
-		elif _visual_column < _length :
-			_real_column = _scroll.select_real_column (_line, _visual_column)
-			_scroll.delete (_line, _real_column, 1)
-			_cursor.set_column (_scroll.select_visual_column (_line, _real_column))
-		elif _line < (_scroll.get_length () - 1) :
-			_scroll.unsplit (_line)
-			_cursor.set_column (_length)
-		else :
-			_shell.alert ()
-	
-	def handle_key_character (self, _shell, _character) :
-		self._insert_character (_shell, _character)
-	
-	def _insert_character (self, _shell, _character) :
-		_view = _shell.get_view ()
-		_scroll = _view.get_scroll ()
-		_cursor = _view.get_cursor ()
-		_line = _cursor.get_line ()
-		_visual_column = _cursor.get_column ()
-		_real_column = _scroll.select_real_column (_line, _visual_column)
-		_scroll.insert (_line, _real_column, _character)
-		_cursor.set_column (_scroll.select_visual_column (_line, _real_column + 1))
+		_view.get_cursor () .increment_line (_view.get_max_lines ())
 	
 	def handle_key_control (self, _shell, _code) :
 		if _code not in self._controls :
@@ -778,6 +785,78 @@ class ScrollHandler (Handler) :
 	
 	def unregister_control (self, _control) :
 		del self._controls[ord (_control) - 64]
+#
+
+
+class ScrollHandler (BasicHandler) :
+	
+	def __init__ (self) :
+		BasicHandler.__init__ (self)
+	
+	def handle_key_backspace (self, _shell) :
+		_view = _shell.get_view ()
+		_scroll = _view.get_scroll ()
+		_cursor = _view.get_cursor ()
+		_line = _cursor.get_line ()
+		_visual_column = _cursor.get_column ()
+		_length = _view.select_visual_length (_line)
+		if _visual_column > _length :
+			_cursor.set_column (_length)
+		elif _visual_column > 0 :
+			_real_column = _view.select_real_column (_line, _visual_column - 1)
+			_scroll.delete (_line, _real_column, 1)
+			_cursor.set_column (_view.select_visual_column (_line, _real_column))
+		elif _line > 0 :
+			_length = _view.select_visual_length (_line - 1)
+			_scroll.unsplit (_line - 1)
+			_cursor.increment_line (-1)
+			_cursor.set_column (_length)
+		else :
+			_shell.alert ()
+	
+	def handle_key_tab (self, _shell) :
+		self._insert_character (_shell, '\t')
+	
+	def handle_key_enter (self, _shell) :
+		_view = _shell.get_view ()
+		_scroll = _view.get_scroll ()
+		_cursor = _view.get_cursor ()
+		_line = _cursor.get_line ()
+		_scroll.split (_line, _view.select_real_column (_line, _cursor.get_column ()))
+		_cursor.increment_line (1)
+		_cursor.set_column (0)
+	
+	def handle_key_delete (self, _shell) :
+		_view = _shell.get_view ()
+		_scroll = _view.get_scroll ()
+		_cursor = _view.get_cursor ()
+		_line = _cursor.get_line ()
+		_visual_column = _cursor.get_column ()
+		_length = _view.select_visual_length (_line)
+		if _visual_column > _length :
+			_cursor.set_column (_length)
+		elif _visual_column < _length :
+			_real_column = _view.select_real_column (_line, _visual_column)
+			_scroll.delete (_line, _real_column, 1)
+			_cursor.set_column (_view.select_visual_column (_line, _real_column))
+		elif _line < (_scroll.get_length () - 1) :
+			_scroll.unsplit (_line)
+			_cursor.set_column (_length)
+		else :
+			_shell.alert ()
+	
+	def handle_key_character (self, _shell, _character) :
+		self._insert_character (_shell, _character)
+	
+	def _insert_character (self, _shell, _character) :
+		_view = _shell.get_view ()
+		_scroll = _view.get_scroll ()
+		_cursor = _view.get_cursor ()
+		_line = _cursor.get_line ()
+		_visual_column = _cursor.get_column ()
+		_real_column = _view.select_real_column (_line, _visual_column)
+		_scroll.insert (_line, _real_column, _character)
+		_cursor.set_column (_view.select_visual_column (_line, _real_column + 1))
 #
 
 
@@ -828,9 +907,9 @@ def yank_lines_command (_shell, _arguments) :
 			_scroll.include_before (_cursor_line, _line)
 	else :
 		_visual_column = _cursor.get_column ()
-		_real_column = _scroll.select_real_column (_cursor_line, _visual_column)
+		_real_column = _view.select_real_column (_cursor_line, _visual_column)
 		_scroll.insert (_cursor_line, _real_column, _yank_buffer)
-		_cursor.set_column (_scroll.select_visual_column (_cursor_line, _real_column + len (_yank_buffer)))
+		_cursor.set_column (_view.select_visual_column (_cursor_line, _real_column + len (_yank_buffer)))
 
 
 def copy_lines_command (_shell, _arguments) :
@@ -847,8 +926,8 @@ def copy_lines_command (_shell, _arguments) :
 		_mark = _view.get_mark ()
 		_mark_line = _mark.get_line ()
 		if _mark_line == _cursor_line :
-			_cursor_real_column = _scroll.select_real_column (_cursor_line, _cursor.get_column ())
-			_mark_real_column = _scroll.select_real_column (_cursor_line, _mark.get_column ())
+			_cursor_real_column = _view.select_real_column (_cursor_line, _cursor.get_column ())
+			_mark_real_column = _view.select_real_column (_cursor_line, _mark.get_column ())
 			_first_real_column = min (_mark_real_column, _cursor_real_column)
 			_last_real_column = max (_mark_real_column, _cursor_real_column)
 			_string = _scroll.select (_cursor_line)
@@ -967,9 +1046,9 @@ def _handle_file_lines (_shell, _type, _lines) :
 
 def sce (_arguments) :
 	_scroll = Scroll ()
-	_view = View (_scroll)
+	_view = ScrollView (_scroll)
 	_handler = ScrollHandler ()
-	#_handler.register_control ('X', exit_command)
+	_handler.register_control ('X', exit_command)
 	_handler.register_control ('@', mark_command)
 	_handler.register_control ('R', _handler.handle_command)
 	_handler.register_control ('Y', yank_lines_command)
