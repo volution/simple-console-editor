@@ -520,7 +520,7 @@ class Shell :
 				else :
 					_string = None
 				break
-			elif (_code == curses.KEY_DC) :
+			elif _code == 11 : # Ctrl+K
 				if len (_buffer) == 0 :
 					break
 				else :
