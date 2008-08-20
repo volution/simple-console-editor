@@ -58,6 +58,8 @@ class Scroll :
 			self._lines.insert (_index + 1, _string)
 	
 	def exclude (self, _index) :
+		if self._lines == None :
+			return
 		del self._lines[_index]
 		if len (self._lines) == 0 :
 			self._lines = None
@@ -176,7 +178,11 @@ class View :
 		return ''
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
-		return []
+		_string = self.select_real_string (_line)
+		_buffer = [-1]
+		for _character in _string :
+			_buffer.append (ord (_character))
+		return _buffer
 	
 	def select_real_column (self, _line, _visual_column) :
 		return _visual_column
@@ -185,10 +191,10 @@ class View :
 		return _real_column
 	
 	def select_real_length (self, _line) :
-		return 0
+		return len (self.select_real_string (_line))
 	
 	def select_visual_length (self, _line) :
-		return 0
+		return len (self.select_real_string (_line))
 	
 	def select_tagged (self, _line) :
 		return False
@@ -265,6 +271,24 @@ class View :
 		self._head._column = _head_column
 		self._tail._line = _tail_line
 		self._tail._column = _tail_column
+#
+
+
+class RangeView (View) :
+	
+	def __init__ (self, _min, _max) :
+		View.__init__ (self)
+		self._min = _min
+		self._max = _max
+	
+	def get_lines (self) :
+		return self._max - self._min
+	
+	def select_real_string (self, _line) :
+		return unicode (self._min + _line)
+	
+	def select_tagged (self, _line) :
+		return (_line % 2) == 0
 #
 
 
@@ -542,7 +566,7 @@ class Shell :
 		
 		_buffer = []
 		_inputs = self._inputs
-		_input = len (_inputs) - 1
+		_input = len (_inputs)
 		while True :
 			_string = u''.join (_buffer)
 			_window.move (_line + 1, 5)
@@ -576,7 +600,7 @@ class Shell :
 					continue
 				_input -= 1
 				if _input < 0 :
-					_input = len (_inputs) -1
+					_input = len (_inputs) - 1
 				_buffer = []
 				_buffer.extend (_inputs[_input])
 			elif (_code == curses.KEY_DOWN) :
@@ -1050,7 +1074,7 @@ def delete_lines_command (_shell, _arguments) :
 			_last_line = max (_mark_line, _cursor_line)
 			_yank_buffer = []
 			for _line in xrange (_first_line, _last_line + 1) :
-				_yank_buffer.append (_scroll.select (_line))
+				_yank_buffer.append (_scroll.select (_first_line))
 				_scroll.exclude (_first_line)
 			_cursor.set_line (_first_line)
 		_view.set_mark_enabled (False)
@@ -1135,6 +1159,22 @@ def _handle_file_lines (_shell, _type, _lines) :
 		_scroll.include_before (_insert_line, _line)
 
 
+def range (_min, _max) :
+	_view = RangeView (_min, _max)
+	_handler = BasicHandler ()
+	_handler.register_control ('X', exit_command)
+	_handler.register_control ('R', _handler.handle_command)
+	_handler.register_command ('exit', exit_command)
+	_shell = Shell (_view, _handler)
+	_shell.open ()
+	_error = _shell.loop ()
+	_shell.close ()
+	if _error is not None :
+		print _error[0]
+		print _error[1]
+	print
+
+
 def sce (_arguments) :
 	_scroll = Scroll ()
 	_view = ScrollView (_scroll)
@@ -1151,8 +1191,12 @@ def sce (_arguments) :
 	_handler.register_command ('sys', sys_command)
 	_shell = Shell (_view, _handler)
 	_shell.open ()
-	for _argument in sys.argv[1 :] :
-		load_command (_shell, ['a', _argument])
+	if len (_arguments) > 0 :
+		for _argument in sys.argv[1 :] :
+			load_command (_shell, ['a', _argument])
+	else :
+		_scroll.append ('SCE (Simple Console Editor)')
+		_scroll.append ('---------------------------')
 	_error = _shell.loop ()
 	_shell.close ()
 	if _error is not None :
