@@ -1085,29 +1085,36 @@ def delete_lines_command (_shell, _arguments) :
 
 def load_command (_shell, _arguments) :
 	if len (_arguments) != 2 :
-		_shell.notify ('load: wrong syntax: load r|i|a <path>')
+		_shell.notify ('load: wrong syntax: load r|i|a <file>')
 		return
-	_type = _arguments[0]
+	_mode = _arguments[0]
 	_path = _arguments[1]
-	if _type not in ['r', 'i', 'a'] :
-		_shell.notify ('load: wrong type; aborting.')
+	if _mode not in ['r', 'i', 'a'] :
+		_shell.notify ('load: wrong mode (r|i|a); aborting.')
 		return
 	if not os.path.isfile (_path) :
-		_shell.notify ('load: wrong path; aborting.')
+		_shell.notify ('load: target file does not exist; aborting.')
 		return
-	_stream = codecs.open (_path, 'r', 'utf-8')
-	_lines = _stream.readlines ()
-	_stream.close ()
-	_handle_file_lines (_shell, _type, _lines)
+	try :
+		_stream = codecs.open (_path, 'r', 'utf-8')
+		_lines = _stream.readlines ()
+		_stream.close ()
+	except :
+		_shell.notify ('load: input failed; aborting.')
+		if _stream is not None :
+			_stream.close ()
+		return
+	_load_file_lines (_shell, _mode, _lines)
+	return True
 
 
 def sys_command (_shell, _arguments) :
 	if len (_arguments) < 2 :
 		_shell.notify ('sys: wrong syntax: sys r|i|a <command> <argument> ...')
 		return
-	_type = _arguments[0]
-	if _type not in ['r', 'i', 'a'] :
-		_shell.notify ('sys: wrong type; aborting.')
+	_mode = _arguments[0]
+	if _mode not in ['r', 'i', 'a'] :
+		_shell.notify ('sys: wrong mode (r|i|a); aborting.')
 		return
 	_system_arguments = _arguments[1 :]
 	_shell.hide ()
@@ -1117,7 +1124,7 @@ def sys_command (_shell, _arguments) :
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
 		_shell.show ()
-		_shell.notify ('sys: wrong command; aborting.')
+		_shell.notify ('sys: spawn failed; aborting.')
 		return
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, 'utf-8')
@@ -1129,27 +1136,27 @@ def sys_command (_shell, _arguments) :
 		_error = _process.wait ()
 	except :
 		_shell.show ()
-		_shell.notify ('sys: command failed; aborting.')
+		_shell.notify ('sys: input failed; aborting.')
 		return
 	_shell.show ()
 	if _error != 0 :
-		_shell.notify ('sys: command failed; ignoring.')
+		_shell.notify ('sys: command failed (non zero exit code); ignoring.')
 	if len (_error_lines) != 0 :
 		for _line in _error_lines :
 			_line = _line.rstrip ('\r\n')
 			_shell.notify ('sys: %s', _line)
-	_handle_file_lines (_shell, _type, _lines)
+	_load_file_lines (_shell, _mode, _lines)
 
 
-def _handle_file_lines (_shell, _type, _lines) :
+def _load_file_lines (_shell, _mode, _lines) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
-	if _type == 'r' :
+	if _mode == 'r' :
 		_scroll.empty ()
 		_insert_line = 0
-	elif _type == 'i' :
+	elif _mode == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
-	elif _type == 'a' :
+	elif _mode == 'a' :
 		_insert_line = _scroll.get_length ()
 	else :
 		_insert_line = _scroll.get_length ()
@@ -1157,6 +1164,58 @@ def _handle_file_lines (_shell, _type, _lines) :
 	for _line in _lines :
 		_line = _line.rstrip ('\r\n')
 		_scroll.include_before (_insert_line, _line)
+
+
+def store_command (_shell, _arguments) :
+	if len (_arguments) != 3 :
+		_shell.notify ('store: wrong syntax: store a|t o|c <file>')
+		return
+	_selector = _arguments[0]
+	_mode = _arguments[1]
+	_path = _arguments[2]
+	if _selector not in ['a', 't'] :
+		_shell.notify ('store: wrong selector (a|t); aborting.')
+		return
+	if _mode not in ['o', 'c'] :
+		_shell.notify ('store: wrong mode (o|c); aborting.')
+		return
+	if _mode == 'c' and os.path.isfile (_path) :
+		_shell.notify ('store: target file exists; aborting.')
+		return
+	try :
+		_stream = codecs.open (_path, 'w', 'utf-8')
+		_view = _shell.get_view ()
+		_lines = _view.get_lines ()
+		for _line in xrange (0, _lines) :
+			if _selector == 'a' or _view.select_is_tagged (_line) :
+				_string = _view.select_real_string (_line)
+				_stream.write (_string)
+				_stream.write ('\n')
+		_stream.close ()
+	except :
+		_shell.notify ('store: output failed; target file might have been destroyed!')
+		return
+
+
+def open_command (_shell, _arguments) :
+	if len (_arguments) != 1 :
+		_shell.notify ('open: wrong syntax: open <file>')
+		return
+	_path = _arguments[0]
+	_succeeded = load_command (_shell, ['r', _path])
+	if _succeeded :
+		_shell.get_view () ._open_command_path = _path
+
+
+def save_command (_shell, _arguments) :
+	if len (_arguments) != 0 :
+		_shell.notify ('save: wrong syntax: save')
+		return
+	_path = _shell.get_view () ._open_command_path
+	if _path is None :
+		_shell.notify ('save: no previous open command; aborting.')
+		return
+	_succeeded = store_command (_shell, ['a', 'o', _path])
 
 
 def range (_min, _max) :
@@ -1176,6 +1235,9 @@ def range (_min, _max) :
 
 
 def sce (_arguments) :
+	if len (_arguments) > 1 :
+		print '[ee] sce: wrong syntax: sce [file]'
+		return
 	_scroll = Scroll ()
 	_view = ScrollView (_scroll)
 	_handler = ScrollHandler ()
@@ -1188,15 +1250,14 @@ def sce (_arguments) :
 	_handler.register_command ('clear', clear_command)
 	_handler.register_command ('exit', exit_command)
 	_handler.register_command ('load', load_command)
+	_handler.register_command ('store', store_command)
+	_handler.register_command ('open', open_command)
+	_handler.register_command ('save', save_command)
 	_handler.register_command ('sys', sys_command)
 	_shell = Shell (_view, _handler)
 	_shell.open ()
 	if len (_arguments) > 0 :
-		for _argument in sys.argv[1 :] :
-			load_command (_shell, ['a', _argument])
-	else :
-		_scroll.append ('SCE (Simple Console Editor)')
-		_scroll.append ('---------------------------')
+		open_command (_shell, [_arguments[0]])
 	_error = _shell.loop ()
 	_shell.close ()
 	if _error is not None :
