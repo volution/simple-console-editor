@@ -1113,15 +1113,16 @@ def sys_command (_shell, _arguments) :
 		_shell.notify ('sys: wrong syntax: sys r|i|a <command> <argument> ...')
 		return
 	_mode = _arguments[0]
+	_system_arguments = _arguments[1 :]
 	if _mode not in ['r', 'i', 'a'] :
 		_shell.notify ('sys: wrong mode (r|i|a); aborting.')
 		return
-	_system_arguments = _arguments[1 :]
 	_shell.hide ()
 	try :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
-				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE, bufsize = 1, close_fds = True, universal_newlines = True)
+				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+				bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
 		_shell.show ()
 		_shell.notify ('sys: spawn failed; aborting.')
@@ -1146,6 +1147,70 @@ def sys_command (_shell, _arguments) :
 			_line = _line.rstrip ('\r\n')
 			_shell.notify ('sys: %s', _line)
 	_load_file_lines (_shell, _mode, _lines)
+
+
+def pipe_command (_shell, _arguments) :
+	if len (_arguments) < 1 :
+		_shell.notify ('pipe: wrong syntax: pipe <command> <arguments> ...')
+		return
+	_system_arguments = _arguments
+	try :
+		_process = subprocess.Popen (
+				_system_arguments, shell = False, env = None,
+				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+				bufsize = 1, close_fds = True, universal_newlines = True)
+	except :
+		_shell.notify ('pipe: spawn failed; aborting.')
+		return
+	_view = _shell.get_view ()
+	_scroll = _view.get_scroll ()
+	_cursor = _view.get_cursor ()
+	_cursor_line = _cursor.get_line ()
+	_lines = []
+	if _view.is_mark_enabled () :
+		_mark = _view.get_mark ()
+		_mark_line = _mark.get_line ()
+		_first_line = min (_mark_line, _cursor_line)
+		_last_line = max (_mark_line, _cursor_line)
+	else :
+		_first_line = 0
+		_last_line = _scroll.get_length () - 1
+	for _line in xrange (_first_line, _last_line + 1) :
+		_lines.append (_scroll.select (_line))
+	try :
+		_stream = codecs.EncodedFile (_process.stdin, 'utf-8')
+		for _line in _lines :
+			_stream.write (_line)
+			_stream.write ('\n')
+		_stream.close ()
+		_stream = codecs.EncodedFile (_process.stdout, 'utf-8')
+		_lines = _stream.readlines ()
+		_stream.close ()
+		_stream = codecs.EncodedFile (_process.stderr, 'utf-8')
+		_error_lines = _stream.readlines ()
+		_stream.close ()
+		_error = _process.wait ()
+	except :
+		_shell.notify ('pipe: input failed; aborting.')
+		return
+	if _error != 0 :
+		_shell.notify ('sys: command failed (non zero exit code); ignoring.')
+	if len (_error_lines) != 0 :
+		for _line in _error_lines :
+			_line = _line.rstrip ('\r\n')
+			_shell.notify ('sys: %s', _line)
+	for _line in xrange (_first_line, _last_line + 1) :
+		_scroll.exclude (_first_line)
+	for _line in _lines :
+		_line = _line.rstrip ('\r\n')
+		_scroll.include_before (_first_line, _line)
+	if _view.is_mark_enabled () :
+		if len (_lines) == 0 :
+			_view.set_mark_enabled (False)
+		else :
+			_last_line = _first_line + len (_lines) - 1
+			_cursor.set_line (_first_line)
+			_mark.set_line (_last_line)
 
 
 def _load_file_lines (_shell, _mode, _lines) :
@@ -1254,6 +1319,7 @@ def sce (_arguments) :
 	_handler.register_command ('open', open_command)
 	_handler.register_command ('save', save_command)
 	_handler.register_command ('sys', sys_command)
+	_handler.register_command ('pipe', pipe_command)
 	_shell = Shell (_view, _handler)
 	_shell.open ()
 	if len (_arguments) > 0 :
@@ -1264,6 +1330,5 @@ def sce (_arguments) :
 		print _error[0]
 		print _error[1]
 	print
-
 
 sce (sys.argv[1 :])
