@@ -86,7 +86,7 @@ class View :
 			if _cursor_column < 0 :
 				_cursor_column = 0
 			
-			if _lines <= _max_lines :
+			if _lines < _max_lines :
 				_head_line = 0
 				_tail_line = _lines - 1
 			else :
@@ -97,8 +97,8 @@ class View :
 					_tail_line = _head_line + _max_lines - 1
 				if _cursor_line >= (_tail_line - 5) :
 					_tail_line = _cursor_line + 5
-					if _tail_line >= _lines :
-						_tail_line = _lines - 1
+					if _tail_line > _lines :
+						_tail_line = _lines
 					_head_line = _tail_line - _max_lines + 1
 			
 			if _tail_column - _head_column < _max_columns :
