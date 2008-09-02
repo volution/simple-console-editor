@@ -366,10 +366,16 @@ def go_command (_shell, _arguments) :
 	if _lines == 0 :
 		pass
 	if _mode == 'l' :
-		_line = int (_argument)
+		try :
+			_line = int (_argument) - 1
+		except :
+			_shell.notify ('go: wrong line; aborting.')
+			return None
 		if _line > _lines :
 			_line = _lines - 1
 		_cursor.set_line (_line)
+		_go_arguments = _arguments
+		return True
 	elif _mode == 's' :
 		_line = _cursor.get_line () + 1
 		if _line >= _lines :
@@ -382,5 +388,6 @@ def go_command (_shell, _arguments) :
 			if _line < _lines :
 				_cursor.set_line (_line)
 				_cursor.set_column (_view.select_visual_column (_line, _column))
-	_go_arguments = _arguments
-	return True
+		_go_arguments = _arguments
+		return True
+	return None
