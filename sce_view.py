@@ -46,7 +46,7 @@ class View (core.View) :
 	def select_visual_length (self, _line) :
 		return self.compute_visual_length (self._scroll.select (_line))
 	
-	def select_tagged (self, _line) :
+	def select_is_tagged (self, _line) :
 		_cursor_line = self._cursor.get_line ()
 		_mark_line = self._mark.get_line ()
 		return self._mark_enabled and ((_cursor_line <= _line <= _mark_line) or (_mark_line <= _line <= _cursor_line))
@@ -113,7 +113,7 @@ class View (core.View) :
 			else :
 				_length += 1
 		return _length
-
+	
 	def compute_visual_string (self, _string, _head_column, _tail_column) :
 		_tab_columns = self._tab_columns
 		_buffer = []

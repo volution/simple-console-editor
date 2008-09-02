@@ -4,12 +4,9 @@ class Scroll :
 	def __init__ (self) :
 		self._lines = None
 	
-	def is_empty (self) :
-		return self._lines == None
-	
 	def get_length (self) :
 		if self._lines == None :
-			return 1
+			return 0
 		return len (self._lines)
 	
 	def select (self, _index) :
@@ -52,6 +49,9 @@ class Scroll :
 		if len (self._lines) == 0 :
 			self._lines = None
 	
+	def exclude_all (self) :
+		self._lines = None
+	
 	def include_all_before (self, _index, _strings) :
 		if self._lines == None :
 			self._lines = []
@@ -72,9 +72,6 @@ class Scroll :
 		for _string in _strings :
 			self._lines.append (unicode (_string))
 	
-	def empty (self) :
-		self._lines = None
-	
 	def split (self, _index, _column) :
 		if self._lines == None :
 			self._lines = [u'']
@@ -87,7 +84,7 @@ class Scroll :
 	
 	def unsplit (self, _index) :
 		if self._lines == None :
-			self._lines = [u'']
+			return
 		_line_0 = self._lines[_index]
 		_line_1 = self._lines[_index + 1]
 		_line = _line_0 + _line_1

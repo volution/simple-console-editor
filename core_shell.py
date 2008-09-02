@@ -6,9 +6,9 @@ import traceback
 
 class Shell :
 	
-	def __init__ (self, _view, _handler) :
-		self._view = _view
-		self._handler = _handler
+	def __init__ (self) :
+		self._view = None
+		self._handler = None
 		self._messages = []
 		self._messages_touched = False
 		self._max_message_lines = 10
@@ -18,12 +18,18 @@ class Shell :
 	def get_view (self) :
 		return self._view
 	
+	def set_view (self, _view) :
+		self._view = _view
+	
 	def get_handler (self) :
 		return self._key_handler
 	
+	def set_handler (self, _handler) :
+		self._handler = _handler
+	
 	def open (self) :
 		
-		locale.setlocale (locale.LC_ALL,'')
+		locale.setlocale (locale.LC_ALL, '')
 		
 		self._window = curses.initscr ()
 		
@@ -40,41 +46,27 @@ class Shell :
 		self._color_message = curses.color_pair (4)
 		self._color_input = curses.color_pair (5)
 		
-		self.show ()
-	
-	def close (self) :
-		
-		self.hide ()
-		
-		del self._window
-		del self._window_lines
-		del self._window_columns
-		del self._color_text
-		del self._color_markup
-		del self._color_message
-		del self._color_input
-	
-	def show (self) :
 		self._window = curses.initscr ()
 		curses.raw ()
-		#curses.cbreak ()
 		curses.noecho ()
 		curses.nonl ()
 		self._window.keypad (1)
 		self._window.leaveok (0)
-		(self._window_lines, self._window_columns) = self._window.getmaxyx ()
-		self._view.set_max_lines (self._window_lines)
-		self._view.set_max_columns (self._window_columns - 1)
-		self._view.refresh ()
 	
-	def hide (self) :
-		self._window.keypad (0)
+	def close (self) :
+		
 		self._window.leaveok (1)
+		self._window.keypad (0)
 		curses.nl ()
 		curses.echo ()
-		#curses.nocbreak ()
 		curses.noraw ()
 		curses.endwin ()
+		
+		del self._window
+		del self._color_text
+		del self._color_markup
+		del self._color_message
+		del self._color_input
 	
 	def scan (self) :
 		return self._window.getch ()
@@ -109,7 +101,8 @@ class Shell :
 	def input (self, _format, *_arguments) :
 		
 		_window = self._window
-		_line = self._window_lines - self._max_input_lines
+		(_window_lines, _window_columns) = self._window.getmaxyx ()
+		_line = _window_lines - self._max_input_lines
 		
 		_window.move (_line, 0)
 		_window.clrtobot ()
@@ -175,7 +168,22 @@ class Shell :
 	
 	def refresh (self) :
 		
+		_window = self._window
+		(_window_lines, _window_columns) = self._window.getmaxyx ()
+		
+		_color_text = self._color_text
+		_color_markup = self._color_markup
+		_color_error = self._color_error
+		_color_message = self._color_message
+		
+		_window.erase ()
+		
+		_max_lines = _window_lines
+		_max_columns = _window_columns - 1
+		
 		_view = self._view
+		_view.set_max_lines (_max_lines)
+		_view.set_max_columns (_max_columns)
 		_view.refresh ()
 		
 		_cursor = _view.get_cursor ()
@@ -189,28 +197,18 @@ class Shell :
 		_head_column = _head.get_column ()
 		_tail_line = _tail.get_line ()
 		_tail_column = _tail.get_column ()
-		_max_lines = self._window_lines
-		_max_columns = self._window_columns - 1
 		
 		_messages = self._messages
 		_messages_touched = self._messages_touched
 		self._messages_touched = False
-		
-		_window = self._window
-		_color_text = self._color_text
-		_color_markup = self._color_markup
-		_color_error = self._color_error
-		_color_message = self._color_message
-		
-		_window.erase ()
 		
 		for i in xrange (0, _max_lines) :
 			_window.move (i, 0)
 			_line = _head_line + i
 			if _line < _lines :
 				_window.attrset (_color_markup)
-				if _view.select_tagged (_line) :
-					_window.addstr ('#')
+				if _view.select_is_tagged (_line) :
+					_window.addstr ('|')
 				else :
 					_window.addstr (' ')
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
@@ -227,7 +225,7 @@ class Shell :
 						_window.addstr ('?')
 			else :
 				_window.attrset (_color_markup)
-				_window.addstr ('-----')
+				_window.addstr ('~~~~')
 				break
 		
 		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)

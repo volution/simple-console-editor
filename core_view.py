@@ -5,11 +5,11 @@ class View :
 		self._cursor = Mark ()
 		self._head = Mark ()
 		self._tail = Mark ()
-		self._max_lines = 1
-		self._max_columns = 1
+		self._max_lines = 0
+		self._max_columns = 0
 	
 	def get_lines (self) :
-		return 1
+		return 0
 	
 	def select_real_string (self, _line) :
 		return ''
@@ -33,7 +33,7 @@ class View :
 	def select_visual_length (self, _line) :
 		return len (self.select_real_string (_line))
 	
-	def select_tagged (self, _line) :
+	def select_is_tagged (self, _line) :
 		return False
 	
 	def get_cursor (self) :
@@ -69,38 +69,48 @@ class View :
 		_max_columns = self._max_columns
 		_lines = self.get_lines ()
 		
-		if _cursor_line < 0 :
+		if _lines == 0 :
 			_cursor_line = 0
-		elif _cursor_line >= _lines :
-			_cursor_line = _lines - 1
-		if _cursor_column < 0 :
 			_cursor_column = 0
-		
-		if _lines <= _max_lines :
 			_head_line = 0
-			_tail_line = _lines - 1
+			_head_column = 0
+			_tail_line = 0
+			_tail_column = 0
+			
 		else :
-			if _cursor_line <= (_head_line + 5) :
-				_head_line = _cursor_line - 5
-				if _head_line < 0 :
-					_head_line = 0
-				_tail_line = _head_line + _max_lines - 1
-			if _cursor_line >= (_tail_line - 5) :
-				_tail_line = _cursor_line + 5
-				if _tail_line >= _lines :
-					_tail_line = _lines - 1
-				_head_line = _tail_line - _max_lines + 1
-		
-		if _tail_column - _head_column < _max_columns :
-			_tail_column = _head_column + _max_columns - 1
-		if _cursor_column <= (_head_column + 10) :
-			_head_column = _cursor_column - 10
-			if _head_column < 0 :
-				_head_column = 0
-			_tail_column = _head_column + _max_columns - 1
-		if _cursor_column >= (_tail_column - 10) :
-			_tail_column = _cursor_column + 10
-			_head_column = _tail_column - _max_columns + 1
+			
+			if _cursor_line < 0 :
+				_cursor_line = 0
+			elif _cursor_line >= _lines :
+				_cursor_line = _lines - 1
+			if _cursor_column < 0 :
+				_cursor_column = 0
+			
+			if _lines <= _max_lines :
+				_head_line = 0
+				_tail_line = _lines - 1
+			else :
+				if _cursor_line <= (_head_line + 5) :
+					_head_line = _cursor_line - 5
+					if _head_line < 0 :
+						_head_line = 0
+					_tail_line = _head_line + _max_lines - 1
+				if _cursor_line >= (_tail_line - 5) :
+					_tail_line = _cursor_line + 5
+					if _tail_line >= _lines :
+						_tail_line = _lines - 1
+					_head_line = _tail_line - _max_lines + 1
+			
+			if _tail_column - _head_column < _max_columns :
+				_tail_column = _head_column + _max_columns - 1
+			if _cursor_column <= (_head_column + 10) :
+				_head_column = _cursor_column - 10
+				if _head_column < 0 :
+					_head_column = 0
+				_tail_column = _head_column + _max_columns - 1
+			if _cursor_column >= (_tail_column - 10) :
+				_tail_column = _cursor_column + 10
+				_head_column = _tail_column - _max_columns + 1
 		
 		self._cursor._line = _cursor_line
 		self._cursor._column = _cursor_column
