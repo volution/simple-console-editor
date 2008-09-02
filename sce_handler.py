@@ -36,9 +36,22 @@ class Handler (core.BasicHandler) :
 		_scroll = _view.get_scroll ()
 		_cursor = _view.get_cursor ()
 		_line = _cursor.get_line ()
-		_scroll.split (_line, _view.select_real_column (_line, _cursor.get_column ()))
+		_column = _cursor.get_column ()
+		_scroll.split (_line, _view.select_real_column (_line, _column))
+		_string = _scroll.select (_line)
+		_prefix = []
+		for _char in _string :
+			if _char == ' ' :
+				_prefix.append (_char)
+			elif _char == '\t' :
+				_prefix.append (_char)
+			else :
+				break
+		_prefix = ''.join (_prefix)
+		_scroll.insert (_line + 1, 0, _prefix)
+		_column = _view.compute_visual_length (_prefix)
 		_cursor.increment_line (1)
-		_cursor.set_column (0)
+		_cursor.set_column (_column)
 	
 	def handle_key_delete (self, _shell) :
 		_view = _shell.get_view ()
