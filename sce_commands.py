@@ -268,7 +268,7 @@ def _load_file_lines (_shell, _mode, _lines) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	if _mode == 'r' :
-		_scroll.empty ()
+		_scroll.exclude_all ()
 		_insert_line = 0
 	elif _mode == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
@@ -340,3 +340,47 @@ def save_command (_shell, _arguments) :
 		_shell.notify ('save: no previous open command; aborting.')
 		return None
 	return store_command (_shell, ['a', 'o', _path])
+
+
+_go_arguments = None
+
+
+def go_command (_shell, _arguments) :
+	global _go_arguments
+	if len (_arguments) == 0 :
+		if _go_arguments is None :
+			_shell.notify ('go: no previous go command; aborting.')
+			return None
+		_arguments = _go_arguments
+	if len (_arguments) != 2 :
+		_shell.notify ('go: wrong syntax: go l|s <argument>')
+		return None
+	_mode = _arguments[0]
+	_argument = _arguments[1]
+	if _mode not in ['l', 's'] :
+		_shell.notify ('go: wrong mode (l|s); aborting.')
+		return None
+	_view = _shell.get_view ()
+	_lines = _view.get_lines ()
+	_cursor = _view.get_cursor ()
+	if _lines == 0 :
+		pass
+	if _mode == 'l' :
+		_line = int (_argument)
+		if _line > _lines :
+			_line = _lines - 1
+		_cursor.set_line (_line)
+	elif _mode == 's' :
+		_line = _cursor.get_line () + 1
+		if _line >= _lines :
+			pass
+		else :
+			for _line in xrange (_line, _lines) :
+				_column = _view.select_real_string (_line) .find (_argument)
+				if _column >= 0 :
+					break
+			if _line < _lines :
+				_cursor.set_line (_line)
+				_cursor.set_column (_view.select_visual_column (_line, _column))
+	_go_arguments = _arguments
+	return True

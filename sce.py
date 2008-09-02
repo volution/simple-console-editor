@@ -14,13 +14,15 @@ def sce (_arguments) :
 	
 	_handler = Handler ()
 	
-	_handler.register_control ('X', exit_command)
+	#_handler.register_control ('X', exit_command)
 	_handler.register_command ('exit', exit_command)
 	
 	_handler.register_control ('R', _handler.handle_command)
+	_handler.register_control ('G', go_command)
 	
 	_handler.register_control ('@', mark_command)
 	_handler.register_command ('mark', mark_command)
+	_handler.register_command ('go', go_command)
 	
 	_handler.register_control ('Y', yank_lines_command)
 	_handler.register_control ('D', copy_lines_command)
