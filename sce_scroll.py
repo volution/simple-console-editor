@@ -3,6 +3,13 @@ class Scroll :
 	
 	def __init__ (self) :
 		self._lines = None
+		self._touched = False
+	
+	def is_touched (self) :
+		return self._touched
+	
+	def reset_touched (self) :
+		self._touched = False
 	
 	def get_length (self) :
 		if self._lines == None :
@@ -15,6 +22,7 @@ class Scroll :
 		return self._lines[_index]
 	
 	def update (self, _index, _string) :
+		self._touched = True
 		_string = unicode (_string)
 		if self._lines == None :
 			self._lines = [_string]
@@ -22,6 +30,7 @@ class Scroll :
 			self._lines[_index] = _string
 	
 	def append (self, _string) :
+		self._touched = True
 		_string = unicode (_string)
 		if self._lines == None :
 			self._lines = [_string]
@@ -29,6 +38,7 @@ class Scroll :
 			self._lines.append (_string)
 	
 	def include_before (self, _index, _string) :
+		self._touched = True
 		_string = unicode (_string)
 		if self._lines == None :
 			self._lines = [_string]
@@ -36,6 +46,7 @@ class Scroll :
 			self._lines.insert (_index, _string)
 	
 	def include_after (self, _index, _string) :
+		self._touched = True
 		_string = unicode (_string)
 		if self._lines == None :
 			self._lines = [_string]
@@ -43,6 +54,7 @@ class Scroll :
 			self._lines.insert (_index + 1, _string)
 	
 	def exclude (self, _index) :
+		self._touched = True
 		if self._lines == None :
 			return
 		del self._lines[_index]
@@ -50,9 +62,11 @@ class Scroll :
 			self._lines = None
 	
 	def exclude_all (self) :
+		self._touched = True
 		self._lines = None
 	
 	def include_all_before (self, _index, _strings) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
@@ -60,6 +74,7 @@ class Scroll :
 			_index += 1
 	
 	def include_all_after (self, _index, _strings) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
@@ -67,12 +82,14 @@ class Scroll :
 			_index += 1
 	
 	def append_all (self, _string) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
 			self._lines.append (unicode (_string))
 	
 	def split (self, _index, _column) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = [u'']
 		if (_column == 0) :
@@ -83,6 +100,7 @@ class Scroll :
 			self._lines.insert (_index + 1, _line[_column :])
 	
 	def unsplit (self, _index) :
+		self._touched = True
 		if self._lines == None :
 			return
 		_line_0 = self._lines[_index]
@@ -92,6 +110,7 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def insert (self, _index, _column, _string) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = [u'']
 		_line = self._lines[_index]
@@ -106,6 +125,7 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def delete (self, _index, _column, _length) :
+		self._touched = True
 		if self._lines == None :
 			self._lines = [u'']
 		_line = self._lines[_index]

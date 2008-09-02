@@ -14,8 +14,9 @@ def sce (_arguments) :
 	
 	_handler = Handler ()
 	
-	#_handler.register_control ('X', exit_command)
+	_handler.register_control ('X', quick_exit_command)
 	_handler.register_command ('exit', exit_command)
+	_handler.register_command ('quick-exit', quick_exit_command)
 	
 	_handler.register_control ('R', _handler.handle_command)
 	_handler.register_control ('G', go_command)

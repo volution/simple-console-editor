@@ -13,6 +13,16 @@ def exit_command (_shell, _arguments) :
 	return True
 
 
+def quick_exit_command (_shell, _arguments) :
+	if len (_arguments) != 0 :
+		_shell.notify ('quick-exit: wrong syntax: quick-exit')
+		return None
+	if _shell.get_view () .get_scroll () .is_touched () :
+		_shell.notify ('quick-exit: scroll is touched; aborting.')
+		return None
+	return exit_command (_shell, [])
+
+
 def mark_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('mark: wrong syntax: mark')
@@ -327,6 +337,7 @@ def open_command (_shell, _arguments) :
 	if not load_command (_shell, ['r', _path]) :
 		return None
 	_open_path = _path
+	_shell.get_view () .get_scroll () .reset_touched ()
 	return True
 
 
@@ -339,7 +350,10 @@ def save_command (_shell, _arguments) :
 	if _path is None :
 		_shell.notify ('save: no previous open command; aborting.')
 		return None
-	return store_command (_shell, ['a', 'o', _path])
+	if not store_command (_shell, ['a', 'o', _path]) :
+		return None
+	_shell.get_view () .get_scroll () .reset_touched ()
+	return True
 
 
 _go_arguments = None
