@@ -33,6 +33,7 @@ def sce (_arguments) :
 	_handler.register_command ('cut', cut_lines_command)
 	_handler.register_command ('delete', delete_lines_command)
 	
+	_handler.register_control ('S', save_command)
 	_handler.register_command ('clear', clear_command)
 	_handler.register_command ('open', open_command)
 	_handler.register_command ('save', save_command)

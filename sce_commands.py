@@ -62,7 +62,7 @@ def yank_lines_command (_shell, _arguments) :
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
 	_cursor_line = _cursor.get_line ()
-	if isinstance(_yank_buffer, list) :
+	if isinstance (_yank_buffer, list) :
 		_scroll.include_all_before (_cursor_line, _yank_buffer)
 	else :
 		_visual_column = _cursor.get_column ()
@@ -73,6 +73,15 @@ def yank_lines_command (_shell, _arguments) :
 
 
 def copy_lines_command (_shell, _arguments) :
+	if _copy_lines (_shell, _arguments) is None :
+		return None
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		_view.set_mark_enabled (False)
+	return True
+
+
+def _copy_lines (_shell, _arguments) :
 	global _yank_buffer
 	if len (_arguments) != 0 :
 		_shell.notify ('copy-lines: wrong syntax: copy-lines')
@@ -97,12 +106,21 @@ def copy_lines_command (_shell, _arguments) :
 			_yank_buffer = []
 			for _line in xrange (_first_line, _last_line + 1) :
 				_yank_buffer.append (_scroll.select (_line))
-		_view.set_mark_enabled (False)
 	else :
 		_yank_buffer = [_scroll.select (_cursor_line)]
+	return True
 
 
 def delete_lines_command (_shell, _arguments) :
+	if _delete_lines (_shell, _arguments) is None :
+		return None
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		_view.set_mark_enabled (False)
+	return True
+
+
+def _delete_lines (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('delete-lines: wrong syntax: delete-lines')
 		return None
@@ -126,7 +144,6 @@ def delete_lines_command (_shell, _arguments) :
 			for _line in xrange (_first_line, _last_line + 1) :
 				_scroll.exclude (_first_line)
 			_cursor.set_line (_first_line)
-		_view.set_mark_enabled (False)
 	else :
 		_scroll.exclude (_cursor_line)
 	return True
@@ -136,10 +153,13 @@ def cut_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('cut-lines: wrong syntax: cut-lines')
 		return None
-	if copy_lines_command (_shell, []) :
+	if _copy_lines (_shell, []) is None :
 		return None
-	if delete_lines_command (_shell, []) :
+	if _delete_lines (_shell, []) is None :
 		return None
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		_view.set_mark_enabled (False)
 	return True
 
 
@@ -164,8 +184,7 @@ def load_command (_shell, _arguments) :
 		if _stream is not None :
 			_stream.close ()
 		return None
-	_load_file_lines (_shell, _mode, _lines)
-	return True
+	return _load_file_lines (_shell, _mode, _lines)
 
 
 def sys_command (_shell, _arguments) :
@@ -334,7 +353,7 @@ def open_command (_shell, _arguments) :
 		_shell.notify ('open: wrong syntax: open <file>')
 		return None
 	_path = _arguments[0]
-	if not load_command (_shell, ['r', _path]) :
+	if load_command (_shell, ['r', _path]) is None :
 		return None
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
@@ -350,9 +369,10 @@ def save_command (_shell, _arguments) :
 	if _path is None :
 		_shell.notify ('save: no previous open command; aborting.')
 		return None
-	if not store_command (_shell, ['a', 'o', _path]) :
+	if store_command (_shell, ['a', 'o', _path]) is None :
 		return None
 	_shell.get_view () .get_scroll () .reset_touched ()
+	_shell.notify ('save: saved.')
 	return True
 
 

@@ -61,7 +61,9 @@ class BasicHandler (Handler) :
 			return
 		_handler = self._commands[_parts[0]]
 		try :
-			_handler (_shell, _parts[1 :])
+			_outcome = _handler (_shell, _parts[1 :])
+			#if _outcome is None :
+			#	_shell.notify ('Command [%s] failed.', _command)
 		except Exception, _error :
 			_shell.notify ('Unhandled exception [%s]; ignoring.', str (_error))
 		except :
