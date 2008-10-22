@@ -1,4 +1,3 @@
-
 '''
 	SCE -- Simple Console Editor
 	
@@ -19,18 +18,3 @@
 	You should have received a copy of the GNU General Public License
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
-
-from core import *
-
-if __name__ == '__main__' :
-	
-	_shell = Shell ()
-	_view = View ()
-	_handler = Handler ()
-	
-	_shell.set_view (_view)
-	_shell.set_handler (_handler)
-	_shell.open ()
-	_shell.refresh ()
-	_shell.input ('Hello?')
-	_shell.close ()
