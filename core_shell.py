@@ -22,6 +22,7 @@
 
 import curses
 import locale
+import time
 import traceback
 
 
@@ -99,7 +100,7 @@ class Shell :
 		curses.beep ()
 	
 	def notify (self, _format, *_arguments) :
-		self._messages.insert (0, _format % _arguments)
+		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), (_format % _arguments)))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
 	
@@ -254,11 +255,12 @@ class Shell :
 		if _messages_touched :
 			_index = 0
 			_window.attrset (_color_message)
-			for _message in _messages :
+			for (_time, _text) in _messages :
 				_window.move (_max_lines - _index - 1, 0)
 				_window.clrtoeol ()
-				_window.addstr ('[..] ')
-				_window.addstr (_message.encode ('utf-8'))
+				_window.addstr (_time)
+				_window.addstr (' [..] ')
+				_window.addstr (_text.encode ('utf-8'))
 				_index += 1
 			_window.move (_max_lines - 1, _max_columns - 1)
 		

@@ -197,7 +197,7 @@ def load_command (_shell, _arguments) :
 		_shell.notify ('load: target file does not exist; aborting.')
 		return None
 	try :
-		_stream = codecs.open (_path, 'r', 'utf-8')
+		_stream = codecs.open (_path, 'r', 'utf-8', 'replace')
 		_lines = _stream.readlines ()
 		_stream.close ()
 	except :
@@ -228,10 +228,10 @@ def sys_command (_shell, _arguments) :
 		_shell.notify ('sys: spawn failed; aborting.')
 		return None
 	try :
-		_stream = codecs.EncodedFile (_process.stdout, 'utf-8')
+		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
 		_lines = _stream.readlines ()
 		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stderr, 'utf-8')
+		_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
 		_error_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
@@ -278,15 +278,15 @@ def pipe_command (_shell, _arguments) :
 	for _line in xrange (_first_line, _last_line + 1) :
 		_lines.append (_scroll.select (_line))
 	try :
-		_stream = codecs.EncodedFile (_process.stdin, 'utf-8')
+		_stream = codecs.EncodedFile (_process.stdin, 'utf-8', 'utf-8', 'replace')
 		for _line in _lines :
 			_stream.write (_line)
 			_stream.write ('\n')
 		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stdout, 'utf-8')
+		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
 		_lines = _stream.readlines ()
 		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stderr, 'utf-8')
+		_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
 		_error_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
@@ -350,7 +350,7 @@ def store_command (_shell, _arguments) :
 		_shell.notify ('store: target file exists; aborting.')
 		return None
 	try :
-		_stream = codecs.open (_path, 'w', 'utf-8')
+		_stream = codecs.open (_path, 'w', 'utf-8', 'replace')
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
 		for _line in xrange (0, _lines) :
