@@ -136,7 +136,8 @@ class Shell :
 		
 		_buffer = []
 		_inputs = self._inputs
-		_input = len (_inputs)
+		_inputs_count = len (_inputs)
+		_input = _inputs_count
 		while True :
 			_string = u''.join (_buffer)
 			_window.move (_line + 1, 5)
@@ -164,23 +165,22 @@ class Shell :
 					break
 				else :
 					_buffer = []
-			elif (_code == curses.KEY_UP) :
-				if _input == -1 :
+			elif (_code == curses.KEY_UP) or (_code == curses.KEY_DOWN) :
+				if _inputs_count == 0 :
 					curses.beep ()
 					continue
-				_input -= 1
+				if _code == curses.KEY_UP :
+					_input -= 1
+				elif _code == curses.KEY_DOWN :
+					_input += 1
+				_buffer = []
+				if (_input == -1) or (_input == _inputs_count) :
+					curses.beep ()
+					continue
 				if _input < 0 :
-					_input = len (_inputs) - 1
-				_buffer = []
-				_buffer.extend (_inputs[_input])
-			elif (_code == curses.KEY_DOWN) :
-				if _input == -1 :
-					curses.beep ()
-					continue
-				_input += 1
-				if _input >= len (_inputs) :
+					_input = _inputs_count - 1
+				if _input > _inputs_count :
 					_input = 0
-				_buffer = []
 				_buffer.extend (_inputs[_input])
 			else :
 				curses.beep ()
