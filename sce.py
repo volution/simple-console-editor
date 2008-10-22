@@ -62,10 +62,16 @@ def sce (_arguments) :
 	
 	_shell.close ()
 	
+	print
 	if _error is not None :
+		print
+		print 'sce failed!'
+		print
+		print '----------------------------------------'
+		print
 		print _error[0]
 		print _error[1]
-	print
+		print '----------------------------------------'
 
 
 if __name__ == '__main__' :

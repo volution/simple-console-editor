@@ -117,13 +117,26 @@ class View (core.View) :
 	def compute_visual_string (self, _string, _head_column, _tail_column) :
 		_tab_columns = self._tab_columns
 		_buffer = []
+		_length = self.compute_visual_length (_string)
 		_column = 0
 		_code = 0
 		_h_code = ord ('-')
+		_l_code = ord ('<')
 		_g_code = ord ('>')
 		_e_code = ord ('!')
 		_last_mode = None
 		_last_code = None
+		_left_trimmed = _head_column > 0
+		_right_trimmed = _length >= _tail_column
+		if _left_trimmed :
+			_head_column += 1
+		if _right_trimmed :
+			_tail_column -= 1
+		if _left_trimmed :
+			if _last_mode != -3 :
+				_buffer.append (-3)
+				_last_mode = -3
+			_buffer.append (_l_code)
 		for _character in _string :
 			_code = ord (_character)
 			if _code == 9 :
@@ -151,10 +164,15 @@ class View (core.View) :
 			_last_code = _code
 			if _column >= _tail_column :
 				break
-		if _column <= _tail_column and _last_code == 32 :
+		if _column < _tail_column and _column == _length and _last_code == 32 :
 			if _last_mode != -3 :
 				_buffer.append (-3)
 				_last_mode = -3
 			_buffer.append (_e_code)
+		if _right_trimmed :
+			if _last_mode != -3 :
+				_buffer.append (-3)
+				_last_mode = -3
+			_buffer.append (_g_code)
 		return _buffer
 #

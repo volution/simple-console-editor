@@ -40,11 +40,11 @@ class Shell :
 		curses.init_pair (3, curses.COLOR_RED, -1)
 		curses.init_pair (4, curses.COLOR_MAGENTA, -1)
 		curses.init_pair (5, curses.COLOR_GREEN, -1)
-		self._color_text = curses.color_pair (1)
-		self._color_markup = curses.color_pair (2)
-		self._color_error = curses.color_pair (3)
-		self._color_message = curses.color_pair (4)
-		self._color_input = curses.color_pair (5)
+		self._color_text = curses.color_pair (1) | curses.A_NORMAL
+		self._color_markup = curses.color_pair (2) | curses.A_DIM
+		self._color_error = curses.color_pair (3) | curses.A_BOLD
+		self._color_message = curses.color_pair (4) | curses.A_NORMAL
+		self._color_input = curses.color_pair (5) | curses.A_NORMAL
 		
 		self._window = curses.initscr ()
 		curses.raw ()
