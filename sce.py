@@ -19,11 +19,17 @@ def sce (_arguments) :
 	_handler.register_command ('quick-exit', quick_exit_command)
 	
 	_handler.register_control ('R', _handler.handle_command)
-	_handler.register_control ('G', go_command)
 	
 	_handler.register_control ('@', mark_command)
+	_handler.register_control ('G', go_command)
+	_handler.register_control ('Z', jump_command)
+	_handler.register_control ('V', jump_set_command)
 	_handler.register_command ('mark', mark_command)
 	_handler.register_command ('go', go_command)
+	_handler.register_command ('gl', go_line_command)
+	_handler.register_command ('gs', go_string_command)
+	_handler.register_command ('jump', jump_command)
+	_handler.register_command ('js', jump_set_command)
 	
 	_handler.register_control ('Y', yank_lines_command)
 	_handler.register_control ('D', copy_lines_command)

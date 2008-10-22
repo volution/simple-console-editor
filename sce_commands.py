@@ -425,3 +425,62 @@ def go_command (_shell, _arguments) :
 		_go_arguments = _arguments
 		return True
 	return None
+
+
+def go_line_command (_shell, _arguments) :
+	if len (_arguments) != 1 :
+		_shell.notify ('go-line: wrong syntax: go-line <line>')
+		return None
+	_line = _arguments[0]
+	if go_command (_shell, ['l', _line]) is None :
+		return None
+	return True
+
+
+def go_string_command (_shell, _arguments) :
+	if len (_arguments) != 1 :
+		_shell.notify ('go-string: wrong syntax: go-string <string>')
+		return None
+	_string = _arguments[0]
+	if go_command (_shell, ['s', _string]) is None :
+		return None
+	return True
+
+
+_jump_line = None
+
+
+def jump_command (_shell, _arguments) :
+	global _jump_line
+	if len (_arguments) == 0 :
+		_arguments = ['j']
+	if len (_arguments) != 1 :
+		_shell.notify ('go: wrong syntax: jump s|j')
+		return None
+	_mode = _arguments[0]
+	if _mode not in ['s', 'j'] :
+		_shell.notify ('go: wrong mode (s|j); aborting.')
+		return None
+	_view = _shell.get_view ()
+	_cursor = _view.get_cursor ()
+	if _mode == 's' :
+		_jump_line = _cursor.get_line ()
+		return True
+	elif _mode == 'j' :
+		if _jump_line is None :
+			_shell.notify ('jump: no previous jump set command; aborting.')
+			return None
+		_old_jump_line = _jump_line
+		_jump_line = _cursor.get_line ()
+		_cursor.set_line (_old_jump_line)
+		return True
+	return None
+
+
+def jump_set_command (_shell, _arguments) :
+	if len (_arguments) != 0 :
+		_shell.notify ('jump-set: wrong syntax: jump-set')
+		return None
+	if jump_command (_shell, ['s']) is None :
+		return None
+	return True
