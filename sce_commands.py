@@ -361,6 +361,8 @@ def store_command (_shell, _arguments) :
 		_stream.close ()
 	except :
 		_shell.notify ('store: output failed; target file might have been destroyed!')
+		if _stream is not None :
+			_stream.close ()
 		return None
 	return True
 
@@ -503,5 +505,42 @@ def jump_set_command (_shell, _arguments) :
 		_shell.notify ('jump-set: wrong syntax: jump-set')
 		return None
 	if jump_command (_shell, ['s']) is None :
+		return None
+	return True
+
+
+def load_fd_command (_shell, _arguments, _input) :
+	if len (_arguments) != 0 :
+		_shell.notify ('load-fd: wrong syntax: load-fd')
+		return None
+	try :
+		_stream = codecs.EncodedFile (os.fdopen (_input, 'r'), 'utf-8', 'utf-8', 'replace')
+		_lines = _stream.readlines ()
+		_stream.close ()
+	except :
+		_shell.notify ('load-fd: input failed; aborting.')
+		if _stream is not None :
+			_stream.close ()
+		return None
+	return _load_file_lines (_shell, 'a', _lines)
+
+
+def store_fd_command (_shell, _arguments, _output) :
+	if len (_arguments) != 0 :
+		_shell.notify ('store-fd: wrong syntax: load-fd')
+		return None
+	try :
+		_stream = codecs.EncodedFile (os.fdopen (_output, 'a'), 'utf-8', 'utf-8', 'replace')
+		_view = _shell.get_view ()
+		_lines = _view.get_lines ()
+		for _line in xrange (0, _lines) :
+			_string = _view.select_real_string (_line)
+			_stream.write (_string)
+			_stream.write ('\n')
+		_stream.close ()
+	except :
+		_shell.notify ('store-fd: output failed; aborting.')
+		if _stream is not None :
+			_stream.close ()
 		return None
 	return True

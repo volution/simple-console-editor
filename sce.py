@@ -20,6 +20,10 @@
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
+
+import os
+import sys
+
 from core import Shell
 from sce_commands import *
 from sce_handler import *
@@ -27,9 +31,72 @@ from sce_view import *
 
 
 def sce (_arguments) :
-	if len (_arguments) > 1 :
-		print '[ee] sce: wrong syntax: sce [file]'
-		return
+	
+	if not os.isatty (2) :
+		return False
+	
+	_redirected_input = None
+	if not os.isatty (0) :
+		_redirected_input = os.dup (0)
+		os.dup2 (2, 0)
+	
+	_redirected_output = None
+	if not os.isatty (1) :
+		_redirected_output = os.dup (1)
+		os.dup2 (2, 1)
+	
+	_shell = _create ()
+	if _shell is None :
+		return False
+	
+	if _redirected_input is None and _redirected_output is None :
+		if len (_arguments) > 0 :
+			_load = lambda : open_command (_shell, _arguments)
+		else :
+			_load = lambda : True
+		_store = lambda : True
+	else :
+		if _redirected_input is not None :
+			_load = lambda : load_fd_command (_shell, _arguments, _redirected_input)
+		else :
+			_load = lambda : True
+		if _redirected_output is not None :
+			_store = lambda : store_fd_command (_shell, _arguments, _redirected_output)
+		else :
+			_store = lambda : True
+	
+	if not _load () :
+		return False
+	
+	_error = _loop (_shell, _load, _store)
+	if _error is not None :
+		return _error
+	
+	if not _store () :
+		return False
+	
+	return None
+
+
+def _loop (_shell, _load, _store) :
+	
+	_error = _shell.open ()
+	if _error is not None :
+		return _error
+	
+	_error = _shell.loop ()
+	if _error is not None :
+		_shell.close ()
+		return _error
+	
+	_error = _shell.close ()
+	if _error is not None :
+		return _error
+	
+	return None
+
+
+def _create () :
 	
 	_view = View ()
 	
@@ -74,26 +141,10 @@ def sce (_arguments) :
 	_shell.set_view (_view)
 	_shell.set_handler (_handler)
 	
-	_shell.open ()
-	
-	if len (_arguments) > 0 :
-		open_command (_shell, [_arguments[0]])
-	
-	_error = _shell.loop ()
-	
-	_shell.close ()
-	
-	print
-	if _error is not None :
-		print
-		print 'sce failed!'
-		print
-		print '----------------------------------------'
-		print
-		print _error[0]
-		print _error[1]
-		print '----------------------------------------'
+	return _shell
 
 
 if __name__ == '__main__' :
-	sce (sys.argv[1 :])
+	_error = sce (sys.argv[1 :])
+	if _error is not None :
+		print >> sys.stderr, 'sce failed!'

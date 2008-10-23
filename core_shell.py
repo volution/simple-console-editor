@@ -22,6 +22,7 @@
 
 import curses
 import locale
+import os
 import time
 import traceback
 
@@ -51,6 +52,9 @@ class Shell :
 	
 	def open (self) :
 		
+		if not os.isatty (0) or not os.isatty (1) or not os.isatty (2) :
+			return False
+		
 		locale.setlocale (locale.LC_ALL, '')
 		
 		self._window = curses.initscr ()
@@ -74,6 +78,8 @@ class Shell :
 		curses.nonl ()
 		self._window.keypad (1)
 		self._window.leaveok (0)
+		
+		return None
 	
 	def close (self) :
 		
@@ -89,6 +95,8 @@ class Shell :
 		del self._color_markup
 		del self._color_message
 		del self._color_input
+		
+		return None
 	
 	def scan (self) :
 		return self._window.getch ()
