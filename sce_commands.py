@@ -24,6 +24,8 @@ import codecs
 import os.path
 import subprocess
 import sys
+import time
+import thread
 
 
 def exit_command (_shell, _arguments) :
@@ -278,18 +280,54 @@ def pipe_command (_shell, _arguments) :
 	for _line in xrange (_first_line, _last_line + 1) :
 		_lines.append (_scroll.select (_line))
 	try :
-		_stream = codecs.EncodedFile (_process.stdin, 'utf-8', 'utf-8', 'replace')
-		for _line in _lines :
-			_stream.write (_line)
-			_stream.write ('\n')
-		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
-		_lines = _stream.readlines ()
-		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
-		_error_lines = _stream.readlines ()
-		_stream.close ()
+		_output_lines = []
+		_error_lines = []
+		_done_threads = []
+		def _handle_stdin () :
+			try :
+				_stream = codecs.EncodedFile (_process.stdin, 'utf-8', 'utf-8', 'replace')
+				for _line in _lines :
+					_stream.write (_line)
+					_stream.write ('\n')
+				_stream.close ()
+			except :
+				pass
+			finally :
+				_done_threads.append (0)
+		def _handle_stdout () :
+			try :
+				_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+				_line = _stream.readline ()
+				while _line is not '' :
+					_output_lines.append (_line)
+					_line = _stream.readline ()
+				_stream.close ()
+			except :
+				pass
+			finally :
+				_done_threads.append (1)
+		def _handle_stderr () :
+			try :
+				_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
+				_line = _stream.readline ()
+				while _line is not '' :
+					_error_lines.append (_line)
+					_line = _stream.readline ()
+				_stream.close ()
+			except :
+				pass
+			finally :
+				_done_threads.append (2)
+		_stdin_thread = thread.start_new_thread (_handle_stdin, ())
+		_stdout_thread = thread.start_new_thread (_handle_stdout, ())
+		_stderr_thread = thread.start_new_thread (_handle_stderr, ())
 		_error = _process.wait ()
+		while len (_done_threads) != 3 :
+			time.sleep (0.1)
+		_lines = _output_lines
+	except Exception, error:
+		_shell.notify ('pipe: input failed; aborting.' + str (error))
+		return
 	except :
 		_shell.notify ('pipe: input failed; aborting.')
 		return
@@ -301,6 +339,7 @@ def pipe_command (_shell, _arguments) :
 			_shell.notify ('sys: %s', _line)
 	for _line in xrange (_first_line, _last_line + 1) :
 		_scroll.exclude (_first_line)
+	_lines.reverse ()
 	for _line in _lines :
 		_line = _line.rstrip ('\r\n')
 		_scroll.include_before (_first_line, _line)
