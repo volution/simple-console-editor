@@ -21,6 +21,7 @@
 '''
 
 import codecs
+import os
 import os.path
 import subprocess
 import sys
@@ -70,6 +71,7 @@ def clear_command (_shell, _arguments) :
 	return True
 
 
+_yank_path = "/tmp/sce.%d.yank" % (os.getuid())
 _yank_buffer = None
 
 
@@ -187,11 +189,15 @@ def cut_lines_command (_shell, _arguments) :
 
 
 def load_command (_shell, _arguments) :
-	if len (_arguments) != 2 :
+	if len (_arguments) == 0 :
+		_mode = 'i'
+		_path = _yank_path
+	elif len (_arguments) == 2 :
+		_mode = _arguments[0]
+		_path = _arguments[1]
+	else :
 		_shell.notify ('load: wrong syntax: load r|i|a <file>')
 		return None
-	_mode = _arguments[0]
-	_path = _arguments[1]
 	if _mode not in ['r', 'i', 'a'] :
 		_shell.notify ('load: wrong mode (r|i|a); aborting.')
 		return None
@@ -373,16 +379,21 @@ def _load_file_lines (_shell, _mode, _lines) :
 
 
 def store_command (_shell, _arguments) :
-	if len (_arguments) != 3 :
+	if len (_arguments) == 0 :
+		_selector = 't'
+		_mode = 'o'
+		_path = _yank_path
+	elif len (_arguments) == 3 :
+		_selector = _arguments[0]
+		_mode = _arguments[1]
+		_path = _arguments[2]
+	else :
 		_shell.notify ('store: wrong syntax: store a|t o|c <file>')
 		return None
-	_selector = _arguments[0]
-	_mode = _arguments[1]
-	_path = _arguments[2]
 	if _selector not in ['a', 't'] :
 		_shell.notify ('store: wrong selector (a|t); aborting.')
 		return None
-	if _mode not in ['o', 'c'] :
+	if _mode not in ['o', 'c', 'a'] :
 		_shell.notify ('store: wrong mode (o|c); aborting.')
 		return None
 	if _mode == 'c' and os.path.isfile (_path) :
