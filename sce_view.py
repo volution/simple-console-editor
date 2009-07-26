@@ -33,6 +33,8 @@ class View (core.View) :
 		self._mark = core.Mark ()
 		self._mark_enabled = False
 		self._tab_columns = 4
+		self._limit_columns = 128
+		self._visual_cache = dict ()
 	
 	def get_scroll (self) :
 		return self._scroll
@@ -53,19 +55,71 @@ class View (core.View) :
 		return self._scroll.select (_line)
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
-		return self.compute_visual_string (self._scroll.select (_line), _head_column, _tail_column)
+		_real_string = self._scroll.select (_line)
+		_cache_key = ('visual_string', _line, _head_column, _tail_column)
+		_visual_string = None
+		if _cache_key in self._visual_cache :
+			_cache_value = self._visual_cache[_cache_key]
+			_cache_real_string = _cache_value[0]
+			_cache_visual_string = _cache_value[1]
+			if _real_string == _cache_real_string :
+				_visual_string = _cache_visual_string
+		if _visual_string is None :
+			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column)
+			_cache_value = (_real_string, _visual_string)
+			self._visual_cache[_cache_key] = _cache_value
+		return _visual_string
 	
 	def select_real_column (self, _line, _visual_column) :
-		return self.compute_real_column (self._scroll.select (_line), _visual_column)
+		_real_string = self._scroll.select (_line)
+		_cache_key = ('real_column', _line, _visual_column)
+		_real_column = None
+		if _cache_key in self._visual_cache :
+			_cache_value = self._visual_cache[_cache_key]
+			_cache_real_string = _cache_value[0]
+			_cache_real_column = _cache_value[1]
+			if _real_string == _cache_real_string :
+				_real_column = _cache_real_column
+		if _real_column is None :
+			_real_column = self.compute_real_column (_real_string, _visual_column)
+			_cache_value = (_real_string, _real_column)
+			self._visual_cache[_cache_key] = _cache_value
+		return _real_column
 	
 	def select_visual_column (self, _line, _real_column) :
-		return self.compute_visual_column (self._scroll.select (_line), _real_column)
+		_real_string = self._scroll.select (_line)
+		_cache_key = ('visual_column', _line, _real_column)
+		_visual_column = None
+		if _cache_key in self._visual_cache :
+			_cache_value = self._visual_cache[_cache_key]
+			_cache_real_string = _cache_value[0]
+			_cache_visual_column = _cache_value[1]
+			if _real_string == _cache_real_string :
+				_visual_column = _cache_visual_column
+		if _visual_column is None :
+			_visual_column = self.compute_visual_column (_real_string, _real_column)
+			_cache_value = (_real_string, _visual_column)
+			self._visual_cache[_cache_key] = _cache_value
+		return _visual_column
 	
 	def select_real_length (self, _line) :
 		return len (self._scroll.select (_line))
 	
 	def select_visual_length (self, _line) :
-		return self.compute_visual_length (self._scroll.select (_line))
+		_real_string = self._scroll.select (_line)
+		_cache_key = ('visual_length', _line)
+		_visual_length = None
+		if _cache_key in self._visual_cache :
+			_cache_value = self._visual_cache[_cache_key]
+			_cache_real_string = _cache_value[0]
+			_cache_visual_length = _cache_value[1]
+			if _real_string == _cache_real_string :
+				_visual_length = _cache_visual_length
+		if _visual_length is None :
+			_visual_length = self.compute_visual_length (_real_string)
+			_cache_value = (_real_string, _visual_length)
+			self._visual_cache[_cache_key] = _cache_value
+		return _visual_length
 	
 	def select_is_tagged (self, _line) :
 		_cursor_line = self._cursor.get_line ()
@@ -136,8 +190,9 @@ class View (core.View) :
 		return _length
 	
 	def compute_visual_string (self, _string, _head_column, _tail_column) :
+		_limit_column = self._limit_columns
 		_tab_columns = self._tab_columns
-		_buffer = []
+		_buffer = list ()
 		_length = self.compute_visual_length (_string)
 		_column = 0
 		_code = 0
@@ -145,6 +200,8 @@ class View (core.View) :
 		_l_code = ord ('<')
 		_g_code = ord ('>')
 		_e_code = ord ('!')
+		_q_code = ord ('\'')
+		_s_code = ord (' ')
 		_last_mode = None
 		_last_code = None
 		_left_trimmed = _head_column > 0
@@ -177,23 +234,54 @@ class View (core.View) :
 				_column += _delta
 			else :
 				if (_column >= _head_column) and (_column <= _tail_column) :
-					if _last_mode != -1 :
-						_buffer.append (-1)
-						_last_mode = -1
+					if _column >= _limit_column :
+						if _last_mode != -3 :
+							_buffer.append (-3)
+							_last_mode = -3
+					else :
+						if _last_mode != -1 :
+							_buffer.append (-1)
+							_last_mode = -1
 					_buffer.append (_code)
 				_column += 1
 			_last_code = _code
-			if _column >= _tail_column :
+			if _column > _tail_column :
 				break
-		if _column < _tail_column and _column == _length and _last_code == 32 :
+		if _column <= _tail_column and _column == _length and _last_code == 32 :
 			if _last_mode != -3 :
 				_buffer.append (-3)
 				_last_mode = -3
 			_buffer.append (_e_code)
+			_column += 1
+		if _column <= _tail_column and _column <= _limit_column and _head_column <= _limit_column and _tail_column >= _limit_column :
+			_delta = _limit_column - max (_column, _head_column)
+			if _last_mode != -1 :
+				_buffer.append (-1)
+				_last_mode = -1
+			_buffer.extend ([_s_code] * _delta)
+			_buffer.append (-2)
+			_last_mode = -2
+			_buffer.append (_q_code)
+			_column += _delta
 		if _right_trimmed :
 			if _last_mode != -3 :
 				_buffer.append (-3)
 				_last_mode = -3
 			_buffer.append (_g_code)
-		return _buffer
+		_coalesced_buffer = list ()
+		_coalesced_codes = list ()
+		for _code in _buffer :
+			if _code < 0 :
+				if len (_coalesced_codes) > 0 :
+					_coalesced_codes = ''.join (_coalesced_codes)
+					_coalesced_buffer.append (_coalesced_codes)
+					_coalesced_codes = list ()
+				_coalesced_buffer.append (_code)
+			else :
+				_coalesced_codes.append (unichr (_code))
+		if len (_coalesced_codes) > 0 :
+			_coalesced_codes = ''.join (_coalesced_codes)
+			_coalesced_buffer.append (_coalesced_codes)
+			_coalesced_codes = list ()
+		return _coalesced_buffer
 #

@@ -243,8 +243,8 @@ class Shell :
 					_window.addstr (' ')
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
 				for _code in _buffer :
-					if _code >= 0 :
-						_window.addstr (unichr (_code) .encode ('utf-8'))
+					if isinstance (_code, basestring) :
+						_window.addstr (_code.encode ('utf-8'))
 					elif _code == -1 :
 						_window.attrset (_color_text)
 					elif _code == -2 :
