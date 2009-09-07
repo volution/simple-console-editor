@@ -21,6 +21,8 @@
 '''
 
 import codecs
+import errno
+import fcntl
 import os
 import os.path
 import subprocess
@@ -205,14 +207,17 @@ def load_command (_shell, _arguments) :
 		_shell.notify ('load: target file does not exist; aborting.')
 		return None
 	try :
+		_stream = None
 		_stream = codecs.open (_path, 'r', 'utf-8', 'replace')
 		_lines = _stream.readlines ()
 		_stream.close ()
 	except :
 		_shell.notify ('load: input failed; aborting.')
 		if _stream is not None :
-			_stream.close ()
-		return None
+			try :
+				_stream.close ()
+			except :
+				pass
 	return _load_file_lines (_shell, _mode, _lines)
 
 
@@ -225,14 +230,12 @@ def sys_command (_shell, _arguments) :
 	if _mode not in ['r', 'i', 'a'] :
 		_shell.notify ('sys: wrong mode (r|i|a); aborting.')
 		return None
-	_shell.close ()
 	try :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
-		_shell.open ()
 		_shell.notify ('sys: spawn failed; aborting.')
 		return None
 	try :
@@ -244,10 +247,8 @@ def sys_command (_shell, _arguments) :
 		_stream.close ()
 		_error = _process.wait ()
 	except :
-		_shell.open ()
 		_shell.notify ('sys: input failed; aborting.')
 		return None
-	_shell.open ()
 	if _error != 0 :
 		_shell.notify ('sys: command failed (non zero exit code); ignoring.')
 	if len (_error_lines) != 0 :
@@ -289,20 +290,62 @@ def pipe_command (_shell, _arguments) :
 		_output_lines = []
 		_error_lines = []
 		_done_threads = []
+		class NbStream (object) :
+			def __init__ (self, _stream) :
+				self.stream = _stream
+				_stream_descriptor = _stream.fileno ()
+				_stream_flags = fcntl.fcntl (_stream_descriptor, fcntl.F_GETFL)
+				_stream_flags |= os.O_NONBLOCK
+				fcntl.fcntl (_stream_descriptor, fcntl.F_SETFL, _stream_flags)
+			def close (self) :
+				return self.stream.close ()
+			def flush (self) :
+				return self.stream.flush ()
+			def read (self, size = None) :
+				_do = True
+				while _do :
+					try :
+						_data = self.stream.read ()
+						_do = False
+					except IOError, _error :
+						if _error.errno != errno.EAGAIN :
+							raise _error
+						time.sleep (0.01)
+				return _data
+			def write (self, _data) :
+				_do = True
+				while _do :
+					try :
+						_outcome = self.stream.write (_data)
+						_do = False
+					except IOError, _error :
+						if _error.errno != errno.EAGAIN :
+							raise _error
+						time.sleep (0.01)
+				return _outcome
 		def _handle_stdin () :
 			try :
-				_stream = codecs.EncodedFile (_process.stdin, 'utf-8', 'utf-8', 'replace')
+				_stream = _process.stdin
+				_stream = NbStream (_stream)
+				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
 				for _line in _lines :
 					_stream.write (_line)
 					_stream.write ('\n')
+					_stream.flush ()
 				_stream.close ()
 			except :
 				pass
 			finally :
+				try :
+					_stream.close ()
+				except :
+					pass
 				_done_threads.append (0)
 		def _handle_stdout () :
 			try :
-				_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+				_stream = _process.stdout
+				_stream = NbStream (_stream)
+				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
 				_line = _stream.readline ()
 				while _line is not '' :
 					_output_lines.append (_line)
@@ -311,10 +354,16 @@ def pipe_command (_shell, _arguments) :
 			except :
 				pass
 			finally :
+				try :
+					_stream.close ()
+				except :
+					pass
 				_done_threads.append (1)
 		def _handle_stderr () :
 			try :
-				_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
+				_stream = _process.stderr
+				_stream = NbStream (_stream)
+				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
 				_line = _stream.readline ()
 				while _line is not '' :
 					_error_lines.append (_line)
@@ -323,6 +372,10 @@ def pipe_command (_shell, _arguments) :
 			except :
 				pass
 			finally :
+				try :
+					_stream.close ()
+				except :
+					pass
 				_done_threads.append (2)
 		_stdin_thread = thread.start_new_thread (_handle_stdin, ())
 		_stdout_thread = thread.start_new_thread (_handle_stdout, ())
@@ -331,8 +384,8 @@ def pipe_command (_shell, _arguments) :
 		while len (_done_threads) != 3 :
 			time.sleep (0.1)
 		_lines = _output_lines
-	except Exception, error:
-		_shell.notify ('pipe: input failed; aborting.' + str (error))
+	except Exception, _error:
+		_shell.notify ('pipe: input failed; aborting.' + str (_error))
 		return
 	except :
 		_shell.notify ('pipe: input failed; aborting.')
@@ -400,6 +453,7 @@ def store_command (_shell, _arguments) :
 		_shell.notify ('store: target file exists; aborting.')
 		return None
 	try :
+		_stream = None
 		_stream = codecs.open (_path, 'w', 'utf-8', 'replace')
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
@@ -412,7 +466,10 @@ def store_command (_shell, _arguments) :
 	except :
 		_shell.notify ('store: output failed; target file might have been destroyed!')
 		if _stream is not None :
-			_stream.close ()
+			try :
+				_stream.close ()
+			except :
+				pass
 		return None
 	return True
 
@@ -564,13 +621,17 @@ def load_fd_command (_shell, _arguments, _input) :
 		_shell.notify ('load-fd: wrong syntax: load-fd')
 		return None
 	try :
+		_stream = None
 		_stream = codecs.EncodedFile (os.fdopen (_input, 'r'), 'utf-8', 'utf-8', 'replace')
 		_lines = _stream.readlines ()
 		_stream.close ()
 	except :
 		_shell.notify ('load-fd: input failed; aborting.')
 		if _stream is not None :
-			_stream.close ()
+			try :
+				_stream.close ()
+			except :
+				pass
 		return None
 	return _load_file_lines (_shell, 'a', _lines)
 
@@ -580,6 +641,7 @@ def store_fd_command (_shell, _arguments, _output) :
 		_shell.notify ('store-fd: wrong syntax: load-fd')
 		return None
 	try :
+		_stream = None
 		_stream = codecs.EncodedFile (os.fdopen (_output, 'a'), 'utf-8', 'utf-8', 'replace')
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
@@ -587,10 +649,14 @@ def store_fd_command (_shell, _arguments, _output) :
 			_string = _view.select_real_string (_line)
 			_stream.write (_string)
 			_stream.write ('\n')
+			_stream.flush ()
 		_stream.close ()
 	except :
 		_shell.notify ('store-fd: output failed; aborting.')
 		if _stream is not None :
-			_stream.close ()
+			try :
+				_stream.close ()
+			except :
+				pass
 		return None
 	return True
