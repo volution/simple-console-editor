@@ -30,14 +30,17 @@ class Handler :
 	
 	def handle_key (self, _shell, _code) :
 		
-		if _code < 0 :
-			self.handle_key_unknown (_shell, 'Code:%d' % (_code))
+		if _code is None :
+			self.handle_key_unknown (_shell, 'Code:WTF!')
 		
-		elif (_code >= 32) and (_code < 127) :
-			self.handle_key_character (_shell, chr (_code))
-		elif (_code >= 194) and (_code < 224) :
-			_char = (chr (_code) + chr (_shell.scan ())) .decode ('utf-8')
-			self.handle_key_character (_shell, _char)
+		elif isinstance (_code, basestring) :
+			self.handle_key_character (_shell, _code)
+		
+		elif not isinstance (_code, int) :
+			self.handle_key_unknown (_shell, 'Code:WTF!')
+		
+		elif _code < 0 :
+			self.handle_key_unknown (_shell, 'Code:%d' % (_code))
 		
 		elif _code == 8 : # Backspace
 			self.handle_key_backspace (_shell)

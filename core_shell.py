@@ -72,22 +72,27 @@ class Shell :
 		self._color_message = curses.color_pair (4) | curses.A_NORMAL
 		self._color_input = curses.color_pair (5) | curses.A_NORMAL
 		
-		self._window = curses.initscr ()
-		curses.raw ()
 		curses.noecho ()
 		curses.nonl ()
-		self._window.keypad (1)
+		curses.raw ()
+		
 		self._window.leaveok (0)
+		self._window.idcok (0)
+		self._window.idlok (0)
+		self._window.keypad (1)
+		self._window.scrollok (0)
 		
 		return None
 	
 	def close (self) :
 		
-		self._window.leaveok (1)
+		self._window.scrollok (1)
 		self._window.keypad (0)
-		curses.nl ()
+		
 		curses.echo ()
+		curses.nl ()
 		curses.noraw ()
+		
 		curses.endwin ()
 		
 		del self._window
@@ -99,7 +104,46 @@ class Shell :
 		return None
 	
 	def scan (self) :
-		return self._window.getch ()
+		_window = self._window
+		_code = _window.getch ()
+		if _code < 0 :
+			pass
+		elif (_code >= 0) and (_code < 32) :
+			pass
+		elif (_code >= 32) and (_code < 128) :
+			_code = unicode (chr (_code))
+		elif (_code >= 128) and (_code < 192) :
+			_code = None
+		elif (_code >= 192) and (_code < 194) :
+			_code = None
+		elif (_code >= 194) and (_code < 224) :
+			_code_1 = _code
+			_code_2 = _window.getch ()
+			_code = (chr (_code_1) + chr (_code_2)) .decode ('utf-8')
+		elif (_code >= 224) and (_code < 240) :
+			_code_1 = _code
+			_code_2 = _window.getch ()
+			_code_3 = _window.getch ()
+			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3)) .decode ('utf-8')
+		elif (_code >= 240) and (_code < 245) :
+			_code_1 = _code
+			_code_2 = _window.getch ()
+			_code_3 = _window.getch ()
+			_code_4 = _window.getch ()
+			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3) + chr (_code_4)) .decode ('utf-8')
+		elif (_code >= 245) and (_code < 248) :
+			_code = None
+		elif (_code >= 248) and (_code < 252) :
+			_code = None
+		elif (_code >= 252) and (_code < 254) :
+			_code = None
+		elif (_code >= 254) and (_code < 256) :
+			_code = None
+		elif (_code >= 256) :
+			pass
+		else :
+			_code = None
+		return _code
 	
 	def flush (self) :
 		curses.flushinp ()
@@ -131,7 +175,7 @@ class Shell :
 	def input (self, _format, *_arguments) :
 		
 		_window = self._window
-		(_window_lines, _window_columns) = self._window.getmaxyx ()
+		(_window_lines, _window_columns) = _window.getmaxyx ()
 		_line = _window_lines - self._max_input_lines
 		
 		_window.move (_line, 0)
@@ -153,11 +197,13 @@ class Shell :
 			_window.clrtobot ()
 			_window.addstr (_string .encode ('utf-8'))
 			_window.refresh ()
-			_code = _window.getch ()
-			if (_code >= 32) and (_code < 127) :
-				_buffer.append (chr (_code))
-			elif (_code >= 194) and (_code < 224) :
-				_buffer.append ((chr (_code) + chr (_window.scan ())) .decode ('utf-8'))
+			_code = self.scan ()
+			if _code is None :
+				curses.beep ()
+			elif isinstance (_code, basestring) :
+				_buffer.append (_code)
+			elif not isinstance (_code, int) :
+				curses.beep ()
 			elif (_code == curses.KEY_BACKSPACE) or (_code == 8) :
 				if len (_buffer) > 0 :
 					_buffer.pop ()
@@ -235,16 +281,20 @@ class Shell :
 		for i in xrange (0, _max_lines) :
 			_window.move (i, 0)
 			_line = _head_line + i
+			_column = 0
 			if _line < _lines :
 				_window.attrset (_color_markup)
 				if _view.select_is_tagged (_line) :
-					_window.addstr ('|')
+					_window.insstr (i, _column, '|')
+					_column += 1
 				else :
-					_window.addstr (' ')
+					_window.insstr (i, _column, ' ')
+					_column += 1
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
 				for _code in _buffer :
 					if isinstance (_code, basestring) :
-						_window.addstr (_code.encode ('utf-8'))
+						_window.insstr (i, _column, _code.encode ('utf-8'))
+						_column += len (_code)
 					elif _code == -1 :
 						_window.attrset (_color_text)
 					elif _code == -2 :
@@ -252,10 +302,11 @@ class Shell :
 					elif _code == -3 :
 						_window.attrset (_color_error)
 					else :
-						_window.addstr ('?')
+						_window.insstr (_i, _column, '?')
+						_column += 1
 			else :
 				_window.attrset (_color_markup)
-				_window.addstr ('~~~~')
+				_window.insstr (i, _column, '~~~~')
 				break
 		
 		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)

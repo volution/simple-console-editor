@@ -148,3 +148,4 @@ if __name__ == '__main__' :
 	_error = sce (sys.argv[1 :])
 	if _error is not None :
 		print >> sys.stderr, 'sce failed!'
+		print >> sys.stderr, _error
