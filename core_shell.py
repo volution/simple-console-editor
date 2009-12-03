@@ -36,7 +36,6 @@ class Shell :
 		self._messages_touched = False
 		self._max_message_lines = 10
 		self._inputs = []
-		self._max_input_lines = 3
 	
 	def get_view (self) :
 		return self._view
@@ -173,29 +172,33 @@ class Shell :
 		self._loop = False
 	
 	def input (self, _format, *_arguments) :
-		
 		_window = self._window
 		(_window_lines, _window_columns) = _window.getmaxyx ()
-		_line = _window_lines - self._max_input_lines
-		
-		_window.move (_line, 0)
-		_window.clrtobot ()
+		_request_line = _window_lines - 2
+		_request_max_length = _window_columns - 5 - 1
+		_response_line = _window_lines - 1
+		_response_max_length = _window_columns - 5 - 1
+		_request = _format % _arguments
+		if len (_request) > _request_max_length :
+			_request = _request[:_request_max_length - 6] + ' [...]'
 		_window.attrset (self._color_input)
-		_window.addstr ('[??] ')
-		_window.addstr ((_format % _arguments) .encode ('utf-8'))
-		_window.move (_line + 1, 0)
-		_window.addstr ('[>>] ')
-		_window.refresh ()
-		
+		_window.move (_request_line, 0)
+		_window.clrtoeol ()
+		_window.insstr (('[??] ' + _request) .encode ('utf-8'))
 		_buffer = []
 		_inputs = self._inputs
 		_inputs_count = len (_inputs)
 		_input = _inputs_count
 		while True :
 			_string = u''.join (_buffer)
-			_window.move (_line + 1, 5)
-			_window.clrtobot ()
-			_window.addstr (_string .encode ('utf-8'))
+			_response = _string
+			if len (_response) > _response_max_length :
+				_response_drop = len (_response) - _response_max_length + 6
+				_response = '[...] ' + _response[_response_drop:]
+			_window.move (_response_line, 0)
+			_window.clrtoeol ()
+			_window.insstr (('[>>] ' + _response) .encode ('utf-8'))
+			_window.move (_response_line, 5 + len (_response))
 			_window.refresh ()
 			_code = self.scan ()
 			if _code is None :
@@ -239,7 +242,6 @@ class Shell :
 				_buffer.extend (_inputs[_input])
 			else :
 				curses.beep ()
-		
 		return _string
 	
 	def refresh (self) :
@@ -315,11 +317,10 @@ class Shell :
 			_index = 0
 			_window.attrset (_color_message)
 			for (_time, _text) in _messages :
-				_window.move (_max_lines - _index - 1, 0)
+				_line = _max_lines - _index - 1
+				_window.move (_line, 0)
 				_window.clrtoeol ()
-				_window.addstr (_time)
-				_window.addstr (' [..] ')
-				_window.addstr (_text.encode ('utf-8'))
+				_window.insstr ((_time + ' [..] ' + _text) .encode ('utf-8'))
 				_index += 1
 			_window.move (_max_lines - 1, _max_columns - 1)
 		
