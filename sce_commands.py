@@ -487,6 +487,8 @@ def open_command (_shell, _arguments) :
 		return None
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
+	fpos_get_command (_shell, [])
+	_shell.notify ('open: succeeded %s', _open_path)
 	return True
 
 
@@ -502,7 +504,81 @@ def save_command (_shell, _arguments) :
 	if store_command (_shell, ['a', 'o', _path]) is None :
 		return None
 	_shell.get_view () .get_scroll () .reset_touched ()
-	_shell.notify ('save: saved.')
+	fpos_set_command (_shell, [])
+	_shell.notify ('save: succeeded %s', _open_path)
+	return True
+
+
+_fpos_path = "/tmp/sce.%d.fpos" % (os.getuid())
+
+
+def fpos_get_command (_shell, _arguments) :
+	global _open_path
+	_path = os.path.realpath (_open_path)
+	if len (_arguments) != 0 :
+		_shell.notify ('fpos-get: wrong syntax: fpos-get')
+	_dict = _fpos_load (_shell)
+	if _path in _dict :
+		_line = _dict[_path]
+		if type (_line) is int :
+			_shell.get_view () .get_cursor () .set_line (_line)
+			return True
+		else :
+			_shell.notify ('fpos-get: line is not int; ignoring.')
+	else :
+		_shell.notify ('fpos-get: line is unknown; ignoring.')
+	return True
+
+def fpos_set_command (_shell, _arguments) :
+	global _open_path
+	_path = os.path.realpath (_open_path)
+	if len (_arguments) != 0 :
+		_shell.notify ('fpos-set: wrong syntax: fpos-set')
+	_dict = _fpos_load (_shell)
+	_line = _shell.get_view () .get_cursor () .get_line ()
+	_dict[_path] = _line
+	return _fpos_store (_shell, _dict)
+
+def _fpos_load (_shell) :
+	global _fpos_path
+	_data = None
+	try :
+		_stream = None
+		_stream = codecs.open (_fpos_path, 'r', 'utf-8', 'replace')
+		_data = _stream.read ()
+		_stream.close ()
+	except :
+		_shell.notify ('fpos-load: input fpos failed; ignoring.')
+		try :
+			_stream.close ()
+		except :
+			pass
+	if _data is None :
+		return dict ()
+	_dict = None
+	try :
+		_globals = {'__builtins__' : {}}
+		_dict = eval (_data, _globals, _globals)
+	except :
+		_shell.notify ('fpos-load: eval failed; ignoring.')
+	if _dict is None :
+		return dict ()
+	return _dict
+
+def _fpos_store (_shell, _dict) :
+	global _fpos_path
+	_data = repr (_dict)
+	try :
+		_stream = None
+		_stream = codecs.open (_fpos_path, 'w', 'utf-8', 'replace')
+		_stream.write (_data)
+		_stream.close ()
+	except :
+		_shell.notify ('fpos-store: output fpos failed; ignoring.')
+		try :
+			_stream.close ()
+		except :
+			pass
 	return True
 
 
