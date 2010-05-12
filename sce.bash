@@ -2,7 +2,7 @@
 
 set -e -u -o pipefail || exit 1
 
-sources="$( dirname "$( readlink -f "${0}" )" )"
+sources="$( dirname "$( readlink -e "${0}" )" )"
 
 test -f "${sources}/sce.py"
 
