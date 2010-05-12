@@ -12,4 +12,5 @@ then
 else
 	exec "${sources}/python" -E -O -O -u "${sources}/sce.py" "${@}"
 fi
+
 exit 1

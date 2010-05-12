@@ -31,16 +31,19 @@ class Handler :
 	def handle_key (self, _shell, _code) :
 		
 		if _code is None :
-			self.handle_key_unknown (_shell, 'Code:WTF!')
+			self.handle_key_unknown (_shell, 'Code:[none]')
 		
 		elif isinstance (_code, basestring) :
-			self.handle_key_character (_shell, _code)
+			if len (_code) == 1 :
+				self.handle_key_character (_shell, _code)
+			else :
+				self.handle_key_unknown (_shell, 'Code:[%s][len>2]', _code)
 		
 		elif not isinstance (_code, int) :
-			self.handle_key_unknown (_shell, 'Code:WTF!')
+			self.handle_key_unknown (_shell, 'Code:[%s][type]', _code)
 		
 		elif _code < 0 :
-			self.handle_key_unknown (_shell, 'Code:%d' % (_code))
+			self.handle_key_unknown (_shell, 'Code:[%d]' % (_code))
 		
 		elif _code == 8 : # Backspace
 			self.handle_key_backspace (_shell)
@@ -91,7 +94,7 @@ class Handler :
 			self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
 		else :
-			self.handle_key_unknown (_shell, 'Code:%d' % (_code))
+			self.handle_key_unknown (_shell, 'Code:[%d]' % (_code))
 		
 		return True
 	

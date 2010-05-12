@@ -109,8 +109,10 @@ class Shell :
 			pass
 		elif (_code >= 0) and (_code < 32) :
 			pass
-		elif (_code >= 32) and (_code < 128) :
+		elif (_code >= 32) and (_code < 127) :
 			_code = unicode (chr (_code))
+		elif _code == 127 :
+			pass
 		elif (_code >= 128) and (_code < 192) :
 			_code = None
 		elif (_code >= 192) and (_code < 194) :
