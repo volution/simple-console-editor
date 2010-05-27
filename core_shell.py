@@ -36,6 +36,8 @@ class Shell :
 		self._messages_touched = False
 		self._max_message_lines = 10
 		self._inputs = []
+		self._backspace_code = 127
+		self._delete_code = 330
 	
 	def get_view (self) :
 		return self._view
@@ -209,7 +211,7 @@ class Shell :
 				_buffer.append (_code)
 			elif not isinstance (_code, int) :
 				curses.beep ()
-			elif (_code == curses.KEY_BACKSPACE) or (_code == 8) :
+			elif (_code == self._backspace_code) or (_code == 8) :
 				if len (_buffer) > 0 :
 					_buffer.pop ()
 				else :

@@ -30,6 +30,8 @@ class Handler :
 	
 	def handle_key (self, _shell, _code) :
 		
+		# _shell.notify ('Code:[%s]', _code)
+		
 		if _code is None :
 			self.handle_key_unknown (_shell, 'Code:[none]')
 		
@@ -45,8 +47,11 @@ class Handler :
 		elif _code < 0 :
 			self.handle_key_unknown (_shell, 'Code:[%d]' % (_code))
 		
-		elif _code == 8 : # Backspace
+		elif _code == _shell._backspace_code or _code == 8 : # Backspace
 			self.handle_key_backspace (_shell)
+		elif _code == _shell._delete_code : # Delete
+			self.handle_key_delete (_shell)
+		
 		elif _code == 9 : # Tab
 			self.handle_key_tab (_shell)
 		elif _code == 10 : # Enter
@@ -55,8 +60,6 @@ class Handler :
 			self.handle_key_enter (_shell)
 		elif _code == 27 : # Escape
 			self.handle_key_escape (_shell)
-		elif _code == 127 : # Delete
-			self.handle_key_delete (_shell)
 		
 		elif (_code >= 0) and (_code < 32) :
 			self.handle_key_control (_shell, _code)
