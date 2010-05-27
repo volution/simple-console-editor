@@ -23,6 +23,7 @@
 import curses
 import locale
 import os
+import sys
 import time
 import traceback
 
@@ -38,6 +39,7 @@ class Shell :
 		self._inputs = []
 		self._backspace_code = 127
 		self._delete_code = 330
+		self._opened = False
 	
 	def get_view (self) :
 		return self._view
@@ -83,6 +85,8 @@ class Shell :
 		self._window.keypad (1)
 		self._window.scrollok (0)
 		
+		self._opened = True
+		
 		return None
 	
 	def close (self) :
@@ -101,6 +105,8 @@ class Shell :
 		del self._color_markup
 		del self._color_message
 		del self._color_input
+		
+		self._opened = False
 		
 		return None
 	
@@ -158,6 +164,8 @@ class Shell :
 		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), (_format % _arguments)))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
+		if not self._opened :
+			print >> sys.stderr, '[..]', _format % _arguments
 	
 	def loop (self) :
 		try :

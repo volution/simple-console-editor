@@ -23,6 +23,7 @@
 
 import os
 import sys
+import uuid
 
 from core import Shell
 from sce_commands import *
@@ -57,19 +58,27 @@ def sce (_arguments) :
 		_store = lambda : True
 	else :
 		if _redirected_input is not None :
-			_load = lambda : load_fd_command (_shell, _arguments, _redirected_input)
+			_load = lambda : load_fd_command (_shell, [], _redirected_input)
 		else :
 			_load = lambda : True
 		if _redirected_output is not None :
-			_store = lambda : store_fd_command (_shell, _arguments, _redirected_output)
+			_store = lambda : store_fd_command (_shell, [], _redirected_output)
 		else :
 			_store = lambda : True
 	
 	if not _load () :
 		return False
 	
-	_error = _loop (_shell, _load, _store)
+	_error = _loop (_shell)
 	if _error is not None :
+		try :
+			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
+			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
+			if not store_fd_command (_shell, [], _dump_stream) :
+				raise Exception ()
+			print >> sys.stderr, '[ee]', 'dumpped to %s' % (_dump_path,)
+		except :
+			print >> sys.stderr, '[ee]', 'dump failed!'
 		return _error
 	
 	if not _store () :
@@ -78,7 +87,7 @@ def sce (_arguments) :
 	return None
 
 
-def _loop (_shell, _load, _store) :
+def _loop (_shell) :
 	
 	_error = _shell.open ()
 	if _error is not None :
@@ -147,5 +156,7 @@ def _create () :
 if __name__ == '__main__' :
 	_error = sce (sys.argv[1 :])
 	if _error is not None :
-		print >> sys.stderr, 'sce failed!'
-		print >> sys.stderr, _error
+		print >> sys.stderr, '[ee]', 'failed!'
+		sys.exit (1)
+	else :
+		sys.exit (0)

@@ -73,7 +73,7 @@ def clear_command (_shell, _arguments) :
 	return True
 
 
-_yank_path = "/tmp/sce.%d.yank" % (os.getuid())
+_yank_path = "/tmp/sce.%d.yank" % (os.getuid (),)
 _yank_buffer = None
 
 
@@ -714,7 +714,7 @@ def load_fd_command (_shell, _arguments, _input) :
 
 def store_fd_command (_shell, _arguments, _output) :
 	if len (_arguments) != 0 :
-		_shell.notify ('store-fd: wrong syntax: load-fd')
+		_shell.notify ('store-fd: wrong syntax: store-fd')
 		return None
 	try :
 		_stream = None
