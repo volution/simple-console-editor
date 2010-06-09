@@ -34,6 +34,13 @@ class View (core.View) :
 		self._mark_enabled = False
 		self._tab_columns = 4
 		self._limit_columns = 128
+		try :
+			import os
+			_limit_columns = int (os.getenv ('SCE_LIMIT_COLUMNS'))
+			if _limit_columns >= 0 :
+				self._limit_columns = _limit_columns
+		except :
+			pass
 		self._visual_cache = dict ()
 	
 	def get_scroll (self) :
