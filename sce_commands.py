@@ -23,6 +23,7 @@
 import codecs
 import errno
 import fcntl
+import itertools
 import os
 import os.path
 import subprocess
@@ -603,9 +604,10 @@ def go_command (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_lines = _view.get_lines ()
 	_cursor = _view.get_cursor ()
+	_go_arguments = _arguments
 	if _lines == 0 :
 		pass
-	if _mode == 'l' :
+	elif _mode == 'l' :
 		try :
 			_line = int (_argument) - 1
 		except :
@@ -614,21 +616,20 @@ def go_command (_shell, _arguments) :
 		if _line > _lines :
 			_line = _lines - 1
 		_cursor.set_line (_line)
-		_go_arguments = _arguments
 		return True
 	elif _mode == 's' :
-		_line = _cursor.get_line () + 1
-		if _line >= _lines :
-			pass
+		_line = _cursor.get_line ()
+		_string = _view.select_real_string (_line)
+		_column = _view.select_real_column (_line, _cursor.get_column ()) + 1
+		for _line in itertools.chain (xrange (_line, _lines), xrange (0, _line)) :
+			_column = _view.select_real_string (_line) .find (_argument, 0 if _column == -1 else _column)
+			if _column >= 0 :
+				break
+		if _column >= 0 :
+			_cursor.set_line (_line)
+			_cursor.set_column (_view.select_visual_column (_line, _column))
 		else :
-			for _line in xrange (_line, _lines) :
-				_column = _view.select_real_string (_line) .find (_argument)
-				if _column >= 0 :
-					break
-			if _line < _lines :
-				_cursor.set_line (_line)
-				_cursor.set_column (_view.select_visual_column (_line, _column))
-		_go_arguments = _arguments
+			_shell.notify ('gs: no match found')
 		return True
 	return None
 
@@ -651,6 +652,52 @@ def go_string_command (_shell, _arguments) :
 	if go_command (_shell, ['s', _string]) is None :
 		return None
 	return True
+
+
+_replace_arguments = None
+
+
+def replace_command (_shell, _arguments) :
+	global _replace_arguments
+	if len (_arguments) == 0 :
+		if _replace_arguments is None :
+			_shell.notify ('replace: no previous replace command; aborting.')
+			return None
+		_arguments = _replace_arguments
+	if len (_arguments) != 2 :
+		_shell.notify ('replace: wrong syntax: replace <wath> <with>')
+		return None
+	_what = _arguments[0]
+	_with = _arguments[1]
+	_view = _shell.get_view ()
+	_scroll = _view.get_scroll ()
+	_lines = _view.get_lines ()
+	_cursor = _view.get_cursor ()
+	_replace_arguments = _arguments
+	if _lines == 0 :
+		pass
+	else :
+		_line = _cursor.get_line ()
+		_string = _view.select_real_string (_line)
+		_column = _view.select_real_column (_line, _cursor.get_column ())
+		if _column == _string.find (_what, _column) :
+			_string = _string[:_column] + _with + _string[_column + len (_what):]
+			_scroll.update (_line, _string)
+			_column += 1
+		else :
+			_column = -1
+			_line = _line + 1
+		for _line in itertools.chain (xrange (_line, _lines), xrange (0, _line)) :
+			_column = _view.select_real_string (_line) .find (_what, 0 if _column == -1 else _column)
+			if _column >= 0 :
+				break
+		if _column >= 0 :
+			_cursor.set_line (_line)
+			_cursor.set_column (_view.select_visual_column (_line, _column))
+		else :
+			_shell.notify ('replace: no match found')
+		return True
+	return None
 
 
 _jump_line = None

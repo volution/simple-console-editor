@@ -136,6 +136,9 @@ def _create () :
 	_handler.register_command ('cut', cut_lines_command)
 	_handler.register_command ('delete', delete_lines_command)
 	
+	_handler.register_control ('N', replace_command)
+	_handler.register_command ('replace', replace_command)
+	
 	_handler.register_control ('S', save_command)
 	_handler.register_command ('clear', clear_command)
 	_handler.register_command ('open', open_command)
