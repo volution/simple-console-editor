@@ -32,6 +32,9 @@ class Scroll :
 	def reset_touched (self) :
 		self._touched = False
 	
+	def force_touched (self) :
+		self._touched = True
+	
 	def get_length (self) :
 		if self._lines == None :
 			return 0

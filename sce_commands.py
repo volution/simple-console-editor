@@ -498,6 +498,7 @@ def save_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('save: wrong syntax: save')
 		return None
+	_shell.get_view () .get_scroll () .force_touched ()
 	_path = _open_path
 	if _path is None :
 		_shell.notify ('save: no previous open command; aborting.')
