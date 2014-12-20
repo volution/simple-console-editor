@@ -81,7 +81,7 @@ _yank_buffer = None
 def yank_lines_command (_shell, _arguments) :
 	global _yank_buffer
 	if len (_arguments) != 0 :
-		_shell.notify ('yank-lines: wrong syntex: yank-lines')
+		_shell.notify ('yank-lines: wrong syntax: yank-lines')
 		return None
 	if _yank_buffer is None :
 		_shell.notify ('yank-lines: yank buffer is empty.')
@@ -422,13 +422,17 @@ def _load_file_lines (_shell, _mode, _lines) :
 	elif _mode == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
 	elif _mode == 'a' :
-		_insert_line = _scroll.get_length ()
+		_insert_line = -1
 	else :
-		_insert_line = _scroll.get_length ()
-	_lines.reverse ()
-	for _line in _lines :
-		_line = _line.rstrip ('\r\n')
-		_scroll.include_before (_insert_line, _line)
+		_insert_line = -1
+	if _insert_line >= 0 :
+		for _line in reversed (_lines) :
+			_line = _line.rstrip ('\r\n')
+			_scroll.include_before (_insert_line, _line)
+	else :
+		for _line in _lines :
+			_line = _line.rstrip ('\r\n')
+			_scroll.append (_line)
 	return True
 
 
