@@ -115,7 +115,7 @@ def _create () :
 	_handler.register_command ('exit', exit_command)
 	_handler.register_command ('quick-exit', quick_exit_command)
 	
-	_handler.register_control ('R', _handler.handle_command)
+	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
 	
 	_handler.register_control ('@', mark_command)
 	_handler.register_control ('G', go_command)
