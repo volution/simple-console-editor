@@ -611,7 +611,7 @@ def go_command (_shell, _arguments) :
 	_cursor = _view.get_cursor ()
 	_go_arguments = _arguments
 	if _lines == 0 :
-		pass
+		return True
 	elif _mode == 'l' :
 		try :
 			_line = int (_argument) - 1
@@ -630,13 +630,14 @@ def go_command (_shell, _arguments) :
 			_column = _view.select_real_string (_line) .find (_argument, 0 if _column == -1 else _column)
 			if _column >= 0 :
 				break
+			_column = -1
 		if _column >= 0 :
 			_cursor.set_line (_line)
 			_cursor.set_column (_view.select_visual_column (_line, _column))
 		else :
 			_shell.notify ('gs: no match found')
 		return True
-	return None
+	raise Exception ('80a736fd')
 
 
 def go_line_command (_shell, _arguments) :
