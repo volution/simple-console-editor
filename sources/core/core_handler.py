@@ -95,7 +95,7 @@ class Handler :
 			return self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
 		else :
-			raise Exception ('de7d800f', _code)
+			return self.handle_key_unknown (_shell, _code)
 		
 		raise Exception ('ba0402d0')
 	
