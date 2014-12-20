@@ -31,7 +31,7 @@ from sce_handler import *
 from sce_view import *
 
 
-def sce (_arguments) :
+def main (_arguments) :
 	
 	if not os.isatty (2) :
 		return False
@@ -154,12 +154,3 @@ def _create () :
 	_shell.set_handler (_handler)
 	
 	return _shell
-
-
-if __name__ == '__main__' :
-	_error = sce (sys.argv[1 :])
-	if _error is not None :
-		print >> sys.stderr, '[ee]', 'failed!'
-		sys.exit (1)
-	else :
-		sys.exit (0)

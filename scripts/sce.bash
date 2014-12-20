@@ -3,16 +3,38 @@
 set -e -E -u -o pipefail -o noclobber -o noglob +o braceexpand || exit 1
 trap 'printf "[ee] failed: %s\n" "${BASH_COMMAND}" >&2' ERR || exit 1
 
-_root="$( dirname -- "$( readlink -e -- "${0}/.." )" )"
+
+_root="$( readlink -e -- "$( dirname -- "$( readlink -e -- "${0}" )" )/.." )"
 _scripts="${_root}/scripts"
 _sources="${_root}/sources"
 
-test -f "${_sources}/sce.py"
+
+_python_arguments=(
+		-u # unbuffered `stdin` and `stdout`
+		-O -O # optimizations enabled
+		-B # disable writing `*.py[oc]`
+		-E # ignore `PYTHON*` environment variables
+		-S # disable `sys.path` manipulation
+		-s # disable user-site
+		-R # hash randomization
+)
+
+_python_environment=(
+		SCE_SOURCES="${_sources}"
+		TERM="${TERM}"
+		TMPDIR="${TMPDIR:-/tmp}"
+)
+
+_python_exec=(
+	env -i "${_python_environment[@]}"
+	"${_scripts}/python" "${_python_arguments[@]}"
+)
+
 
 if test "${#}" -eq 0 ; then
-	exec "${_scripts}/python" -E -O -O -u "${_sources}/sce.py"
+	exec "${_python_exec[@]}" "${_sources}/commands/sce_command.py"
 else
-	exec "${_scripts}/python" -E -O -O -u "${_sources}/sce.py" "${@}"
+	exec "${_python_exec[@]}" "${_sources}/commands/sce_command.py" "${@}"
 fi
 
 exit 1
