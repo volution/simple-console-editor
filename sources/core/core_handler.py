@@ -30,128 +30,130 @@ class Handler :
 	
 	def handle_key (self, _shell, _code) :
 		
-		# _shell.notify ('Code:[%s]', _code)
-		
 		if _code is None :
-			self.handle_key_unknown (_shell, 'Code:[none]')
+			return self.handle_key_unknown (_shell, 'Code:[none]')
 		
 		elif isinstance (_code, basestring) :
 			if len (_code) == 1 :
-				self.handle_key_character (_shell, _code)
+				return self.handle_key_character (_shell, _code)
 			else :
-				self.handle_key_unknown (_shell, 'Code:[%s][len>2]', _code)
+				raise Exception ('a078bdfa', _code)
 		
 		elif not isinstance (_code, int) :
-			self.handle_key_unknown (_shell, 'Code:[%s][type]', _code)
+			raise Exception ('9196652b', _code)
 		
 		elif _code < 0 :
-			self.handle_key_unknown (_shell, 'Code:[%d]' % (_code))
+			raise Exception ('5cab08de', _code)
 		
 		elif _code == _shell._backspace_code or _code == 8 : # Backspace
-			self.handle_key_backspace (_shell)
+			return self.handle_key_backspace (_shell)
 		elif _code == _shell._delete_code : # Delete
-			self.handle_key_delete (_shell)
+			return self.handle_key_delete (_shell)
 		
 		elif _code == 9 : # Tab
-			self.handle_key_tab (_shell)
+			return self.handle_key_tab (_shell)
 		elif _code == 10 : # Enter
-			self.handle_key_enter (_shell)
+			return self.handle_key_enter (_shell)
 		elif _code == 13 : # Enter
-			self.handle_key_enter (_shell)
+			return self.handle_key_enter (_shell)
 		elif _code == 27 : # Escape
-			self.handle_key_escape (_shell)
+			return self.handle_key_escape (_shell)
 		
-		elif (_code >= 0) and (_code < 32) :
-			self.handle_key_control (_shell, _code)
+		elif _code >= 0 and _code < 32 :
+			return self.handle_key_control (_shell, _code)
 		
 		elif _code == curses.KEY_UP :
-			self.handle_key_up (_shell)
+			return self.handle_key_up (_shell)
 		elif _code == curses.KEY_DOWN :
-			self.handle_key_down (_shell)
+			return self.handle_key_down (_shell)
 		elif _code == curses.KEY_LEFT :
-			self.handle_key_left (_shell)
+			return self.handle_key_left (_shell)
 		elif _code == curses.KEY_RIGHT :
-			self.handle_key_right (_shell)
+			return self.handle_key_right (_shell)
 		
 		elif _code == curses.KEY_HOME :
-			self.handle_key_home (_shell)
+			return self.handle_key_home (_shell)
 		elif _code == curses.KEY_END :
-			self.handle_key_end (_shell)
+			return self.handle_key_end (_shell)
 		
 		elif _code == curses.KEY_PPAGE :
-			self.handle_key_page_up (_shell)
+			return self.handle_key_page_up (_shell)
 		elif _code == curses.KEY_NPAGE :
-			self.handle_key_page_down (_shell)
+			return self.handle_key_page_down (_shell)
 		
 		elif _code == curses.KEY_IC :
-			self.handle_key_insert (_shell)
+			return self.handle_key_insert (_shell)
 		elif _code == curses.KEY_DC :
-			self.handle_key_delete (_shell)
+			return self.handle_key_delete (_shell)
 		
 		elif _code == curses.KEY_BACKSPACE :
-			self.handle_key_backspace (_shell)
+			return self.handle_key_backspace (_shell)
 		elif _code == curses.KEY_ENTER :
-			self.handle_key_enter (_shell)
+			return self.handle_key_enter (_shell)
 		
 		elif (_code >= curses.KEY_F0) and (_code <= curses.KEY_F63) :
-			self.handle_key_function (_shell, _code - curses.KEY_F0)
+			return self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
 		else :
-			self.handle_key_unknown (_shell, 'Code:[%d]' % (_code))
+			raise Exception ('de7d800f', _code)
 		
-		return True
+		raise Exception ('ba0402d0')
 	
 	def handle_key_backspace (self, _shell) :
-		self.handle_key_unknown (_shell, 'Backspace')
+		return self.handle_key_special (_shell, 'Backspace')
 	
 	def handle_key_tab (self, _shell) :
-		self.handle_key_unknown (_shell, 'Tab')
+		return self.handle_key_special (_shell, 'Tab')
 	
 	def handle_key_enter (self, _shell) :
-		self.handle_key_unknown (_shell, 'Enter')
+		return self.handle_key_special (_shell, 'Enter')
 	
 	def handle_key_escape (self, _shell) :
-		self.handle_key_unknown (_shell, 'Escape')
+		return self.handle_key_special (_shell, 'Escape')
 	
 	def handle_key_delete (self, _shell) :
-		self.handle_key_unknown (_shell, 'Delete')
+		return self.handle_key_special (_shell, 'Delete')
 	
 	def handle_key_control (self, _shell, _code) :
-		self.handle_key_unknown (_shell, 'Ctrl+%s' % (chr (64 + _code)))
+		return self.handle_key_special (_shell, 'Ctrl+%s' % (chr (64 + _code)))
 	
 	def handle_key_character (self, _shell, _character) :
-		self.handle_key_unknown (_shell, _character)
+		return self.handle_key_special (_shell, _character)
 	
 	def handle_key_up (self, _shell) :
-		self.handle_key_unknown (_shell, 'Up')
+		return self.handle_key_special (_shell, 'Up')
 	
 	def handle_key_down (self, _shell) :
-		self.handle_key_unknown (_shell, 'Down')
+		return self.handle_key_special (_shell, 'Down')
 	
 	def handle_key_left (self, _shell) :
-		self.handle_key_unknown (_shell, 'Left')
+		return self.handle_key_special (_shell, 'Left')
 	
 	def handle_key_right (self, _shell) :
-		self.handle_key_unknown (_shell, 'Right')
+		return self.handle_key_special (_shell, 'Right')
 	
 	def handle_key_home (self, _shell) :
-		self.handle_key_unknown (_shell, 'Home')
+		return self.handle_key_special (_shell, 'Home')
 	
 	def handle_key_end (self, _shell) :
-		self.handle_key_unknown (_shell, 'End')
+		return self.handle_key_special (_shell, 'End')
 	
 	def handle_key_page_up (self, _shell) :
-		self.handle_key_unknown (_shell, 'Page up')
+		return self.handle_key_special (_shell, 'Page up')
 	
 	def handle_key_page_down (self, _shell) :
-		self.handle_key_unknown (_shell, 'Page down')
+		return self.handle_key_special (_shell, 'Page down')
 	
 	def handle_key_insert (self, _shell) :
-		self.handle_key_unknown (_shell, 'Insert')
+		return self.handle_key_special (_shell, 'Insert')
 	
 	def handle_key_function (self, _shell, _code) :
-		self.handle_key_unknown (_shell, 'F%d' % (_code))
+		return self.handle_key_special (_shell, 'F%d' % (_code))
+	
+	def handle_key_special (self, _shell, _code) :
+		return self.handle_key_unknown (_shell, _key)
 	
 	def handle_key_unknown (self, _shell, _key) :
 		_shell.notify ('Unhandled key [%s]; ignoring.', _key)
+		return False
 #
