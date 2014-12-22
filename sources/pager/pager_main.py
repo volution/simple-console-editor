@@ -25,10 +25,11 @@ import os
 import sys
 import uuid
 
-from core import Shell
+from core import *
+from common import *
 from pager_commands import *
 from pager_handler import *
-from pager_view import *
+from pager_scroll import *
 
 
 def main (_arguments) :
@@ -53,10 +54,10 @@ def main (_arguments) :
 	if _shell is None :
 		return False
 	
+	_scroll = _shell.get_view () .get_scroll ()
+	
 	if _redirected_input is None :
 		return False
-	
-	_scroll = _shell.get_view () .get_scroll ()
 	
 	if not load_fd_command (_shell, [], _redirected_input) :
 		return False
@@ -93,7 +94,10 @@ def _loop (_shell) :
 
 def _create () :
 	
+	_scroll = Scroll ()
+	
 	_view = View ()
+	_view.set_scroll (_scroll)
 	
 	_handler = Handler ()
 	

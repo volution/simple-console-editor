@@ -167,6 +167,12 @@ class Scroll :
 			_line = _line[: _column] + _line[_column + _length :]
 		self._lines[_index] = _line
 	
+	def highlights (self, _index) :
+		return []
+	
+	def highlight (self, _line, _column) :
+		return None
+	
 	def _coerce (self, _string) :
 		if isinstance (_string, unicode) :
 			pass

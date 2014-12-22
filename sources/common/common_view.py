@@ -70,6 +70,7 @@ class View (core.View) :
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
 		_real_string = self.select_real_string (_line)
+		_highlights = self._scroll.highlights (_line)
 		_cache_key = ('visual_string', _line, _head_column, _tail_column)
 		_visual_string = None
 		if _cache_key in self._cache :
@@ -79,7 +80,7 @@ class View (core.View) :
 			if _real_string == _cache_real_string :
 				_visual_string = _cache_visual_string
 		if _visual_string is None :
-			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column)
+			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column, _highlights)
 			_cache_value = (_real_string, _visual_string)
 			self._cache[_cache_key] = _cache_value
 		return _visual_string
@@ -203,9 +204,12 @@ class View (core.View) :
 				_length += 1
 		return _length
 	
-	def compute_visual_string (self, _string, _head_column, _tail_column) :
+	def compute_visual_string (self, _string, _head_column, _tail_column, _highlights) :
 		_limit_column = self._limit_columns
 		_tab_columns = self._tab_columns
+		_highlights_iterator = iter (_highlights)
+		_highlights_next = next (_highlights_iterator, None)
+		_highlights_active = False
 		_buffer = list ()
 		_length = self.compute_visual_length (_string)
 		_column = 0
@@ -230,6 +234,17 @@ class View (core.View) :
 				_last_mode = -3
 			_buffer.append (_l_code)
 		for _character in _string :
+			if _highlights_next is not None :
+				_highlights_active = False
+				while _highlights_next is not None :
+					if _column >= _highlights_next[1] :
+						_highlights_next = next (_highlights_iterator, None)
+						continue
+					if _column >= _highlights_next[0] :
+						_highlights_active = True
+					else :
+						_highlights_active = False
+					break
 			_code = ord (_character)
 			if _code == 9 :
 				_delta = (((_column / _tab_columns) + 1) * _tab_columns) - _column
@@ -248,7 +263,11 @@ class View (core.View) :
 				_column += _delta
 			else :
 				if (_column >= _head_column) and (_column <= _tail_column) :
-					if _column >= _limit_column :
+					if _highlights_active :
+						if _last_mode != -4 :
+							_buffer.append (-4)
+							_last_mode = -4
+					elif _column >= _limit_column :
 						if _last_mode != -3 :
 							_buffer.append (-3)
 							_last_mode = -3
