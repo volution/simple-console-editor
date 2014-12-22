@@ -32,9 +32,9 @@ _python_exec=(
 
 
 if test "${#}" -eq 0 ; then
-	exec "${_python_exec[@]}" "${_sources}/commands/sce_command.py"
+	exec "${_python_exec[@]}" "${_sources}/commands/editor_command.py"
 else
-	exec "${_python_exec[@]}" "${_sources}/commands/sce_command.py" "${@}"
+	exec "${_python_exec[@]}" "${_sources}/commands/editor_command.py" "${@}"
 fi
 
 exit 1

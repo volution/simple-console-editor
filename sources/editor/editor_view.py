@@ -22,7 +22,7 @@
 
 import core
 
-from sce_scroll import Scroll
+from editor_scroll import Scroll
 
 
 class View (core.View) :

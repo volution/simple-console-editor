@@ -26,9 +26,9 @@ import sys
 import uuid
 
 from core import Shell
-from sce_commands import *
-from sce_handler import *
-from sce_view import *
+from editor_commands import *
+from editor_handler import *
+from editor_view import *
 
 
 def main (_arguments) :

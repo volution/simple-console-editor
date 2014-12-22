@@ -20,4 +20,19 @@
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from sce_main import main
+import os
+import sys
+
+sys.path.append (os.environ['SCE_SOURCES'])
+
+import editor
+
+if __name__ == '__main__' :
+	_error = editor.main (sys.argv[1 :])
+	if _error is not None :
+		print >> sys.stderr, '[ee]', 'failed!'
+		sys.exit (1)
+	else :
+		sys.exit (0)
+else :
+	raise Exception ()
