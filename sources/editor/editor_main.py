@@ -26,9 +26,10 @@ import sys
 import uuid
 
 from core import Shell
+from common import *
 from editor_commands import *
 from editor_handler import *
-from editor_view import *
+from editor_scroll import *
 
 
 def main (_arguments) :
@@ -107,7 +108,10 @@ def _loop (_shell) :
 
 def _create () :
 	
+	_scroll = Scroll ()
+	
 	_view = View ()
+	_view.set_scroll (_scroll)
 	
 	_handler = Handler ()
 	
