@@ -40,6 +40,7 @@ class Shell :
 		self._backspace_code = 127
 		self._delete_code = 330
 		self._opened = False
+		self._terminal = None
 	
 	def get_view (self) :
 		return self._view
@@ -53,12 +54,26 @@ class Shell :
 	def set_handler (self, _handler) :
 		self._handler = _handler
 	
+	def set_terminal (self, _terminal) :
+		self._terminal = _terminal
+	
 	def open (self) :
 		
-		if not os.isatty (0) or not os.isatty (1) or not os.isatty (2) :
+		_terminal_descriptor = self._terminal.fileno ()
+		if not os.isatty (_terminal_descriptor) :
 			return False
 		
+		# FIXME: These should not be needed, but it seems `setupterm` doesn't do all its job...
+		if _terminal_descriptor != 0 :
+			os.dup2 (_terminal_descriptor, 0)
+		if _terminal_descriptor != 1 :
+			os.dup2 (_terminal_descriptor, 1)
+		if _terminal_descriptor != 2 :
+			os.dup2 (_terminal_descriptor, 2)
+		
 		locale.setlocale (locale.LC_ALL, '')
+		
+		curses.setupterm (os.environ['TERM'], _terminal_descriptor)
 		
 		self._window = curses.initscr ()
 		

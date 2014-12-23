@@ -126,5 +126,6 @@ def _initialize (_terminal) :
 	_shell = Shell ()
 	_shell.set_view (_view)
 	_shell.set_handler (_handler)
+	_shell.set_terminal (_terminal)
 	
 	return _shell
