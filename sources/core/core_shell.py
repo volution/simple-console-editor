@@ -163,11 +163,12 @@ class Shell :
 		curses.beep ()
 	
 	def notify (self, _format, *_arguments) :
-		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), (_format % _arguments)))
+		_message = _format % _arguments
+		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), _message))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
 		if not self._opened :
-			print >> sys.stderr, '[..]', _format % _arguments
+			print >> self._terminal, '[..]', _message
 	
 	def loop (self) :
 		try :
@@ -176,10 +177,11 @@ class Shell :
 			while self._loop :
 				self._handler.handle_key (self, self.scan ())
 				self.refresh ()
-		except Exception, _error :
-			return (_error, traceback.format_exc ())
 		except :
-			return (None, '<<unknown system error>>')
+			_error = sys.exc_info ()
+			_traceback = traceback.format_exception (_error[0], _error[1], _error[2])
+			_error = (_error[1], _traceback)
+			return _error
 		return None
 	
 	def loop_stop (self) :

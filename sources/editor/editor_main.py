@@ -72,15 +72,14 @@ def main (_arguments) :
 	
 	_error = _loop (_shell)
 	if _error is not None :
-		print _error[1]
 		try :
-			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
+			_dump_path = '/tmp/sce.%d.dump.%s' % (os.getuid (), uuid.uuid4 () .hex)
 			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
 			if not store_fd_command (_shell, [], _dump_stream) :
 				raise Exception ()
-			print >> sys.stderr, '[ee]', 'dumpped to %s' % (_dump_path,)
+			_transcript.error ('dumpped to scroll to `%s`...', _dump_path)
 		except :
-			print >> sys.stderr, '[ee]', 'dump failed!'
+			_transcript.error ('dumping scroll failed!')
 		return _error
 	
 	if not _store () :
@@ -107,7 +106,7 @@ def _loop (_shell) :
 	return None
 
 
-def _create () :
+def _initialize (_terminal) :
 	
 	_scroll = Scroll ()
 	

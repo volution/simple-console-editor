@@ -74,7 +74,7 @@ def clear_command (_shell, _arguments) :
 	return True
 
 
-_yank_path = "/tmp/sce.%d.yank" % (os.getuid (),)
+_yank_path = '/tmp/sce.%d.yank' % (os.getuid (),)
 _yank_buffer = None
 
 
@@ -308,7 +308,7 @@ def pipe_command (_shell, _arguments) :
 					try :
 						_data = self.stream.read ()
 						_do = False
-					except IOError, _error :
+					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
 							raise _error
 						time.sleep (0.01)
@@ -319,7 +319,7 @@ def pipe_command (_shell, _arguments) :
 					try :
 						_outcome = self.stream.write (_data)
 						_do = False
-					except IOError, _error :
+					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
 							raise _error
 						time.sleep (0.01)
@@ -385,7 +385,7 @@ def pipe_command (_shell, _arguments) :
 		while len (_done_threads) != 3 :
 			time.sleep (0.1)
 		_lines = _output_lines
-	except Exception, _error:
+	except Exception as _error:
 		_shell.notify ('pipe: input failed; aborting.' + str (_error))
 		return
 	except :
@@ -515,7 +515,7 @@ def save_command (_shell, _arguments) :
 	return True
 
 
-_fpos_path = "/tmp/sce.%d.fpos" % (os.getuid())
+_fpos_path = '/tmp/sce.%d.fpos' % (os.getuid())
 
 
 def fpos_get_command (_shell, _arguments) :

@@ -65,7 +65,7 @@ class View (core.View) :
 	
 	def select_real_string (self, _line) :
 		if self._scroll is None :
-			return ""
+			return ''
 		return self._scroll.select (_line)
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :

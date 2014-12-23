@@ -97,10 +97,10 @@ class BasicHandler (Handler) :
 			_outcome = _handler (_shell, _arguments)
 			#if _outcome is None :
 			#	_shell.notify ('Command [%s] failed.', _command)
-		except Exception, _error :
+		except Exception as _error :
 			_shell.notify ('Unhandled exception [%s]; ignoring.', str (_error))
 		except :
-			_shell.notify ('Unhandled system exception; ignoring.')
+			_shell.notify ('Unhandled unknown exception; ignoring.')
 		return True
 	
 	def register_command (self, _command, _handler) :

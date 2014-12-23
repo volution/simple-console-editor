@@ -92,7 +92,7 @@ def _loop (_shell) :
 	return None
 
 
-def _create () :
+def _initialize (_terminal) :
 	
 	_scroll = Scroll ()
 	
