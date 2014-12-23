@@ -30,7 +30,8 @@ class View (core.View) :
 	def __init__ (self) :
 		core.View.__init__ (self)
 		self._scroll = Scroll ()
-		self._mark = core.Mark ()
+		self._mark_1 = core.Mark ()
+		self._mark_2 = core.Mark ()
 		self._mark_enabled = False
 		self._tab_columns = 4
 		self._limit_columns = 128
@@ -49,8 +50,11 @@ class View (core.View) :
 	def get_lines (self) :
 		return self._scroll.get_length ()
 	
-	def get_mark (self) :
-		return self._mark
+	def get_mark_1 (self) :
+		return self._mark_1
+	
+	def get_mark_2 (self) :
+		return self._mark_2
 	
 	def is_mark_enabled (self) :
 		return self._mark_enabled
@@ -129,27 +133,51 @@ class View (core.View) :
 		return _visual_length
 	
 	def select_is_tagged (self, _line) :
-		_cursor_line = self._cursor.get_line ()
-		_mark_line = self._mark.get_line ()
-		return self._mark_enabled and ((_cursor_line <= _line <= _mark_line) or (_mark_line <= _line <= _cursor_line))
+		if not self._mark_enabled :
+			return False
+		_mark_1_line = self._mark_1.get_line ()
+		_mark_1_column = self._mark_1.get_column ()
+		_mark_2_line = self._mark_2.get_line ()
+		_mark_2_column = self._mark_2.get_column ()
+		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			_mark_2_line = self._cursor.get_line ()
+			_mark_2_column = self._cursor.get_column ()
+		_first_line = min (_mark_1_line, _mark_2_line)
+		_last_line = max (_mark_1_line, _mark_2_line)
+		if _first_line == _last_line :
+			if _first_line == _line :
+				return _mark_1_column != _mark_2_column
+			else :
+				return False
+		else :
+			return _first_line <= _line <= _last_line
 	
 	def refresh (self) :
 		
 		core.View.refresh (self)
 		
-		_mark_line = self._mark._line
-		_mark_column = self._mark._column
+		_mark_1_line = self._mark_1.get_line ()
+		_mark_1_column = self._mark_1.get_column ()
+		_mark_2_line = self._mark_2.get_line ()
+		_mark_2_column = self._mark_2.get_column ()
 		_lines = self.get_lines ()
 		
-		if _mark_line < 0 :
-			_mark_line = 0
-		elif _mark_line >= _lines :
-			_mark_line = _lines - 1
-		if _mark_column < 0 :
-			_mark_column = 0
+		if _mark_1_line < 0 :
+			_mark_1_line = 0
+		elif _mark_1_line >= _lines :
+			_mark_1_line = _lines - 1
+		if _mark_1_column < 0 :
+			_mark_1_column = 0
 		
-		self._mark._line = _mark_line
-		self._mark._column = _mark_column
+		if _mark_2_line < 0 :
+			_mark_2_line = 0
+		elif _mark_2_line >= _lines :
+			_mark_2_line = _lines - 1
+		if _mark_2_column < 0 :
+			_mark_2_column = 0
+		
+		self._mark_1.set (_mark_1_line, _mark_1_column)
+		self._mark_2.set (_mark_2_line, _mark_2_column)
 	
 	def compute_real_column (self, _string, _column) :
 		_tab_columns = self._tab_columns
