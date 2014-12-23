@@ -80,12 +80,12 @@ class View :
 	
 	def refresh (self) :
 		
-		_cursor_line = self._cursor._line
-		_cursor_column = self._cursor._column
-		_head_line = self._head._line
-		_head_column = self._head._column
-		_tail_line = self._tail._line
-		_tail_column = self._tail._column
+		_cursor_line = self._cursor.get_line ()
+		_cursor_column = self._cursor.get_column ()
+		_head_line = self._head.get_line ()
+		_head_column = self._head.get_column ()
+		_tail_line = self._tail.get_line ()
+		_tail_column = self._tail.get_column ()
 		_max_lines = self._max_lines
 		_max_columns = self._max_columns
 		_lines = self.get_lines ()
@@ -145,12 +145,9 @@ class View :
 				_tail_column = _cursor_column + 10
 				_head_column = _tail_column - _max_columns + 1
 		
-		self._cursor._line = _cursor_line
-		self._cursor._column = _cursor_column
-		self._head._line = _head_line
-		self._head._column = _head_column
-		self._tail._line = _tail_line
-		self._tail._column = _tail_column
+		self._cursor.set (_cursor_line, _cursor_column)
+		self._head.set (_head_line, _head_column)
+		self._tail.set (_tail_line, _tail_column)
 #
 
 
@@ -177,4 +174,8 @@ class Mark :
 	
 	def increment_column (self, _increment) :
 		self._column += _increment
+	
+	def set (self, _line, _column) :
+		self._line = _line
+		self._column = _column
 #
