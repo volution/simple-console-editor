@@ -71,6 +71,7 @@ def sce (_arguments) :
 	
 	_error = _loop (_shell)
 	if _error is not None :
+		print _error[1]
 		try :
 			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
 			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
