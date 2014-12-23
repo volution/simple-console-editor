@@ -168,9 +168,11 @@ def yank_lines_command (_shell, _arguments) :
 
 
 def copy_lines_command (_shell, _arguments) :
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _copy_lines (_shell, _arguments) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -214,9 +216,11 @@ def _copy_lines (_shell, _arguments) :
 
 
 def delete_lines_command (_shell, _arguments) :
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _delete_lines (_shell, _arguments) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -262,11 +266,13 @@ def cut_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('cut-lines: wrong syntax: cut-lines')
 		return None
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _copy_lines (_shell, []) is None :
 		return None
 	if _delete_lines (_shell, []) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -357,6 +363,8 @@ def pipe_command (_shell, _arguments) :
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
 	_lines = []
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _view.is_mark_enabled () :
 		_mark_1 = _view.get_mark_1 ()
 		_mark_2 = _view.get_mark_2 ()
