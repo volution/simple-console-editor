@@ -90,10 +90,11 @@ def yank_lines_command (_shell, _arguments) :
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
 	_cursor_line = _cursor.get_line ()
+	_cursor_column = _cursor.get_column ()
 	if isinstance (_yank_buffer, list) :
 		_scroll.include_all_before (_cursor_line, _yank_buffer)
 	else :
-		_visual_column = _cursor.get_column ()
+		_visual_column = _cursor_column
 		_real_column = _view.select_real_column (_cursor_line, _visual_column)
 		_scroll.insert (_cursor_line, _real_column, _yank_buffer)
 		_cursor.set_column (_view.select_visual_column (_cursor_line, _real_column + len (_yank_buffer)))
@@ -117,7 +118,6 @@ def _copy_lines (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	if _view.is_mark_enabled () :
 		_mark = _view.get_mark ()
 		_mark_line = _mark.get_line ()
@@ -135,6 +135,7 @@ def _copy_lines (_shell, _arguments) :
 			for _line in xrange (_first_line, _last_line + 1) :
 				_yank_buffer.append (_scroll.select (_line))
 	else :
+		_cursor_line = _cursor.get_line ()
 		_yank_buffer = [_scroll.select (_cursor_line)]
 	return True
 
@@ -155,7 +156,6 @@ def _delete_lines (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	if _view.is_mark_enabled () :
 		_mark = _view.get_mark ()
 		_mark_line = _mark.get_line ()
@@ -173,6 +173,7 @@ def _delete_lines (_shell, _arguments) :
 				_scroll.exclude (_first_line)
 			_cursor.set_line (_first_line)
 	else :
+		_cursor_line = _cursor.get_line ()
 		_scroll.exclude (_cursor_line)
 	return True
 
@@ -275,7 +276,6 @@ def pipe_command (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	_lines = []
 	if _view.is_mark_enabled () :
 		_mark = _view.get_mark ()
@@ -408,8 +408,9 @@ def pipe_command (_shell, _arguments) :
 			_view.set_mark_enabled (False)
 		else :
 			_last_line = _first_line + len (_lines) - 1
-			_cursor.set_line (_first_line)
-			_mark.set_line (_last_line)
+			_cursor.set_line (_last_line, 0)
+			_mark_1.set (_first_line, 0)
+			_mark_2.set (_last_line, 0)
 	return True
 
 
