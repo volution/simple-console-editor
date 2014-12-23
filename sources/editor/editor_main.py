@@ -32,22 +32,17 @@ from editor_handler import *
 from editor_scroll import *
 
 
-def main (_arguments) :
-	
-	if not os.isatty (2) :
-		return False
+def main (_arguments, _terminal, _transcript) :
 	
 	_redirected_input = None
 	if not os.isatty (0) :
 		_redirected_input = os.dup (0)
-		os.dup2 (2, 0)
 	
 	_redirected_output = None
 	if not os.isatty (1) :
 		_redirected_output = os.dup (1)
-		os.dup2 (2, 1)
 	
-	_shell = _create ()
+	_shell = _initialize (_terminal)
 	if _shell is None :
 		return False
 	

@@ -32,43 +32,43 @@ from pager_handler import *
 from pager_scroll import *
 
 
-def main (_arguments) :
+def main (_arguments, _terminal, _transcript) :
 	
 	if len (_arguments) != 0 :
-		return False
-	
-	if not os.isatty (2) :
+		_transcript.error ('invalid arguments;  expected none;  aborting!')
 		return False
 	
 	_redirected_input = None
 	if not os.isatty (0) :
 		_redirected_input = os.dup (0)
-		os.dup2 (2, 0)
 	
 	_redirected_output = None
 	if not os.isatty (1) :
 		_redirected_output = os.dup (1)
-		os.dup2 (2, 1)
 	
-	_shell = _create ()
+	if _redirected_input is None :
+		_transcript.error ('invalid standard input;  expected a non-TTY;  aborting!')
+		return False
+	
+	if _redirected_output is None :
+		_transcript.error ('invalid standard output;  expected a non-TTY;  aborting!')
+		return False
+	
+	_shell = _initialize (_terminal)
 	if _shell is None :
 		return False
 	
 	_scroll = _shell.get_view () .get_scroll ()
-	
-	if _redirected_input is None :
-		return False
 	
 	if not load_fd_command (_shell, [], _redirected_input) :
 		return False
 	
 	_scroll.reset_touched ()
 	
-	_scroll.set_highlights ("^[ ]*([0-9]+)", "\\g<0>", "\\g<1>")
+	_scroll.set_highlights ('^[ ]*([0-9]+)', '\\g<0>', '\\g<1>')
 	
 	_error = _loop (_shell)
 	if _error is not None :
-		print _error[1]
 		return _error
 	
 	return None
