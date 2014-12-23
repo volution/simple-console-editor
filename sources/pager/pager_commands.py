@@ -11,7 +11,7 @@ from editor.editor_commands import \
 		jump_command, jump_set_command
 
 
-def output_highlight_data_command (_shell, _arguments) :
+def output_highlight_data_command (_shell, _arguments, _delegate) :
 	if len (_arguments) != 0 :
 		_shell.notify ('output-highlight: wrong syntax: output-highlight')
 		return None
@@ -24,8 +24,8 @@ def output_highlight_data_command (_shell, _arguments) :
 	if _highlight is None :
 		_shell.notify ('output-highlight: no match selected')
 		return None
-	_shell.notify ('%s', _highlight[3])
-	return True
+	return _delegate (_highlight[3])
+
 
 def next_highlight_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
@@ -56,4 +56,3 @@ def next_highlight_command (_shell, _arguments) :
 	else :
 		_shell.notify ('next-highlight: no match found')
 	return True
-

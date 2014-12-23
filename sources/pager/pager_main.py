@@ -54,7 +54,13 @@ def main (_arguments, _terminal, _transcript) :
 		_transcript.error ('invalid standard output;  expected a non-TTY;  aborting!')
 		return False
 	
-	_shell = _initialize (_terminal)
+	_output_selected = [None]
+	def _output (_selected) :
+		_output_selected[0] = _selected
+		_shell.loop_stop ()
+		return None
+	
+	_shell = _initialize (_terminal, _output)
 	if _shell is None :
 		return False
 	
@@ -65,13 +71,18 @@ def main (_arguments, _terminal, _transcript) :
 	
 	_scroll.reset_touched ()
 	
-	_scroll.set_highlights ('^[ ]*([0-9]+)', '\\g<0>', '\\g<1>')
+	#_scroll.set_highlights ('^[ ]*([0-9]+)', '\\g<0>', '\\g<1>')
+	_scroll.set_highlights ('^.*$', '\\g<0>', '\\g<0>')
 	
 	_error = _loop (_shell)
 	if _error is not None :
 		return _error
 	
-	return None
+	if _output_selected[0] is not None :
+		os.write (_redirected_output, _output_selected[0])
+		return True
+	else :
+		return False
 
 
 def _loop (_shell) :
@@ -92,7 +103,7 @@ def _loop (_shell) :
 	return None
 
 
-def _initialize (_terminal) :
+def _initialize (_terminal, _output_delegate) :
 	
 	_scroll = Scroll ()
 	
@@ -107,7 +118,7 @@ def _initialize (_terminal) :
 	
 	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
 	
-	_handler.register_special ('Enter', output_highlight_data_command)
+	_handler.register_special ('Enter', lambda _shell, _arguments : output_highlight_data_command (_shell, _arguments, _output_delegate))
 	_handler.register_special ('Tab', next_highlight_command)
 	
 	_handler.register_control ('@', mark_command)
