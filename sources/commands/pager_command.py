@@ -20,19 +20,14 @@
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-import os
-import sys
-
-sys.path.append (os.environ['SCE_SOURCES'])
-
-import pager
-
 if __name__ == '__main__' :
-	_error = pager.main (sys.argv[1 :])
-	if _error is not None :
-		print >> sys.stderr, '[ee]', 'failed!'
-		sys.exit (1)
-	else :
-		sys.exit (0)
+	
+	import sys, os
+	sys.path.append (os.environ['SCE_SOURCES'])
+	
+	import pager, commands
+	commands.main (pager.main)
+	raise Exception ('566b6ea5')
+	
 else :
-	raise Exception ()
+	raise Exception ('4f67e656')
