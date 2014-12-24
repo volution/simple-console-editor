@@ -50,6 +50,8 @@ def main (_arguments, _terminal, _transcript) :
 		_transcript.error ('invalid arguments;  expected: [<pattern> [<display-prefix> <display-anchor> <display-suffix> <output>]];  aborting!')
 		return False
 	
+	_filter_re = None
+	
 	_redirected_input = None
 	if not os.isatty (0) :
 		_redirected_input = os.dup (0)
@@ -83,6 +85,7 @@ def main (_arguments, _terminal, _transcript) :
 	
 	_scroll.reset_touched ()
 	
+	_scroll.set_filter (_filter_re)
 	_scroll.set_highlights (_highlight_re, _highlight_strings_sub, _highlight_data_sub)
 	
 	_error = _loop (_shell)
@@ -126,6 +129,8 @@ def _initialize (_terminal, _output_delegate) :
 	_handler.register_control ('X', quick_exit_command)
 	_handler.register_command ('exit', exit_command)
 	_handler.register_command ('quick-exit', quick_exit_command)
+	
+	_handler.register_command ('filter', filter_command)
 	
 	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
 	
