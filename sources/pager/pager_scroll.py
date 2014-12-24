@@ -27,6 +27,8 @@ class Scroll :
 	def __init__ (self) :
 		self._lines = None
 		self._touched = False
+		self._filter_re = None
+		self._filtered_lines = None
 		self._highlights_re = None
 		self._highlights_string_prefix_sub = None
 		self._highlights_string_anchor_sub = None
@@ -44,14 +46,20 @@ class Scroll :
 		self._touched = True
 	
 	def get_length (self) :
-		if self._lines == None :
-			return 0
-		return len (self._lines)
+		if self._lines is None :
+			_length = 0
+		elif self._filtered_lines is not None :
+			if self._filtered_lines is False :
+				self._filter_apply ()
+			_length = len (self._filtered_lines)
+		else :
+			_length = len (self._lines)
+		return _length
 	
 	def select (self, _index) :
-		if self._lines == None :
+		_string = self._select_line (_index)
+		if _string is None :
 			return u''
-		_string = self._lines[_index]
 		_cache_key = ('line_and_highlights', _index)
 		_line = None
 		if _cache_key in self._cache :
@@ -66,16 +74,28 @@ class Scroll :
 			self._cache[_cache_key] = _cache_value
 		return _line
 	
+	def _select_line (self, _index) :
+		if self._lines is None :
+			_string = None
+		elif self._filtered_lines is not None :
+			if self._filtered_lines is False :
+				self._filter_apply ()
+			_string = self._filtered_lines[_index]
+		else :
+			_string = self._lines[_index]
+		return _string
+	
 	def update (self, _index, _string) :
 		raise Exception ()
 	
 	def append (self, _string) :
 		self._touched = True
 		_string = self._coerce (_string)
-		if self._lines == None :
+		if self._lines is None :
 			self._lines = [_string]
 		else :
 			self._lines.append (_string)
+		self._filtered_lines = False
 	
 	def include_before (self, _index, _string) :
 		raise Exception ()
@@ -97,11 +117,12 @@ class Scroll :
 	
 	def append_all (self, _strings) :
 		self._touched = True
-		if self._lines == None :
+		if self._lines is None :
 			self._lines = []
 		for _string in _strings :
 			_string = self._coerce (_string)
 			self._lines.append (_string)
+		self._filtered_lines = False
 	
 	def split (self, _index, _column) :
 		raise Exception ()
@@ -115,10 +136,29 @@ class Scroll :
 	def delete (self, _index, _column, _length) :
 		raise Exception ()
 	
+	def set_filter (self, _re) :
+		if _re is None :
+			self._filter_re = None
+		else :
+			self._filter_re = re.compile (_re)
+		self._filtered_lines = False
+	
+	def _filter_apply (self) :
+		if self._filter_re is None :
+			self._filtered_lines = self._lines
+			return
+		_filter_re = self._filter_re
+		_filtered_lines = list ()
+		for _line in self._lines :
+			_match = _filter_re.search (_line)
+			if _match is not None :
+				_filtered_lines.append (_line)
+		self._filtered_lines = _filtered_lines
+	
 	def highlights (self, _index) :
-		if self._lines == None :
+		_string = self._select_line (_index)
+		if _string is None :
 			return []
-		_string = self._lines[_index]
 		_cache_key = ('line_and_highlights', _index)
 		_highlights = None
 		if _cache_key in self._cache :
