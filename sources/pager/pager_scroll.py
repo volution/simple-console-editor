@@ -28,6 +28,9 @@ class Scroll :
 		self._lines = None
 		self._touched = False
 		self._filter_re = None
+		self._filter_prefix_lines = 0
+		self._filter_suffix_lines = 0
+		self._filter_break = '~'
 		self._filtered_lines = None
 		self._highlights_re = None
 		self._highlights_string_prefix_sub = None
@@ -136,11 +139,21 @@ class Scroll :
 	def delete (self, _index, _column, _length) :
 		raise Exception ()
 	
-	def set_filter (self, _re) :
+	def set_filter (self, _re, _prefix_lines, _suffix_lines) :
 		if _re is None :
 			self._filter_re = None
 		else :
 			self._filter_re = re.compile (_re)
+		if _prefix_lines is None :
+			_prefix_lines = 0
+		elif _prefix_lines < 0 :
+			_prefix_lines = 0
+		if _suffix_lines is None :
+			_suffix_lines = 0
+		elif _suffix_lines < 0 :
+			_suffix_lines = 0
+		self._filter_prefix_lines = _prefix_lines
+		self._filter_suffix_lines = _suffix_lines
 		self._filtered_lines = False
 	
 	def _filter_apply (self) :
@@ -148,11 +161,50 @@ class Scroll :
 			self._filtered_lines = self._lines
 			return
 		_filter_re = self._filter_re
+		_filter_prefix = self._filter_prefix_lines or 0
+		_filter_suffix = self._filter_suffix_lines or 0
+		if _filter_prefix == 0 and _filter_suffix == 0 :
+			_filter_break = None
+		else :
+			_filter_break = self._filter_break
 		_filtered_lines = list ()
-		for _line in self._lines :
-			_match = _filter_re.search (_line)
+		_lines = self._lines
+		_line_max = len (_lines)
+		_line_mark = -1
+		_line_limit = -1
+		for _line_index in xrange (_line_max) :
+			_match = _filter_re.search (_lines[_line_index])
 			if _match is not None :
-				_filtered_lines.append (_line)
+				if _filter_break is not None and _line_mark < (_line_index - _filter_prefix - 1) :
+					_filtered_lines.append (None)
+				_index_perhaps_cut = True
+				for _index in xrange (_line_index - _filter_prefix, _line_index + _filter_suffix + 1) :
+					if _index <= _line_mark :
+						continue
+					elif _index >= _line_max :
+						break
+					if _index_perhaps_cut and _index < _line_index :
+						if _lines[_index] == '' and _index > _line_considered :
+							continue
+						_index_perhaps_cut = False
+					_filtered_lines.append (_lines[_index])
+					_line_mark = _index
+				_line_considered = _line_mark
+				while len (_filtered_lines) > 0 and _filtered_lines[-1] == '' :
+					del _filtered_lines[-1]
+					_line_mark -= 1
+		if _filter_break is not None and _line_considered < (_line_max - 1) :
+			_filtered_lines.append (None)
+		if _filter_break is not None :
+			_line_size = 1
+			for _line in _filtered_lines :
+				if _line is None :
+					continue
+				_line_size = max (_line_size, len (_line))
+			_filter_break = _filter_break * max (1, _line_size / len (_filter_break))
+			for _index in xrange (len (_filtered_lines)) :
+				if _filtered_lines[_index] is None :
+					_filtered_lines[_index] = _filter_break
 		self._filtered_lines = _filtered_lines
 	
 	def highlights (self, _index) :
