@@ -34,8 +34,20 @@ from pager_scroll import *
 
 def main (_arguments, _terminal, _transcript) :
 	
-	if len (_arguments) != 0 :
-		_transcript.error ('invalid arguments;  expected none;  aborting!')
+	if len (_arguments) == 0 :
+		_highlight_re = '^.*'
+		_highlight_string_sub = '\\g<0>'
+		_highlight_data_sub = '\\g<0>'
+	elif len (_arguments) == 1 :
+		_highlight_re = _arguments[0]
+		_highlight_string_sub = '\\g<0>'
+		_highlight_data_sub = '\\g<0>'
+	elif len (_arguments) == 3 :
+		_highlight_re = _arguments[0]
+		_highlight_string_sub = _arguments[1]
+		_highlight_data_sub = _arguments[2]
+	else :
+		_transcript.error ('invalid arguments;  expected: [<matcher> [<display-template> <output-template>]];  aborting!')
 		return False
 	
 	_redirected_input = None
@@ -71,8 +83,7 @@ def main (_arguments, _terminal, _transcript) :
 	
 	_scroll.reset_touched ()
 	
-	#_scroll.set_highlights ('^[ ]*([0-9]+)', '\\g<0>', '\\g<1>')
-	_scroll.set_highlights ('^.*$', '\\g<0>', '\\g<0>')
+	_scroll.set_highlights (_highlight_re, _highlight_string_sub, _highlight_data_sub)
 	
 	_error = _loop (_shell)
 	if _error is not None :
