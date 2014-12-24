@@ -28,7 +28,9 @@ class Scroll :
 		self._lines = None
 		self._touched = False
 		self._highlights_re = None
-		self._highlights_string_sub = None
+		self._highlights_string_prefix_sub = None
+		self._highlights_string_anchor_sub = None
+		self._highlights_string_suffix_sub = None
 		self._highlights_data_sub = None
 		self._cache = dict ()
 	
@@ -131,9 +133,11 @@ class Scroll :
 			self._cache[_cache_key] = _cache_value
 		return _highlights
 	
-	def set_highlights (self, _re, _string_sub, _data_sub) :
+	def set_highlights (self, _re, _strings_sub, _data_sub) :
 		self._highlights_re = re.compile (_re)
-		self._highlights_string_sub = _string_sub
+		self._highlights_string_prefix_sub = _strings_sub[0]
+		self._highlights_string_anchor_sub = _strings_sub[1]
+		self._highlights_string_suffix_sub = _strings_sub[2]
 		self._highlights_data_sub = _data_sub
 		self._flush ()
 	
@@ -146,33 +150,50 @@ class Scroll :
 	
 	def _compute_line_and_highlights (self, _line) :
 		_re = self._highlights_re
-		_string_sub = self._highlights_string_sub
+		_string_prefix_sub = self._highlights_string_prefix_sub
+		_string_anchor_sub = self._highlights_string_anchor_sub
+		_string_suffix_sub = self._highlights_string_suffix_sub
 		_data_sub = self._highlights_data_sub
 		if _re is None :
 			return (_line, [])
-		_matches = []
+		_highlights_1 = []
 		for _match in _re.finditer (_line) :
-			_highlight_string = _match.expand (_string_sub)
+			_highlight_string_prefix = _match.expand (_string_prefix_sub)
+			_highlight_string_anchor = _match.expand (_string_anchor_sub)
+			_highlight_string_suffix = _match.expand (_string_suffix_sub)
+			_highlight_strings = (_highlight_string_prefix, _highlight_string_anchor, _highlight_string_suffix)
 			_highlight_data = _match.expand (_data_sub)
-			_highlight = (_match.start (), _match.end (), _highlight_string, _highlight_data)
-			_matches.append (_highlight)
+			_highlight_range = (_match.start (), _match.end ())
+			_highlight = (_highlight_range, _highlight_strings, _highlight_data)
+			_highlights_1.append (_highlight)
 		_buffer = []
-		_last_end = 0
-		_new_len = 0
-		_highlights = []
-		for _highlight in _matches :
-			_buffer.append (_line[_last_end:_highlight[0]])
-			_new_len += _highlight[0] - _last_end
-			_new_highlight = (
-					_new_len, _new_len + len (_highlight[2]),
-					_highlight[2], _highlight[3])
-			_buffer.append (_highlight[2])
-			_new_len += len (_highlight[2])
-			_last_end = _highlight[1]
-			_highlights.append (_new_highlight)
-		_buffer.append (_line[_last_end:])
+		_input_marker = 0
+		_output_marker = 0
+		_highlight_marker = 0
+		_highlights_2 = []
+		for _highlight in _highlights_1 :
+			_highlight_range_begin = _highlight[0][0]
+			_highlight_range_end = _highlight[0][1]
+			_highlight_string_prefix = _highlight[1][0]
+			_highlight_string_anchor = _highlight[1][1]
+			_highlight_string_suffix = _highlight[1][2]
+			_highlight_data = _highlight[2]
+			_buffer.append (_line[_input_marker : _highlight_range_begin])
+			_output_marker += _highlight_range_begin - _input_marker
+			_input_marker += _highlight_range_end
+			_buffer.append (_highlight_string_prefix)
+			_buffer.append (_highlight_string_anchor)
+			_buffer.append (_highlight_string_suffix)
+			_highlight_anchor_begin = _output_marker + len (_highlight_string_prefix)
+			_highlight_anchor_end = _highlight_anchor_begin + len (_highlight_string_anchor)
+			_output_marker = _highlight_anchor_end + len (_highlight_string_suffix)
+			_highlight = (
+					_highlight_anchor_begin, _highlight_anchor_end,
+					_highlight_string_anchor, _highlight_data)
+			_highlights_2.append (_highlight)
+		_buffer.append (_line[_input_marker:])
 		_line = ''.join (_buffer)
-		return (_line, _highlights)
+		return (_line, _highlights_2)
 	
 	def _flush (self) :
 		self._cache = dict ()
