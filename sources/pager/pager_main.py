@@ -51,6 +51,7 @@ def main (_arguments, _terminal, _transcript) :
 		return False
 	
 	_filter_re = None
+	_filter_context = None
 	
 	_redirected_input = None
 	if not os.isatty (0) :
@@ -85,7 +86,7 @@ def main (_arguments, _terminal, _transcript) :
 	
 	_scroll.reset_touched ()
 	
-	_scroll.set_filter (_filter_re)
+	_scroll.set_filter (_filter_re, _filter_context, _filter_context)
 	_scroll.set_highlights (_highlight_re, _highlight_strings_sub, _highlight_data_sub)
 	
 	_error = _loop (_shell)

@@ -13,15 +13,20 @@ from editor.editor_commands import \
 
 def filter_command (_shell, _arguments) :
 	if len (_arguments) == 0 :
-		_filter = None
+		_filter_re = None
+		_filter_context = None
 	elif len (_arguments) == 1 :
-		_filter = _arguments[0]
+		_filter_re = _arguments[0]
+		_filter_context = None
+	elif len (_arguments) == 2 :
+		_filter_re = _arguments[0]
+		_filter_context = int (_arguments[1])
 	else :
-		_shell.notify ('filter: wrong syntax: filter <pattern> | filter')
+		_shell.notify ('filter: wrong syntax: filter <pattern> [<context>] | filter')
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
-	_scroll.set_filter (_filter)
+	_scroll.set_filter (_filter_re, _filter_context, _filter_context)
 	return None
 
 def output_highlight_data_command (_shell, _arguments, _delegate) :
