@@ -110,6 +110,8 @@ class Shell :
 		
 		self._window.scrollok (1)
 		self._window.keypad (0)
+		self._window.clear ()
+		self._window.refresh ()
 		
 		curses.echo ()
 		curses.nl ()
