@@ -11,6 +11,19 @@ from editor.editor_commands import \
 		jump_command, jump_set_command
 
 
+def filter_command (_shell, _arguments) :
+	if len (_arguments) == 0 :
+		_filter = None
+	elif len (_arguments) == 1 :
+		_filter = _arguments[0]
+	else :
+		_shell.notify ('filter: wrong syntax: filter <pattern> | filter')
+		return None
+	_view = _shell.get_view ()
+	_scroll = _view.get_scroll ()
+	_scroll.set_filter (_filter)
+	return None
+
 def output_highlight_data_command (_shell, _arguments, _delegate) :
 	if len (_arguments) != 0 :
 		_shell.notify ('output-highlight: wrong syntax: output-highlight')
