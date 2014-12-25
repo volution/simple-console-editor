@@ -22,14 +22,12 @@
 
 import core
 
-from sce_scroll import Scroll
-
 
 class View (core.View) :
 	
 	def __init__ (self) :
 		core.View.__init__ (self)
-		self._scroll = Scroll ()
+		self._scroll = None
 		self._mark_1 = core.Mark ()
 		self._mark_2 = core.Mark ()
 		self._mark_enabled = False
@@ -42,12 +40,19 @@ class View (core.View) :
 				self._limit_columns = _limit_columns
 		except :
 			pass
-		self._visual_cache = dict ()
+		self._cache = dict ()
 	
 	def get_scroll (self) :
 		return self._scroll
 	
+	def set_scroll (self, _scroll) :
+		self._scroll = _scroll
+		self._flush ()
+		self.refresh ()
+	
 	def get_lines (self) :
+		if self._scroll is None :
+			return 0
 		return self._scroll.get_length ()
 	
 	def get_mark_1 (self) :
@@ -63,30 +68,33 @@ class View (core.View) :
 		self._mark_enabled = _enabled
 	
 	def select_real_string (self, _line) :
+		if self._scroll is None :
+			return ''
 		return self._scroll.select (_line)
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
-		_real_string = self._scroll.select (_line)
+		_real_string = self.select_real_string (_line)
+		_highlights = self._scroll.highlights (_line)
 		_cache_key = ('visual_string', _line, _head_column, _tail_column)
 		_visual_string = None
-		if _cache_key in self._visual_cache :
-			_cache_value = self._visual_cache[_cache_key]
+		if _cache_key in self._cache :
+			_cache_value = self._cache[_cache_key]
 			_cache_real_string = _cache_value[0]
 			_cache_visual_string = _cache_value[1]
 			if _real_string == _cache_real_string :
 				_visual_string = _cache_visual_string
 		if _visual_string is None :
-			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column)
+			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column, _highlights)
 			_cache_value = (_real_string, _visual_string)
-			self._visual_cache[_cache_key] = _cache_value
+			self._cache[_cache_key] = _cache_value
 		return _visual_string
 	
 	def select_real_column (self, _line, _visual_column) :
-		_real_string = self._scroll.select (_line)
+		_real_string = self.select_real_string (_line)
 		_cache_key = ('real_column', _line, _visual_column)
 		_real_column = None
-		if _cache_key in self._visual_cache :
-			_cache_value = self._visual_cache[_cache_key]
+		if _cache_key in self._cache :
+			_cache_value = self._cache[_cache_key]
 			_cache_real_string = _cache_value[0]
 			_cache_real_column = _cache_value[1]
 			if _real_string == _cache_real_string :
@@ -94,15 +102,15 @@ class View (core.View) :
 		if _real_column is None :
 			_real_column = self.compute_real_column (_real_string, _visual_column)
 			_cache_value = (_real_string, _real_column)
-			self._visual_cache[_cache_key] = _cache_value
+			self._cache[_cache_key] = _cache_value
 		return _real_column
 	
 	def select_visual_column (self, _line, _real_column) :
-		_real_string = self._scroll.select (_line)
+		_real_string = self.select_real_string (_line)
 		_cache_key = ('visual_column', _line, _real_column)
 		_visual_column = None
-		if _cache_key in self._visual_cache :
-			_cache_value = self._visual_cache[_cache_key]
+		if _cache_key in self._cache :
+			_cache_value = self._cache[_cache_key]
 			_cache_real_string = _cache_value[0]
 			_cache_visual_column = _cache_value[1]
 			if _real_string == _cache_real_string :
@@ -110,18 +118,18 @@ class View (core.View) :
 		if _visual_column is None :
 			_visual_column = self.compute_visual_column (_real_string, _real_column)
 			_cache_value = (_real_string, _visual_column)
-			self._visual_cache[_cache_key] = _cache_value
+			self._cache[_cache_key] = _cache_value
 		return _visual_column
 	
 	def select_real_length (self, _line) :
-		return len (self._scroll.select (_line))
+		return len (self.select_real_string (_line))
 	
 	def select_visual_length (self, _line) :
-		_real_string = self._scroll.select (_line)
+		_real_string = self.select_real_string (_line)
 		_cache_key = ('visual_length', _line)
 		_visual_length = None
-		if _cache_key in self._visual_cache :
-			_cache_value = self._visual_cache[_cache_key]
+		if _cache_key in self._cache :
+			_cache_value = self._cache[_cache_key]
 			_cache_real_string = _cache_value[0]
 			_cache_visual_length = _cache_value[1]
 			if _real_string == _cache_real_string :
@@ -129,7 +137,7 @@ class View (core.View) :
 		if _visual_length is None :
 			_visual_length = self.compute_visual_length (_real_string)
 			_cache_value = (_real_string, _visual_length)
-			self._visual_cache[_cache_key] = _cache_value
+			self._cache[_cache_key] = _cache_value
 		return _visual_length
 	
 	def select_is_tagged (self, _line) :
@@ -224,9 +232,12 @@ class View (core.View) :
 				_length += 1
 		return _length
 	
-	def compute_visual_string (self, _string, _head_column, _tail_column) :
+	def compute_visual_string (self, _string, _head_column, _tail_column, _highlights) :
 		_limit_column = self._limit_columns
 		_tab_columns = self._tab_columns
+		_highlights_iterator = iter (_highlights)
+		_highlights_next = next (_highlights_iterator, None)
+		_highlights_active = False
 		_buffer = list ()
 		_length = self.compute_visual_length (_string)
 		_column = 0
@@ -251,6 +262,17 @@ class View (core.View) :
 				_last_mode = -3
 			_buffer.append (_l_code)
 		for _character in _string :
+			if _highlights_next is not None :
+				_highlights_active = False
+				while _highlights_next is not None :
+					if _column >= _highlights_next[1] :
+						_highlights_next = next (_highlights_iterator, None)
+						continue
+					if _column >= _highlights_next[0] :
+						_highlights_active = True
+					else :
+						_highlights_active = False
+					break
 			_code = ord (_character)
 			if _code == 9 :
 				_delta = (((_column / _tab_columns) + 1) * _tab_columns) - _column
@@ -269,7 +291,11 @@ class View (core.View) :
 				_column += _delta
 			else :
 				if (_column >= _head_column) and (_column <= _tail_column) :
-					if _column >= _limit_column :
+					if _highlights_active :
+						if _last_mode != -4 :
+							_buffer.append (-4)
+							_last_mode = -4
+					elif _column >= _limit_column :
 						if _last_mode != -3 :
 							_buffer.append (-3)
 							_last_mode = -3
@@ -319,4 +345,7 @@ class View (core.View) :
 			_coalesced_buffer.append (_coalesced_codes)
 			_coalesced_codes = list ()
 		return _coalesced_buffer
+	
+	def _flush (self) :
+		self._cache = dict ()
 #

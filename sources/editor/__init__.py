@@ -20,4 +20,4 @@
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from sce_main import main
+from editor_main import main

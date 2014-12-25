@@ -25,67 +25,79 @@ import os
 import sys
 import uuid
 
-from core import Shell
-from sce_commands import *
-from sce_handler import *
-from sce_view import *
+from core import *
+from common import *
+from pager_commands import *
+from pager_handler import *
+from pager_scroll import *
 
 
-def main (_arguments) :
+def main (_arguments, _terminal, _transcript) :
 	
-	if not os.isatty (2) :
+	if len (_arguments) == 0 :
+		_highlight_re = '^.*$'
+		_highlight_strings_sub = ('', '-- ', '\\g<0>')
+		_highlight_data_sub = '\\g<0>'
+	elif len (_arguments) == 1 :
+		_highlight_re = _arguments[0]
+		_highlight_strings_sub = ('', '\\g<0>', '')
+		_highlight_data_sub = '\\g<0>'
+	elif len (_arguments) == 5 :
+		_highlight_re = _arguments[0]
+		_highlight_strings_sub = (_arguments[1], _arguments[2], _arguments[3])
+		_highlight_data_sub = _arguments[4]
+	else :
+		_transcript.error ('invalid arguments;  expected: [<pattern> [<display-prefix> <display-anchor> <display-suffix> <output>]];  aborting!')
 		return False
+	
+	_filter_re = None
+	_filter_context = None
 	
 	_redirected_input = None
 	if not os.isatty (0) :
 		_redirected_input = os.dup (0)
-		os.dup2 (2, 0)
 	
 	_redirected_output = None
 	if not os.isatty (1) :
 		_redirected_output = os.dup (1)
-		os.dup2 (2, 1)
 	
-	_shell = _create ()
+	if _redirected_input is None :
+		_transcript.error ('invalid standard input;  expected a non-TTY;  aborting!')
+		return False
+	
+	if _redirected_output is None :
+		_transcript.error ('invalid standard output;  expected a non-TTY;  aborting!')
+		return False
+	
+	_output_selected = [None]
+	def _output (_selected) :
+		_output_selected[0] = _selected
+		_shell.loop_stop ()
+		return None
+	
+	_shell = _initialize (_terminal, _output)
 	if _shell is None :
 		return False
 	
-	if _redirected_input is None and _redirected_output is None :
-		if len (_arguments) > 0 :
-			_load = lambda : open_command (_shell, _arguments)
-		else :
-			_load = lambda : True
-		_store = lambda : True
-	else :
-		if _redirected_input is not None :
-			_load = lambda : load_fd_command (_shell, [], _redirected_input)
-		else :
-			_load = lambda : True
-		if _redirected_output is not None :
-			_store = lambda : store_fd_command (_shell, [], _redirected_output)
-		else :
-			_store = lambda : True
+	_scroll = _shell.get_view () .get_scroll ()
 	
-	if not _load () :
+	if not load_fd_command (_shell, [], _redirected_input) :
 		return False
+	
+	_scroll.reset_touched ()
+	
+	_scroll.set_filter (_filter_re, _filter_context, _filter_context)
+	_scroll.set_highlights (_highlight_re, _highlight_strings_sub, _highlight_data_sub)
 	
 	_error = _loop (_shell)
 	if _error is not None :
-		print _error[1]
-		try :
-			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
-			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
-			if not store_fd_command (_shell, [], _dump_stream) :
-				raise Exception ()
-			print >> sys.stderr, '[ee]', 'dumpped to %s' % (_dump_path,)
-		except :
-			print >> sys.stderr, '[ee]', 'dump failed!'
 		return _error
 	
-	if not _store () :
+	if _output_selected[0] is not None :
+		os.write (_redirected_output, _output_selected[0])
+		return True
+	else :
 		return False
-	
-	return None
 
 
 def _loop (_shell) :
@@ -106,9 +118,12 @@ def _loop (_shell) :
 	return None
 
 
-def _create () :
+def _initialize (_terminal, _output_delegate) :
+	
+	_scroll = Scroll ()
 	
 	_view = View ()
+	_view.set_scroll (_scroll)
 	
 	_handler = Handler ()
 	
@@ -116,7 +131,12 @@ def _create () :
 	_handler.register_command ('exit', exit_command)
 	_handler.register_command ('quick-exit', quick_exit_command)
 	
-	_handler.register_control ('R', _handler.handle_command)
+	_handler.register_command ('filter', filter_command)
+	
+	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
+	
+	_handler.register_special ('Enter', lambda _shell, _arguments : output_highlight_data_command (_shell, _arguments, _output_delegate))
+	_handler.register_special ('Tab', next_highlight_command)
 	
 	_handler.register_control ('@', mark_command)
 	_handler.register_control ('G', go_command)
@@ -126,33 +146,14 @@ def _create () :
 	_handler.register_command ('go', go_command)
 	_handler.register_command ('gl', go_line_command)
 	_handler.register_command ('gs', go_string_command)
-	_handler.register_command ('gr', go_regexp_command)
 	_handler.register_command ('jump', jump_command)
 	_handler.register_command ('js', jump_set_command)
 	
-	_handler.register_control ('Y', yank_lines_command)
-	_handler.register_control ('D', copy_lines_command)
-	_handler.register_control ('K', cut_lines_command)
-	_handler.register_command ('yank', yank_lines_command)
-	_handler.register_command ('copy', copy_lines_command)
-	_handler.register_command ('cut', cut_lines_command)
-	_handler.register_command ('delete', delete_lines_command)
-	
-	_handler.register_control ('N', replace_command)
-	_handler.register_command ('replace', replace_command)
-	
-	_handler.register_control ('S', save_command)
-	_handler.register_command ('clear', clear_command)
-	_handler.register_command ('open', open_command)
-	_handler.register_command ('save', save_command)
-	
-	_handler.register_command ('load', load_command)
 	_handler.register_command ('store', store_command)
-	_handler.register_command ('sys', sys_command)
-	_handler.register_command ('pipe', pipe_command)
 	
 	_shell = Shell ()
 	_shell.set_view (_view)
 	_shell.set_handler (_handler)
+	_shell.set_terminal (_terminal)
 	
 	return _shell

@@ -141,14 +141,14 @@ def clear_command (_shell, _arguments) :
 	return True
 
 
-_yank_path = "/tmp/sce.%d.yank" % (os.getuid (),)
+_yank_path = '/tmp/sce.%d.yank' % (os.getuid (),)
 _yank_buffer = None
 
 
 def yank_lines_command (_shell, _arguments) :
 	global _yank_buffer
 	if len (_arguments) != 0 :
-		_shell.notify ('yank-lines: wrong syntex: yank-lines')
+		_shell.notify ('yank-lines: wrong syntax: yank-lines')
 		return None
 	if _yank_buffer is None :
 		_shell.notify ('yank-lines: yank buffer is empty.')
@@ -402,7 +402,7 @@ def pipe_command (_shell, _arguments) :
 					try :
 						_data = self.stream.read ()
 						_do = False
-					except IOError, _error :
+					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
 							raise _error
 						time.sleep (0.01)
@@ -413,7 +413,7 @@ def pipe_command (_shell, _arguments) :
 					try :
 						_outcome = self.stream.write (_data)
 						_do = False
-					except IOError, _error :
+					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
 							raise _error
 						time.sleep (0.01)
@@ -479,7 +479,7 @@ def pipe_command (_shell, _arguments) :
 		while len (_done_threads) != 3 :
 			time.sleep (0.1)
 		_lines = _output_lines
-	except Exception, _error:
+	except Exception as _error:
 		_shell.notify ('pipe: input failed; aborting.' + str (_error))
 		return
 	except :
@@ -517,13 +517,17 @@ def _load_file_lines (_shell, _mode, _lines) :
 	elif _mode == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
 	elif _mode == 'a' :
-		_insert_line = _scroll.get_length ()
+		_insert_line = -1
 	else :
-		_insert_line = _scroll.get_length ()
-	_lines.reverse ()
-	for _line in _lines :
-		_line = _line.rstrip ('\r\n')
-		_scroll.include_before (_insert_line, _line)
+		_insert_line = -1
+	if _insert_line >= 0 :
+		for _line in reversed (_lines) :
+			_line = _line.rstrip ('\r\n')
+			_scroll.include_before (_insert_line, _line)
+	else :
+		for _line in _lines :
+			_line = _line.rstrip ('\r\n')
+			_scroll.append (_line)
 	return True
 
 
@@ -606,7 +610,7 @@ def save_command (_shell, _arguments) :
 	return True
 
 
-_fpos_path = "/tmp/sce.%d.fpos" % (os.getuid())
+_fpos_path = '/tmp/sce.%d.fpos' % (os.getuid())
 
 
 def fpos_get_command (_shell, _arguments) :

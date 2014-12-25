@@ -40,6 +40,7 @@ class Shell :
 		self._backspace_code = 127
 		self._delete_code = 330
 		self._opened = False
+		self._terminal = None
 	
 	def get_view (self) :
 		return self._view
@@ -53,12 +54,26 @@ class Shell :
 	def set_handler (self, _handler) :
 		self._handler = _handler
 	
+	def set_terminal (self, _terminal) :
+		self._terminal = _terminal
+	
 	def open (self) :
 		
-		if not os.isatty (0) or not os.isatty (1) or not os.isatty (2) :
+		_terminal_descriptor = self._terminal.fileno ()
+		if not os.isatty (_terminal_descriptor) :
 			return False
 		
+		# FIXME: These should not be needed, but it seems `setupterm` doesn't do all its job...
+		if _terminal_descriptor != 0 :
+			os.dup2 (_terminal_descriptor, 0)
+		if _terminal_descriptor != 1 :
+			os.dup2 (_terminal_descriptor, 1)
+		if _terminal_descriptor != 2 :
+			os.dup2 (_terminal_descriptor, 2)
+		
 		locale.setlocale (locale.LC_ALL, '')
+		
+		curses.setupterm (os.environ['TERM'], _terminal_descriptor)
 		
 		self._window = curses.initscr ()
 		
@@ -69,11 +84,13 @@ class Shell :
 		curses.init_pair (3, curses.COLOR_RED, -1)
 		curses.init_pair (4, curses.COLOR_MAGENTA, -1)
 		curses.init_pair (5, curses.COLOR_GREEN, -1)
+		curses.init_pair (6, curses.COLOR_YELLOW, -1)
 		self._color_text = curses.color_pair (1) | curses.A_NORMAL
 		self._color_markup = curses.color_pair (2) | curses.A_DIM
 		self._color_error = curses.color_pair (3) | curses.A_BOLD
 		self._color_message = curses.color_pair (4) | curses.A_NORMAL
 		self._color_input = curses.color_pair (5) | curses.A_NORMAL
+		self._color_highlight = curses.color_pair (6) | curses.A_NORMAL
 		
 		curses.noecho ()
 		curses.nonl ()
@@ -93,6 +110,8 @@ class Shell :
 		
 		self._window.scrollok (1)
 		self._window.keypad (0)
+		self._window.clear ()
+		self._window.refresh ()
 		
 		curses.echo ()
 		curses.nl ()
@@ -161,11 +180,12 @@ class Shell :
 		curses.beep ()
 	
 	def notify (self, _format, *_arguments) :
-		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), (_format % _arguments)))
+		_message = _format % _arguments
+		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), _message))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
 		if not self._opened :
-			print >> sys.stderr, '[..]', _format % _arguments
+			print >> self._terminal, '[..]', _message
 	
 	def loop (self) :
 		try :
@@ -174,10 +194,11 @@ class Shell :
 			while self._loop :
 				self._handler.handle_key (self, self.scan ())
 				self.refresh ()
-		except Exception, _error :
-			return (_error, traceback.format_exc ())
 		except :
-			return (None, '<<unknown system error>>')
+			_error = sys.exc_info ()
+			_traceback = traceback.format_exception (_error[0], _error[1], _error[2])
+			_error = (_error[1], _traceback)
+			return _error
 		return None
 	
 	def loop_stop (self) :
@@ -265,6 +286,7 @@ class Shell :
 		_color_markup = self._color_markup
 		_color_error = self._color_error
 		_color_message = self._color_message
+		_color_highlight = self._color_highlight
 		
 		_window.erase ()
 		
@@ -315,6 +337,8 @@ class Shell :
 						_window.attrset (_color_markup)
 					elif _code == -3 :
 						_window.attrset (_color_error)
+					elif _code == -4 :
+						_window.attrset (_color_highlight)
 					else :
 						_window.insstr (_i, _column, '?')
 						_column += 1

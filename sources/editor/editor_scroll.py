@@ -47,7 +47,7 @@ class Scroll :
 	
 	def update (self, _index, _string) :
 		self._touched = True
-		_string = self.coerce (_string)
+		_string = self._coerce (_string)
 		if self._lines == None :
 			self._lines = [_string]
 		else :
@@ -55,7 +55,7 @@ class Scroll :
 	
 	def append (self, _string) :
 		self._touched = True
-		_string = self.coerce (_string)
+		_string = self._coerce (_string)
 		if self._lines == None :
 			self._lines = [_string]
 		else :
@@ -63,7 +63,7 @@ class Scroll :
 	
 	def include_before (self, _index, _string) :
 		self._touched = True
-		_string = self.coerce (_string)
+		_string = self._coerce (_string)
 		if self._lines == None :
 			self._lines = [_string]
 		else :
@@ -71,7 +71,7 @@ class Scroll :
 	
 	def include_after (self, _index, _string) :
 		self._touched = True
-		_string = self.coerce (_string)
+		_string = self._coerce (_string)
 		if self._lines == None :
 			self._lines = [_string]
 		else :
@@ -94,7 +94,7 @@ class Scroll :
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
-			_string = self.coerce (_string)
+			_string = self._coerce (_string)
 			self._lines.insert (_index, _string)
 			_index += 1
 	
@@ -103,7 +103,7 @@ class Scroll :
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
-			_string = self.coerce (_string)
+			_string = self._coerce (_string)
 			self._lines.insert (_index + 1, _string)
 			_index += 1
 	
@@ -112,7 +112,7 @@ class Scroll :
 		if self._lines == None :
 			self._lines = []
 		for _string in _strings :
-			_string = self.coerce (_string)
+			_string = self._coerce (_string)
 			self._lines.append (_string)
 	
 	def split (self, _index, _column) :
@@ -138,7 +138,7 @@ class Scroll :
 	
 	def insert (self, _index, _column, _string) :
 		self._touched = True
-		_string = self.coerce (_string)
+		_string = self._coerce (_string)
 		if self._lines == None :
 			self._lines = [u'']
 		_line = self._lines[_index]
@@ -167,7 +167,13 @@ class Scroll :
 			_line = _line[: _column] + _line[_column + _length :]
 		self._lines[_index] = _line
 	
-	def coerce (self, _string) :
+	def highlights (self, _index) :
+		return []
+	
+	def highlight (self, _line, _column) :
+		return None
+	
+	def _coerce (self, _string) :
 		if isinstance (_string, unicode) :
 			pass
 		elif isinstance (_string, str) :
