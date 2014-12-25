@@ -131,7 +131,7 @@ class Scroll (common.Scroll) :
 						if _lines[_index] == '' and _index > _line_considered :
 							continue
 						_index_perhaps_cut = False
-					_filtered_lines.append ((_revision, _lines[_index]))
+					_filtered_lines.append ((_revision, _lines[_index][1]))
 					_line_mark = _index
 				_line_considered = _line_mark
 				while len (_filtered_lines) > 0 and _filtered_lines[-1][1] == '' :
