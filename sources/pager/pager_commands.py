@@ -44,6 +44,8 @@ def select_highlight_command (_shell, _arguments, _delegate) :
 		for _highlight in _scroll.highlights (_line) :
 			if _column >= _highlight[0] and _column <= _highlight[1] :
 				_found = True
+		if not _found :
+			_highlight = None
 	if _highlight is None :
 		_shell.notify ('output-highlight: no match selected')
 		return None
