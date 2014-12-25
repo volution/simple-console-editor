@@ -52,18 +52,84 @@ def quick_exit_command (_shell, _arguments) :
 
 
 def mark_command (_shell, _arguments) :
-	if len (_arguments) != 0 :
+	if len (_arguments) != 0 and (_arguments != ["s"]):
 		_shell.notify ('mark: wrong syntax: mark')
 		return None
 	_view = _shell.get_view ()
+	_cursor = _view.get_cursor ()
+	_cursor_line = _cursor.get_line ()
+	_cursor_column = _cursor.get_column ()
+	_mark_1 = _view.get_mark_1 ()
+	_mark_2 = _view.get_mark_2 ()
+	_stabilize = len (_arguments) != 0 and (_arguments == ["s"])
 	if _view.is_mark_enabled () :
-		_view.set_mark_enabled (False)
+		_mark_1_line = _mark_1.get_line ()
+		_mark_1_column = _mark_1.get_column ()
+		_mark_2_line = _mark_2.get_line ()
+		_mark_2_column = _mark_2.get_column ()
+		_mark_m_line = (_mark_1_line + _mark_2_line) / 2
+		_mark_m_column = (_mark_1_column + _mark_2_column) / 2
+		if _mark_1_line == _cursor_line and _mark_1_column == _cursor_column :
+			if not _stabilize :
+				_view.set_mark_enabled (False)
+		elif _mark_2_line == _cursor_line and _mark_2_column == _cursor_column :
+			if not _stabilize :
+				_view.set_mark_enabled (False)
+		elif _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			_mark_2.set (_cursor_line, _cursor_column)
+		elif _stabilize :
+			pass
+		elif _mark_1_line == _mark_2_line and _mark_1_line == _cursor_line :
+			if _cursor_column < _mark_1_column < _mark_2_column :
+				_mark_1.set_column (_cursor_column)
+			elif _cursor_column > _mark_1_column > _mark_2_column :
+				_mark_1.set_column (_cursor_column)
+			elif _cursor_column < _mark_2_column < _mark_1_column :
+				_mark_2.set_column (_cursor_column)
+			elif _cursor_column > _mark_2_column > _mark_1_column :
+				_mark_2.set_column (_cursor_column)
+			elif _cursor_column < _mark_m_column < _mark_2_column :
+				_mark_1.set_column (_cursor_column)
+			elif _cursor_column > _mark_m_column > _mark_1_column :
+				_mark_2.set_column (_cursor_column)
+			#elif _mark_1_column < _cursor_column < _mark_2_column :
+			#	_view.set_mark_enabled (False)
+			#elif _mark_2_column < _cursor_column < _mark_1_column :
+			#	_view.set_mark_enabled (False)
+			else :
+				raise Exception ("wtf!1")
+		elif _cursor_line < _mark_1_line < _mark_2_line :
+			_mark_1.set (_cursor_line, _cursor_column)
+		elif _cursor_line > _mark_1_line > _mark_2_line :
+			_mark_1.set (_cursor_line, _cursor_column)
+		elif _cursor_line < _mark_2_line < _mark_1_line :
+			_mark_2.set (_cursor_line, _cursor_column)
+		elif _cursor_line > _mark_2_line > _mark_1_line :
+			_mark_2.set (_cursor_line, _cursor_column)
+		elif _mark_1_line == _mark_2_line :
+			_mark_2.set (_cursor_line, _cursor_column)
+		elif _cursor_line == _mark_1_line :
+			_mark_1.set_column (_cursor_column)
+		elif _cursor_line == _mark_2_line :
+			_mark_2.set_column (_cursor_column)
+		elif _cursor_line < _mark_m_line < _mark_2_line :
+			_mark_1.set (_cursor_line, _cursor_column)
+		elif _cursor_line > _mark_m_line > _mark_2_line :
+			_mark_1.set (_cursor_line, _cursor_column)
+		elif _cursor_line < _mark_m_line < _mark_1_line :
+			_mark_2.set (_cursor_line, _cursor_column)
+		elif _cursor_line > _mark_m_line > _mark_1_line :
+			_mark_2.set (_cursor_line, _cursor_column)
+		#elif _mark_1_line < _cursor_line < _mark_2_line :
+		#	_view.set_mark_enabled (False)
+		#elif _mark_2_line < _cursor_line < _mark_1_line :
+		#	_view.set_mark_enabled (False)
+		else :
+			raise Exception ("wtf!2")
 	else :
-		_cursor = _view.get_cursor ()
-		_mark = _view.get_mark ()
 		_view.set_mark_enabled (True)
-		_mark.set_line (_cursor.get_line ())
-		_mark.set_column (_cursor.get_column ())
+		_mark_1.set (_cursor_line, _cursor_column)
+		_mark_2.set (_cursor_line, _cursor_column)
 	return True
 
 
@@ -91,10 +157,11 @@ def yank_lines_command (_shell, _arguments) :
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
 	_cursor_line = _cursor.get_line ()
+	_cursor_column = _cursor.get_column ()
 	if isinstance (_yank_buffer, list) :
 		_scroll.include_all_before (_cursor_line, _yank_buffer)
 	else :
-		_visual_column = _cursor.get_column ()
+		_visual_column = _cursor_column
 		_real_column = _view.select_real_column (_cursor_line, _visual_column)
 		_scroll.insert (_cursor_line, _real_column, _yank_buffer)
 		_cursor.set_column (_view.select_visual_column (_cursor_line, _real_column + len (_yank_buffer)))
@@ -102,9 +169,11 @@ def yank_lines_command (_shell, _arguments) :
 
 
 def copy_lines_command (_shell, _arguments) :
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _copy_lines (_shell, _arguments) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -118,32 +187,41 @@ def _copy_lines (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	if _view.is_mark_enabled () :
-		_mark = _view.get_mark ()
-		_mark_line = _mark.get_line ()
-		if _mark_line == _cursor_line :
-			_cursor_real_column = _view.select_real_column (_cursor_line, _cursor.get_column ())
-			_mark_real_column = _view.select_real_column (_cursor_line, _mark.get_column ())
-			_first_real_column = min (_mark_real_column, _cursor_real_column)
-			_last_real_column = max (_mark_real_column, _cursor_real_column)
-			_string = _scroll.select (_cursor_line)
+		_mark_1 = _view.get_mark_1 ()
+		_mark_2 = _view.get_mark_2 ()
+		_mark_1_line = _mark_1.get_line ()
+		_mark_1_column = _mark_1.get_column ()
+		_mark_2_line = _mark_2.get_line ()
+		_mark_2_column = _mark_2.get_column ()
+		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			_shell.notify ('copy-lines: non-marked')
+			return None
+		if _mark_1_line == _mark_2_line :
+			_mark_1_real_column = _view.select_real_column (_mark_1_line, _mark_1_column)
+			_mark_2_real_column = _view.select_real_column (_mark_2_line, _mark_2_column)
+			_first_real_column = min (_mark_1_real_column, _mark_2_real_column)
+			_last_real_column = max (_mark_1_real_column, _mark_2_real_column)
+			_string = _scroll.select (_mark_1_line)
 			_yank_buffer = _string[_first_real_column : _last_real_column]
 		else :
-			_first_line = min (_mark_line, _cursor_line)
-			_last_line = max (_mark_line, _cursor_line)
+			_first_line = min (_mark_1_line, _mark_2_line)
+			_last_line = max (_mark_1_line, _mark_2_line)
 			_yank_buffer = []
 			for _line in xrange (_first_line, _last_line + 1) :
 				_yank_buffer.append (_scroll.select (_line))
 	else :
+		_cursor_line = _cursor.get_line ()
 		_yank_buffer = [_scroll.select (_cursor_line)]
 	return True
 
 
 def delete_lines_command (_shell, _arguments) :
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _delete_lines (_shell, _arguments) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -156,24 +234,31 @@ def _delete_lines (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	if _view.is_mark_enabled () :
-		_mark = _view.get_mark ()
-		_mark_line = _mark.get_line ()
-		if _mark_line == _cursor_line :
-			_cursor_real_column = _view.select_real_column (_cursor_line, _cursor.get_column ())
-			_mark_real_column = _view.select_real_column (_cursor_line, _mark.get_column ())
-			_first_real_column = min (_mark_real_column, _cursor_real_column)
-			_last_real_column = max (_mark_real_column, _cursor_real_column)
-			_scroll.delete (_cursor_line, _first_real_column, _last_real_column - _first_real_column)
-			_cursor.set_column (_view.select_visual_column (_cursor_line, _first_real_column))
+		_mark_1 = _view.get_mark_1 ()
+		_mark_2 = _view.get_mark_2 ()
+		_mark_1_line = _mark_1.get_line ()
+		_mark_1_column = _mark_1.get_column ()
+		_mark_2_line = _mark_2.get_line ()
+		_mark_2_column = _mark_2.get_column ()
+		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			_shell.notify ('delete-lines: non-marked')
+			return None
+		if _mark_1_line == _mark_2_line :
+			_mark_1_real_column = _view.select_real_column (_mark_1_line, _mark_1_column)
+			_mark_2_real_column = _view.select_real_column (_mark_2_line, _mark_2_column)
+			_first_real_column = min (_mark_1_real_column, _mark_2_real_column)
+			_last_real_column = max (_mark_1_real_column, _mark_2_real_column)
+			_scroll.delete (_mark_1_line, _first_real_column, _last_real_column - _first_real_column)
+			_cursor.set_column (_view.select_visual_column (_mark_1_line, _first_real_column))
 		else :
-			_first_line = min (_mark_line, _cursor_line)
-			_last_line = max (_mark_line, _cursor_line)
+			_first_line = min (_mark_1_line, _mark_2_line)
+			_last_line = max (_mark_1_line, _mark_2_line)
 			for _line in xrange (_first_line, _last_line + 1) :
 				_scroll.exclude (_first_line)
 			_cursor.set_line (_first_line)
 	else :
+		_cursor_line = _cursor.get_line ()
 		_scroll.exclude (_cursor_line)
 	return True
 
@@ -182,11 +267,13 @@ def cut_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
 		_shell.notify ('cut-lines: wrong syntax: cut-lines')
 		return None
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
 	if _copy_lines (_shell, []) is None :
 		return None
 	if _delete_lines (_shell, []) is None :
 		return None
-	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
 		_view.set_mark_enabled (False)
 	return True
@@ -276,13 +363,19 @@ def pipe_command (_shell, _arguments) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
 	_lines = []
 	if _view.is_mark_enabled () :
-		_mark = _view.get_mark ()
-		_mark_line = _mark.get_line ()
-		_first_line = min (_mark_line, _cursor_line)
-		_last_line = max (_mark_line, _cursor_line)
+		mark_command (_shell, ["s"])
+	if _view.is_mark_enabled () :
+		_mark_1 = _view.get_mark_1 ()
+		_mark_2 = _view.get_mark_2 ()
+		_mark_1_line = _mark_1.get_line ()
+		_mark_2_line = _mark_2.get_line ()
+		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			_shell.notify ('pipe: non-marked')
+			return None
+		_first_line = min (_mark_1_line, _mark_2_line)
+		_last_line = max (_mark_1_line, _mark_2_line)
 	else :
 		_first_line = 0
 		_last_line = _scroll.get_length () - 1
@@ -409,8 +502,9 @@ def pipe_command (_shell, _arguments) :
 			_view.set_mark_enabled (False)
 		else :
 			_last_line = _first_line + len (_lines) - 1
-			_cursor.set_line (_first_line)
-			_mark.set_line (_last_line)
+			_cursor.set_line (_last_line, 0)
+			_mark_1.set (_first_line, 0)
+			_mark_2.set (_last_line, 0)
 	return True
 
 
