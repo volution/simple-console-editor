@@ -73,51 +73,51 @@ class View (core.View) :
 		return self._scroll.select (_line)
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
-		_real_string = self.select_real_string (_line)
+		_revision, _real_string = self._scroll.select_r (_line)
 		_highlights = self._scroll.highlights (_line)
 		_cache_key = ('visual_string', _line, _head_column, _tail_column)
 		_visual_string = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
-			_cache_real_string = _cache_value[0]
+			_cache_revision = _cache_value[0]
 			_cache_visual_string = _cache_value[1]
-			if _real_string == _cache_real_string :
+			if _revision == _cache_revision :
 				_visual_string = _cache_visual_string
 		if _visual_string is None :
 			_visual_string = self.compute_visual_string (_real_string, _head_column, _tail_column, _highlights)
-			_cache_value = (_real_string, _visual_string)
+			_cache_value = (_revision, _visual_string)
 			self._cache[_cache_key] = _cache_value
 		return _visual_string
 	
 	def select_real_column (self, _line, _visual_column) :
-		_real_string = self.select_real_string (_line)
+		_revision, _real_string = self._scroll.select_r (_line)
 		_cache_key = ('real_column', _line, _visual_column)
 		_real_column = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
-			_cache_real_string = _cache_value[0]
+			_cache_revision = _cache_value[0]
 			_cache_real_column = _cache_value[1]
-			if _real_string == _cache_real_string :
+			if _revision == _cache_revision :
 				_real_column = _cache_real_column
 		if _real_column is None :
 			_real_column = self.compute_real_column (_real_string, _visual_column)
-			_cache_value = (_real_string, _real_column)
+			_cache_value = (_revision, _real_column)
 			self._cache[_cache_key] = _cache_value
 		return _real_column
 	
 	def select_visual_column (self, _line, _real_column) :
-		_real_string = self.select_real_string (_line)
+		_revision, _real_string = self._scroll.select_r (_line)
 		_cache_key = ('visual_column', _line, _real_column)
 		_visual_column = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
-			_cache_real_string = _cache_value[0]
+			_cache_revision = _cache_value[0]
 			_cache_visual_column = _cache_value[1]
-			if _real_string == _cache_real_string :
+			if _revision == _cache_revision :
 				_visual_column = _cache_visual_column
 		if _visual_column is None :
 			_visual_column = self.compute_visual_column (_real_string, _real_column)
-			_cache_value = (_real_string, _visual_column)
+			_cache_value = (_revision, _visual_column)
 			self._cache[_cache_key] = _cache_value
 		return _visual_column
 	
@@ -125,18 +125,18 @@ class View (core.View) :
 		return len (self.select_real_string (_line))
 	
 	def select_visual_length (self, _line) :
-		_real_string = self.select_real_string (_line)
+		_revision, _real_string = self._scroll.select_r (_line)
 		_cache_key = ('visual_length', _line)
 		_visual_length = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
-			_cache_real_string = _cache_value[0]
+			_cache_revision = _cache_value[0]
 			_cache_visual_length = _cache_value[1]
-			if _real_string == _cache_real_string :
+			if _revision == _cache_revision :
 				_visual_length = _cache_visual_length
 		if _visual_length is None :
 			_visual_length = self.compute_visual_length (_real_string)
-			_cache_value = (_real_string, _visual_length)
+			_cache_value = (_revision, _visual_length)
 			self._cache[_cache_key] = _cache_value
 		return _visual_length
 	
