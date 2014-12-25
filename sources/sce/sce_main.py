@@ -71,6 +71,7 @@ def main (_arguments) :
 	
 	_error = _loop (_shell)
 	if _error is not None :
+		print _error[1]
 		try :
 			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
 			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
@@ -125,6 +126,7 @@ def _create () :
 	_handler.register_command ('go', go_command)
 	_handler.register_command ('gl', go_line_command)
 	_handler.register_command ('gs', go_string_command)
+	_handler.register_command ('gr', go_regexp_command)
 	_handler.register_command ('jump', jump_command)
 	_handler.register_command ('js', jump_set_command)
 	
