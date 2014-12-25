@@ -24,147 +24,155 @@ class Scroll :
 	
 	def __init__ (self) :
 		self._lines = None
-		self._touched = False
-	
-	def is_touched (self) :
-		return self._touched
-	
-	def reset_touched (self) :
-		self._touched = False
-	
-	def force_touched (self) :
-		self._touched = True
+		self._revision = 0
+		self._updated = 0
+		self._touched = 0
 	
 	def get_length (self) :
-		if self._lines == None :
+		if self._lines is None :
 			return 0
 		return len (self._lines)
 	
 	def select (self, _index) :
-		if self._lines == None :
-			return u''
+		return self.select_r (_index) [1]
+	
+	def select_r (self, _index) :
+		if self._lines is None :
+			return (0, u'')
 		return self._lines[_index]
 	
 	def update (self, _index, _string) :
-		self._touched = True
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
-		if self._lines == None :
-			self._lines = [_string]
+		_line = (_revision, _string)
+		if self._lines is None :
+			self._lines = [_line]
 		else :
-			self._lines[_index] = _string
+			self._lines[_index] = _line
 	
 	def append (self, _string) :
-		self._touched = True
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
-		if self._lines == None :
-			self._lines = [_string]
+		_line = (_revision, _string)
+		if self._lines is None :
+			self._lines = [_line]
 		else :
-			self._lines.append (_string)
+			self._lines.append (_line)
 	
 	def include_before (self, _index, _string) :
-		self._touched = True
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
-		if self._lines == None :
-			self._lines = [_string]
+		_line = (_revision, _string)
+		if self._lines is None :
+			self._lines = [_line]
 		else :
-			self._lines.insert (_index, _string)
+			self._lines.insert (_index, _line)
 	
 	def include_after (self, _index, _string) :
-		self._touched = True
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
-		if self._lines == None :
-			self._lines = [_string]
+		_line = (_revision, _string)
+		if self._lines is None :
+			self._lines = [_line]
 		else :
-			self._lines.insert (_index + 1, _string)
+			self._lines.insert (_index + 1, _line)
 	
 	def exclude (self, _index) :
-		self._touched = True
-		if self._lines == None :
+		_revision = self._updated_next ()
+		if self._lines is None :
 			return
 		del self._lines[_index]
 		if len (self._lines) == 0 :
 			self._lines = None
 	
 	def exclude_all (self) :
-		self._touched = True
+		_revision = self._updated_next ()
 		self._lines = None
 	
 	def include_all_before (self, _index, _strings) :
-		self._touched = True
-		if self._lines == None :
+		_revision = self._updated_next ()
+		if self._lines is None :
 			self._lines = []
 		for _string in _strings :
 			_string = self._coerce (_string)
-			self._lines.insert (_index, _string)
+			_line = (_revision, _string)
+			self._lines.insert (_index, _line)
 			_index += 1
 	
 	def include_all_after (self, _index, _strings) :
-		self._touched = True
-		if self._lines == None :
+		_revision = self._updated_next ()
+		if self._lines is None :
 			self._lines = []
 		for _string in _strings :
 			_string = self._coerce (_string)
-			self._lines.insert (_index + 1, _string)
+			_line = (_revision, _string)
+			self._lines.insert (_index + 1, _line)
 			_index += 1
 	
 	def append_all (self, _strings) :
-		self._touched = True
-		if self._lines == None :
+		_revision = self._updated_next ()
+		if self._lines is None :
 			self._lines = []
 		for _string in _strings :
 			_string = self._coerce (_string)
-			self._lines.append (_string)
+			_line = (_revision, _string)
+			self._lines.append (_line)
 	
 	def split (self, _index, _column) :
-		self._touched = True
-		if self._lines == None :
-			self._lines = [u'']
+		_revision = self._updated_next ()
+		if self._lines is None :
+			self._lines = [(0, u'')]
 		if (_column == 0) :
-			self._lines.insert (_index, u'')
+			self._lines.insert (_index, (0, u''))
 		else :
-			_line = self._lines[_index]
-			self._lines[_index] = _line[: _column]
-			self._lines.insert (_index + 1, _line[_column :])
+			_string = self._lines[_index][1]
+			_line_1 = (_revision, _string[: _column])
+			_line_2 = (_revision, _string[_column :])
+			self._lines[_index] = _line_1
+			self._lines.insert (_index + 1, _line_2)
 	
 	def unsplit (self, _index) :
-		self._touched = True
-		if self._lines == None :
+		_revision = self._updated_next ()
+		if self._lines is None :
 			return
-		_line_0 = self._lines[_index]
-		_line_1 = self._lines[_index + 1]
-		_line = _line_0 + _line_1
+		_line_1 = self._lines[_index]
+		_line_2 = self._lines[_index + 1]
+		_string = _line_1[1] + _line_2[1]
+		_line = (_revision, _string)
 		del self._lines[_index + 1]
 		self._lines[_index] = _line
 	
 	def insert (self, _index, _column, _string) :
-		self._touched = True
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
-		if self._lines == None :
-			self._lines = [u'']
-		_line = self._lines[_index]
+		if self._lines is None :
+			self._lines = [(0, u'')]
+		_line_string = self._lines[_index][1]
 		if (_column == 0) :
-			_line = _string + _line
-		elif (_column < len (_line)) :
-			_line = _line[: _column] + _string + _line[_column :]
-		elif (_column == len (_line)) :
-			_line = _line + _string
+			_line_string = _string + _line_string
+		elif (_column < len (_line_string)) :
+			_line_string = _line_string[: _column] + _string + _line_string[_column :]
+		elif (_column == len (_line_string)) :
+			_line_string = _line_string + _string
 		else :
-			_line = _line + (' ' * (_column - len (_line))) + _string
+			_line_string = _line_string + (' ' * (_column - len (_line_string))) + _string
+		_line = (_revision, _line_string)
 		self._lines[_index] = _line
 	
 	def delete (self, _index, _column, _length) :
-		self._touched = True
-		if self._lines == None :
-			self._lines = [u'']
-		_line = self._lines[_index]
-		if (_column > len (_line)) :
+		_revision = self._updated_next ()
+		if self._lines is None :
+			self._lines = [(0, u'')]
+		_line_string = self._lines[_index][1]
+		if (_column > len (_line_string)) :
 			pass
-		elif (_column + _length) >= len (_line) :
-			_line = _line[: _column]
+		elif (_column + _length) >= len (_line_string) :
+			_line_string = _line_string[: _column]
 		elif _column == 0 :
-			_line = _line[_length :]
+			_line_string = _line_string[_length :]
 		else :
-			_line = _line[: _column] + _line[_column + _length :]
+			_line_string = _line_string[: _column] + _line_string[_column + _length :]
+		_line = (_revision, _line_string)
 		self._lines[_index] = _line
 	
 	def highlights (self, _index) :
@@ -172,6 +180,25 @@ class Scroll :
 	
 	def highlight (self, _line, _column) :
 		return None
+	
+	def _revision_next (self) :
+		_revision = self._revision + 1
+		self._revision = _revision
+		return _revision
+	
+	def _updated_next (self) :
+		_revision = self._revision_next ()
+		self._updated = _revision
+		return _revision
+	
+	def is_touched (self) :
+		return self._touched < self._updated
+	
+	def reset_touched (self) :
+		self._touched = self._updated
+	
+	def force_touched (self) :
+		self._touched = 0
 	
 	def _coerce (self, _string) :
 		if isinstance (_string, unicode) :
