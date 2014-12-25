@@ -235,8 +235,11 @@ class View (core.View) :
 	def compute_visual_string (self, _string, _head_column, _tail_column, _highlights) :
 		_limit_column = self._limit_columns
 		_tab_columns = self._tab_columns
-		_highlights_iterator = iter (_highlights)
-		_highlights_next = next (_highlights_iterator, None)
+		if _highlights is not None :
+			_highlights_iterator = iter (_highlights)
+			_highlights_next = next (_highlights_iterator, None)
+		else :
+			_highlights_next = None
 		_highlights_active = False
 		_buffer = list ()
 		_length = self.compute_visual_length (_string)

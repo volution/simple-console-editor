@@ -20,105 +20,16 @@
 	along with this program. If not, see <http://www.gnu.org/licenses/>.
 '''
 
-class Scroll :
+import common
+
+class Scroll (common.Scroll) :
 	
 	def __init__ (self) :
-		self._lines = None
-		self._revision = 0
-		self._updated = 0
-		self._touched = 0
-	
-	def get_length (self) :
-		if self._lines is None :
-			return 0
-		return len (self._lines)
-	
-	def select (self, _index) :
-		return self.select_r (_index) [1]
-	
-	def select_r (self, _index) :
-		if self._lines is None :
-			return (0, u'')
-		return self._lines[_index]
-	
-	def update (self, _index, _string) :
-		_revision = self._updated_next ()
-		_string = self._coerce (_string)
-		_line = (_revision, _string)
-		if self._lines is None :
-			self._lines = [_line]
-		else :
-			self._lines[_index] = _line
-	
-	def append (self, _string) :
-		_revision = self._updated_next ()
-		_string = self._coerce (_string)
-		_line = (_revision, _string)
-		if self._lines is None :
-			self._lines = [_line]
-		else :
-			self._lines.append (_line)
-	
-	def include_before (self, _index, _string) :
-		_revision = self._updated_next ()
-		_string = self._coerce (_string)
-		_line = (_revision, _string)
-		if self._lines is None :
-			self._lines = [_line]
-		else :
-			self._lines.insert (_index, _line)
-	
-	def include_after (self, _index, _string) :
-		_revision = self._updated_next ()
-		_string = self._coerce (_string)
-		_line = (_revision, _string)
-		if self._lines is None :
-			self._lines = [_line]
-		else :
-			self._lines.insert (_index + 1, _line)
-	
-	def exclude (self, _index) :
-		_revision = self._updated_next ()
-		if self._lines is None :
-			return
-		del self._lines[_index]
-		if len (self._lines) == 0 :
-			self._lines = None
-	
-	def exclude_all (self) :
-		_revision = self._updated_next ()
-		self._lines = None
-	
-	def include_all_before (self, _index, _strings) :
-		_revision = self._updated_next ()
-		if self._lines is None :
-			self._lines = []
-		for _string in _strings :
-			_string = self._coerce (_string)
-			_line = (_revision, _string)
-			self._lines.insert (_index, _line)
-			_index += 1
-	
-	def include_all_after (self, _index, _strings) :
-		_revision = self._updated_next ()
-		if self._lines is None :
-			self._lines = []
-		for _string in _strings :
-			_string = self._coerce (_string)
-			_line = (_revision, _string)
-			self._lines.insert (_index + 1, _line)
-			_index += 1
-	
-	def append_all (self, _strings) :
-		_revision = self._updated_next ()
-		if self._lines is None :
-			self._lines = []
-		for _string in _strings :
-			_string = self._coerce (_string)
-			_line = (_revision, _string)
-			self._lines.append (_line)
+		common.Scroll.__init__ (self)
 	
 	def split (self, _index, _column) :
+		if self._sealed :
+			raise Exception ()
 		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = [(0, u'')]
@@ -132,9 +43,11 @@ class Scroll :
 			self._lines.insert (_index + 1, _line_2)
 	
 	def unsplit (self, _index) :
-		_revision = self._updated_next ()
+		if self._sealed :
+			raise Exception ()
 		if self._lines is None :
 			return
+		_revision = self._updated_next ()
 		_line_1 = self._lines[_index]
 		_line_2 = self._lines[_index + 1]
 		_string = _line_1[1] + _line_2[1]
@@ -143,10 +56,12 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def insert (self, _index, _column, _string) :
+		if self._sealed :
+			raise Exception ()
 		_revision = self._updated_next ()
-		_string = self._coerce (_string)
 		if self._lines is None :
 			self._lines = [(0, u'')]
+		_string = self._coerce (_string)
 		_line_string = self._lines[_index][1]
 		if (_column == 0) :
 			_line_string = _string + _line_string
@@ -160,6 +75,8 @@ class Scroll :
 		self._lines[_index] = _line
 	
 	def delete (self, _index, _column, _length) :
+		if self._sealed :
+			raise Exception ()
 		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = [(0, u'')]
@@ -174,38 +91,4 @@ class Scroll :
 			_line_string = _line_string[: _column] + _line_string[_column + _length :]
 		_line = (_revision, _line_string)
 		self._lines[_index] = _line
-	
-	def highlights (self, _index) :
-		return []
-	
-	def highlight (self, _line, _column) :
-		return None
-	
-	def _revision_next (self) :
-		_revision = self._revision + 1
-		self._revision = _revision
-		return _revision
-	
-	def _updated_next (self) :
-		_revision = self._revision_next ()
-		self._updated = _revision
-		return _revision
-	
-	def is_touched (self) :
-		return self._touched < self._updated
-	
-	def reset_touched (self) :
-		self._touched = self._updated
-	
-	def force_touched (self) :
-		self._touched = 0
-	
-	def _coerce (self, _string) :
-		if isinstance (_string, unicode) :
-			pass
-		elif isinstance (_string, str) :
-			_string = unicode (_string, 'utf-8', 'replace')
-		else :
-			_string = unicode (str (_string))
-		return _string
 #
