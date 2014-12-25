@@ -85,12 +85,14 @@ class Shell :
 		curses.init_pair (4, curses.COLOR_MAGENTA, -1)
 		curses.init_pair (5, curses.COLOR_GREEN, -1)
 		curses.init_pair (6, curses.COLOR_YELLOW, -1)
+		curses.init_pair (7, curses.COLOR_RED, -1)
 		self._color_text = curses.color_pair (1) | curses.A_NORMAL
 		self._color_markup = curses.color_pair (2) | curses.A_DIM
 		self._color_error = curses.color_pair (3) | curses.A_BOLD
 		self._color_message = curses.color_pair (4) | curses.A_NORMAL
 		self._color_input = curses.color_pair (5) | curses.A_NORMAL
-		self._color_highlight = curses.color_pair (6) | curses.A_NORMAL
+		self._color_highlight_1 = curses.color_pair (6) | curses.A_BOLD
+		self._color_highlight_2 = curses.color_pair (7) | curses.A_BOLD
 		
 		curses.noecho ()
 		curses.nonl ()
@@ -286,7 +288,8 @@ class Shell :
 		_color_markup = self._color_markup
 		_color_error = self._color_error
 		_color_message = self._color_message
-		_color_highlight = self._color_highlight
+		_color_highlight_1 = self._color_highlight_1
+		_color_highlight_2 = self._color_highlight_2
 		
 		_window.erase ()
 		
@@ -338,7 +341,9 @@ class Shell :
 					elif _code == -3 :
 						_window.attrset (_color_error)
 					elif _code == -4 :
-						_window.attrset (_color_highlight)
+						_window.attrset (_color_highlight_1)
+					elif _code == -5 :
+						_window.attrset (_color_highlight_2)
 					else :
 						_window.insstr (_i, _column, '?')
 						_column += 1

@@ -39,6 +39,8 @@ class Scroll (common.Scroll) :
 		self._highlights_string_anchor_sub = None
 		self._highlights_string_suffix_sub = None
 		self._highlights_data_sub = None
+		self._highlights_classifier = None
+		self._highlights_revision = 0
 		self._cache = dict ()
 	
 	def get_length (self) :
@@ -54,7 +56,7 @@ class Scroll (common.Scroll) :
 		_line = self._select_line (_index)
 		if _line is None :
 			return (0, u'')
-		_revision = _line[0]
+		_revision = max (_line[0], self._highlights_revision)
 		_string = _line[1]
 		_line = None
 		_cache_key = ('line_and_highlights', _index)
@@ -65,7 +67,7 @@ class Scroll (common.Scroll) :
 			if _revision == _cache_revision :
 				_line = (_cache_revision, _cache_string)
 		if _line is None :
-			_string, _highlights = self._compute_line_and_highlights (_string)
+			_string, _highlights = self._compute_line_and_highlights (_index, _string)
 			_cache_value = (_revision, _string, _highlights)
 			self._cache[_cache_key] = _cache_value
 			_line = (_revision, _string)
@@ -129,7 +131,7 @@ class Scroll (common.Scroll) :
 						if _lines[_index] == '' and _index > _line_considered :
 							continue
 						_index_perhaps_cut = False
-					_filtered_lines.append ((_revision, _lines[_index]))
+					_filtered_lines.append ((_revision, _lines[_index][1]))
 					_line_mark = _index
 				_line_considered = _line_mark
 				while len (_filtered_lines) > 0 and _filtered_lines[-1][1] == '' :
@@ -154,7 +156,7 @@ class Scroll (common.Scroll) :
 		_line = self._select_line (_index)
 		if _line is None :
 			return []
-		_revision = _line[0]
+		_revision = max (_line[0], self._highlights_revision)
 		_string = _line[1]
 		_highlights = None
 		_cache_key = ('line_and_highlights', _index)
@@ -165,24 +167,32 @@ class Scroll (common.Scroll) :
 			if _revision == _cache_revision :
 				_highlights = _cache_highlights
 		if _highlights is None :
-			_string, _highlights = self._compute_line_and_highlights (_string)
+			_string, _highlights = self._compute_line_and_highlights (_index, _string)
 			_cache_value = (_revision, _string, _highlights)
 			self._cache[_cache_key] = _cache_value
 		return _highlights
 	
 	def set_highlights (self, _re, _strings_sub, _data_sub) :
+		self._highlights_revision = self._revision_next ()
 		self._highlights_re = re.compile (_re)
 		self._highlights_string_prefix_sub = _strings_sub[0]
 		self._highlights_string_anchor_sub = _strings_sub[1]
 		self._highlights_string_suffix_sub = _strings_sub[2]
 		self._highlights_data_sub = _data_sub
-		self._flush ()
 	
-	def _compute_line_and_highlights (self, _line) :
+	def set_highlights_classifier (self, _classifier) :
+		self._highlights_revision = self._revision_next ()
+		self._highlights_classifier = _classifier
+	
+	def flush_highlights_classifier (self) :
+		self._highlights_revision = self._revision_next ()
+	
+	def _compute_line_and_highlights (self, _index, _line) :
 		_re = self._highlights_re
 		_string_prefix_sub = self._highlights_string_prefix_sub
 		_string_anchor_sub = self._highlights_string_anchor_sub
 		_string_suffix_sub = self._highlights_string_suffix_sub
+		_classifier = self._highlights_classifier
 		_data_sub = self._highlights_data_sub
 		if _re is None :
 			return (_line, [])
@@ -217,15 +227,16 @@ class Scroll (common.Scroll) :
 			_highlight_anchor_begin = _output_marker + len (_highlight_string_prefix)
 			_highlight_anchor_end = _highlight_anchor_begin + len (_highlight_string_anchor)
 			_output_marker = _highlight_anchor_end + len (_highlight_string_suffix)
+			if _classifier is not None :
+				_highlight_type = _classifier (_index, _highlight_anchor_begin, _highlight_anchor_end, _highlight_string_anchor, _highlight_data)
+			else :
+				_highlight_type = 1
 			_highlight = (
 					_highlight_anchor_begin, _highlight_anchor_end,
-					_highlight_string_anchor, _highlight_data)
+					_highlight_string_anchor, _highlight_data,
+					_highlight_type)
 			_highlights_2.append (_highlight)
 		_buffer.append (_line[_input_marker:])
 		_line = ''.join (_buffer)
 		return (_line, _highlights_2)
-	
-	def _flush (self) :
-		self._revision_next ()
-		self._cache = dict ()
 #

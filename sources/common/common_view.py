@@ -241,6 +241,7 @@ class View (core.View) :
 		else :
 			_highlights_next = None
 		_highlights_active = False
+		_highlights_type = None
 		_buffer = list ()
 		_length = self.compute_visual_length (_string)
 		_column = 0
@@ -267,14 +268,17 @@ class View (core.View) :
 		for _character in _string :
 			if _highlights_next is not None :
 				_highlights_active = False
+				_highlights_type = None
 				while _highlights_next is not None :
 					if _column >= _highlights_next[1] :
 						_highlights_next = next (_highlights_iterator, None)
 						continue
 					if _column >= _highlights_next[0] :
 						_highlights_active = True
+						_highlights_type = _highlights_next[4]
 					else :
 						_highlights_active = False
+						_highlights_type = None
 					break
 			_code = ord (_character)
 			if _code == 9 :
@@ -295,9 +299,16 @@ class View (core.View) :
 			else :
 				if (_column >= _head_column) and (_column <= _tail_column) :
 					if _highlights_active :
-						if _last_mode != -4 :
-							_buffer.append (-4)
-							_last_mode = -4
+						if _highlights_type == 1 :
+							if _last_mode != -4 :
+								_buffer.append (-4)
+								_last_mode = -4
+						elif _highlights_type == 2 :
+							if _last_mode != -5 :
+								_buffer.append (-5)
+								_last_mode = -5
+						else :
+							raise Exception ('44cdf198')
 					elif _column >= _limit_column :
 						if _last_mode != -3 :
 							_buffer.append (-3)

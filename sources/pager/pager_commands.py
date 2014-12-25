@@ -29,7 +29,7 @@ def filter_command (_shell, _arguments) :
 	_scroll.set_filter (_filter_re, _filter_context, _filter_context)
 	return None
 
-def output_highlight_data_command (_shell, _arguments, _delegate) :
+def select_highlight_command (_shell, _arguments, _delegate) :
 	if len (_arguments) != 0 :
 		_shell.notify ('output-highlight: wrong syntax: output-highlight')
 		return None
@@ -47,7 +47,7 @@ def output_highlight_data_command (_shell, _arguments, _delegate) :
 	if _highlight is None :
 		_shell.notify ('output-highlight: no match selected')
 		return None
-	return _delegate (_highlight[3])
+	return _delegate (_shell, _line, _highlight)
 
 
 def next_highlight_command (_shell, _arguments) :
