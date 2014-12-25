@@ -36,9 +36,14 @@ def output_highlight_data_command (_shell, _arguments, _delegate) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
-	_cursor_column = _cursor.get_column ()
-	_highlight = _scroll.highlight (_cursor_line, _cursor_column)
+	_line = _cursor.get_line ()
+	_column = _view.select_real_column (_line, _cursor.get_column ())
+	_highlights = _scroll.highlights (_line)
+	if _highlights is not None :
+		_found = False
+		for _highlight in _scroll.highlights (_line) :
+			if _column >= _highlight[0] and _column <= _highlight[1] :
+				_found = True
 	if _highlight is None :
 		_shell.notify ('output-highlight: no match selected')
 		return None
