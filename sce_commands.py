@@ -599,8 +599,10 @@ def go_command (_shell, _arguments) :
 		_shell.notify ('go: wrong syntax: go l|s|r <argument>')
 		return None
 	elif _arguments[0] == 'l' :
+		_target_line = _arguments[1]
 		try :
-			_target_line = int (_arguments[1]) - 1
+			_target_line = int (_target_line)
+			_target_line -= 1
 		except :
 			_shell.notify ('go: wrong line syntax; aborting.')
 			return None
