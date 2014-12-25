@@ -91,6 +91,8 @@ def mark_command (_shell, _arguments) :
 				_mark_1.set_column (_cursor_column)
 			elif _cursor_column > _mark_m_column > _mark_1_column :
 				_mark_2.set_column (_cursor_column)
+			elif _cursor_column == _mark_m_column :
+				pass
 			#elif _mark_1_column < _cursor_column < _mark_2_column :
 			#	_view.set_mark_enabled (False)
 			#elif _mark_2_column < _cursor_column < _mark_1_column :
@@ -119,6 +121,8 @@ def mark_command (_shell, _arguments) :
 			_mark_2.set (_cursor_line, _cursor_column)
 		elif _cursor_line > _mark_m_line > _mark_1_line :
 			_mark_2.set (_cursor_line, _cursor_column)
+		elif _cursor_line == _mark_m_line :
+			pass
 		#elif _mark_1_line < _cursor_line < _mark_2_line :
 		#	_view.set_mark_enabled (False)
 		#elif _mark_2_line < _cursor_line < _mark_1_line :
