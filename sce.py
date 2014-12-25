@@ -126,6 +126,7 @@ def _create () :
 	_handler.register_command ('go', go_command)
 	_handler.register_command ('gl', go_line_command)
 	_handler.register_command ('gs', go_string_command)
+	_handler.register_command ('gr', go_regexp_command)
 	_handler.register_command ('jump', jump_command)
 	_handler.register_command ('js', jump_set_command)
 	

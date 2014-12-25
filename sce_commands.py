@@ -692,6 +692,16 @@ def go_string_command (_shell, _arguments) :
 	return True
 
 
+def go_regexp_command (_shell, _arguments) :
+	if len (_arguments) != 1 :
+		_shell.notify ('go-regexp: wrong syntax: go-regexp <pattern>')
+		return None
+	_pattern = _arguments[0]
+	if go_command (_shell, ['r', _pattern]) is None :
+		return None
+	return True
+
+
 _replace_arguments = None
 
 
