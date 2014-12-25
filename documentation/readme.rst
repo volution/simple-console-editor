@@ -4,6 +4,8 @@
 SCE -- Simple Console Editor
 ############################
 
+.. contents::
+
 
 About
 =====

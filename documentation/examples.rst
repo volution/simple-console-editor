@@ -1,5 +1,26 @@
 
 
+SCE examples
+############
+
+.. contents::
+
+
+Editor examples
+===============
+
+Invocation syntax
+-----------------
+
+::
+
+	./scripts/editor <file>
+	./scripts/editor
+
+In the first variant the editor opens the specified file and allows the user to edit it.
+In the second variant it reads from the standard input (which should not be a TTY), allows the user to edit, and on exit it writes to the stardard output, allowing the editor to be used in a pipe without a having a temporary file.
+
+
 Pager examples
 ==============
 
@@ -19,6 +40,11 @@ The four arguments are:
 	* ``<anchor>`` a substitution template (``[\g<2>]`` in the next example) that will be highlighted anchor;
 	* ``<suffix>`` a substitution template (a space in the next example) that will be part of the normal text, right after the anchor;
 	* ``<data>`` a substitution template (``\g<2>`` in the next example) that constitutes the data to be outputed if the current anchor is selected;
+
+The input and output:
+
+	* the pager expects that the standard input and output are either a file or a pipe (in fact anything else than a TTY);
+	* the pager expects that the standard error is a terminal (i.e. a TTY);
 
 Notes:
 
