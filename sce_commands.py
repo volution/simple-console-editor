@@ -584,55 +584,73 @@ def _fpos_store (_shell, _dict) :
 	return True
 
 
-_go_arguments = None
+_go_matcher = None
 
 
 def go_command (_shell, _arguments) :
-	global _go_arguments
+	global _go_matcher
 	if len (_arguments) == 0 :
-		if _go_arguments is None :
+		if _go_matcher is None :
 			_shell.notify ('go: no previous go command; aborting.')
 			return None
-		_arguments = _go_arguments
-	if len (_arguments) != 2 :
+		_matcher = _go_matcher
+	elif len (_arguments) != 2 :
 		_shell.notify ('go: wrong syntax: go l|s <argument>')
 		return None
-	_mode = _arguments[0]
-	_argument = _arguments[1]
-	if _mode not in ['l', 's'] :
+	elif _arguments[0] == 'l' :
+		try :
+			_target_line = int (_arguments[1]) - 1
+		except :
+			_shell.notify ('go: wrong line syntax; aborting.')
+			return None
+		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
+				_go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line)
+	elif _arguments[0] == 's' :
+		_pattern = _arguments[1]
+		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
+				_go_match_string (_cursor_line, _cursor_column, _current_line, _string, _pattern)
+	else :
 		_shell.notify ('go: wrong mode (l|s); aborting.')
 		return None
+	_go_matcher = _matcher
+	return _go_search (_shell, _matcher)
+
+
+def _go_search (_shell, _matcher) :
 	_view = _shell.get_view ()
-	_lines = _view.get_lines ()
 	_cursor = _view.get_cursor ()
-	_go_arguments = _arguments
-	if _lines == 0 :
-		pass
-	elif _mode == 'l' :
-		try :
-			_line = int (_argument) - 1
-		except :
-			_shell.notify ('go: wrong line; aborting.')
-			return None
-		if _line > _lines :
-			_line = _lines - 1
-		_cursor.set_line (_line)
-		return True
-	elif _mode == 's' :
-		_line = _cursor.get_line ()
-		_string = _view.select_real_string (_line)
-		_column = _view.select_real_column (_line, _cursor.get_column ()) + 1
-		for _line in itertools.chain (xrange (_line, _lines), xrange (0, _line)) :
-			_column = _view.select_real_string (_line) .find (_argument, 0 if _column == -1 else _column)
-			if _column >= 0 :
-				break
-		if _column >= 0 :
-			_cursor.set_line (_line)
-			_cursor.set_column (_view.select_visual_column (_line, _column))
+	_cursor_line = _cursor.get_line ()
+	_cursor_column = _cursor.get_column ()
+	_lines = _view.get_lines ()
+	_cursor_line = _cursor.get_line ()
+	_cursor_column_0 = _cursor.get_column ()
+	for _current_line in itertools.chain (xrange (_cursor_line, _lines), xrange (0, _cursor_line)) :
+		_cursor_column = _view.select_real_column (_current_line, _cursor_column_0)
+		_current_string = _view.select_real_string (_current_line)
+		_matched_column = _matcher (_cursor_line, _cursor_column, _current_line, _current_string)
+		if _matched_column >= 0 and _matched_column < _lines :
+			_cursor.set (_current_line, _view.select_visual_column (_current_line, _matched_column))
+			return True
+		elif _matched_column == -1 :
+			pass
 		else :
-			_shell.notify ('gs: no match found')
-		return True
-	return None
+			raise Exception ("4b15d9af")
+	_shell.notify ('gs: no match found')
+	return False
+
+
+def _go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line) :
+	if _current_line == _target_line :
+		return _cursor_column
+	else :
+		return -1
+
+def _go_match_string (_cursor_line, _cursor_column, _current_line, _string, _pattern) :
+	if _cursor_line == _current_line :
+		_offset = _cursor_column + 1
+	else :
+		_offset = 0
+	return _string.find (_pattern, _offset)
 
 
 def go_line_command (_shell, _arguments) :
