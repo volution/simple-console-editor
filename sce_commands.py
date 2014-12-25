@@ -26,6 +26,7 @@ import fcntl
 import itertools
 import os
 import os.path
+import re
 import subprocess
 import sys
 import time
@@ -595,7 +596,7 @@ def go_command (_shell, _arguments) :
 			return None
 		_matcher = _go_matcher
 	elif len (_arguments) != 2 :
-		_shell.notify ('go: wrong syntax: go l|s <argument>')
+		_shell.notify ('go: wrong syntax: go l|s|r <argument>')
 		return None
 	elif _arguments[0] == 'l' :
 		try :
@@ -609,8 +610,16 @@ def go_command (_shell, _arguments) :
 		_pattern = _arguments[1]
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_string (_cursor_line, _cursor_column, _current_line, _string, _pattern)
+	elif _arguments[0] == 'r' :
+		_pattern = _arguments[1]
+		try :
+			_pattern = re.compile (_pattern)
+		except :
+			_shell.notify ('go: wrong pattern syntax; aborting.')
+		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
+				_go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pattern)
 	else :
-		_shell.notify ('go: wrong mode (l|s); aborting.')
+		_shell.notify ('go: wrong mode (l|s|r); aborting.')
 		return None
 	_go_matcher = _matcher
 	return _go_search (_shell, _matcher)
@@ -651,6 +660,16 @@ def _go_match_string (_cursor_line, _cursor_column, _current_line, _string, _pat
 	else :
 		_offset = 0
 	return _string.find (_pattern, _offset)
+
+def _go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pattern) :
+	if _cursor_line == _current_line :
+		_offset = _cursor_column + 1
+	else :
+		_offset = 0
+	_match = _pattern.search (_string, _offset)
+	if _match is not None :
+		return _match.start ()
+	return -1
 
 
 def go_line_command (_shell, _arguments) :
