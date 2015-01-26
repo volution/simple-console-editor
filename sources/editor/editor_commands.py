@@ -741,7 +741,7 @@ def _go_search (_shell, _matcher) :
 		_cursor_column = _view.select_real_column (_current_line, _cursor_column_0)
 		_current_string = _view.select_real_string (_current_line)
 		_matched_column = _matcher (_cursor_line, _cursor_column, _current_line, _current_string)
-		if _matched_column >= 0 and _matched_column < _lines :
+		if _matched_column >= 0 :
 			_cursor.set (_current_line, _view.select_visual_column (_current_line, _matched_column))
 			return True
 		elif _matched_column == -1 :
