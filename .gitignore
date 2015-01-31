@@ -1,2 +1,9 @@
+
+.*
+!.gitignore
+
 *.pyc
 *.pyo
+
+*#
+*~
