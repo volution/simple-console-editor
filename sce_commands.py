@@ -519,6 +519,33 @@ def pipe_command (_shell, _arguments) :
 	return True
 
 
+def paste_command (_shell, _arguments) :
+	_system_arguments = ["sce-paste"] + _arguments
+	_shell._curses_close ()
+	try :
+		_process = subprocess.Popen (
+				_system_arguments, shell = False, env = None,
+				stdin = None, stdout = subprocess.PIPE, stderr = None,
+				bufsize = 1, close_fds = True, universal_newlines = True)
+	except :
+		_shell._curses_open ()
+		_shell.notify ('paste: spawn failed; aborting.')
+		return None
+	try :
+		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+		_lines = _stream.readlines ()
+		_stream.close ()
+		_error = _process.wait ()
+	except :
+		_shell._curses_open ()
+		_shell.notify ('paste: input failed; aborting.')
+		return None
+	_shell._curses_open ()
+	if _error != 0 :
+		_shell.notify ('paste: command failed (non zero exit code); ignoring.')
+	return _load_file_lines (_shell, 'i', _lines)
+
+
 def _load_file_lines (_shell, _mode, _lines) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
