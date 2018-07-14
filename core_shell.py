@@ -60,6 +60,22 @@ class Shell :
 		
 		locale.setlocale (locale.LC_ALL, '')
 		
+		self._curses_open ()
+		
+		self._opened = True
+		
+		return None
+	
+	def close (self) :
+		
+		self._curses_close ()
+		
+		self._opened = False
+		
+		return None
+	
+	def _curses_open (self) :
+		
 		self._window = curses.initscr ()
 		
 		curses.start_color ()
@@ -85,11 +101,9 @@ class Shell :
 		self._window.keypad (1)
 		self._window.scrollok (0)
 		
-		self._opened = True
-		
 		return None
 	
-	def close (self) :
+	def _curses_close (self) :
 		
 		self._window.scrollok (1)
 		self._window.keypad (0)
@@ -105,8 +119,6 @@ class Shell :
 		del self._color_markup
 		del self._color_message
 		del self._color_input
-		
-		self._opened = False
 		
 		return None
 	
