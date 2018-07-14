@@ -157,6 +157,13 @@ def yank_lines_command (_shell, _arguments) :
 	if _yank_buffer is None :
 		_shell.notify ('yank-lines: yank buffer is empty.')
 		return None
+	return _yank_lines (_shell, _yank_buffer)
+
+
+def _yank_lines (_shell, _yank_buffer) :
+	if _yank_buffer is None :
+		_shell.notify ('yank-lines: yank buffer is empty.')
+		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
@@ -524,11 +531,18 @@ def _load_file_lines (_shell, _mode, _lines) :
 		_insert_line = _scroll.get_length ()
 	else :
 		_insert_line = _scroll.get_length ()
-	_lines.reverse ()
-	for _line in _lines :
-		_line = _line.rstrip ('\r\n')
-		_scroll.include_before (_insert_line, _line)
-	return True
+	if len (_lines) == 0 :
+		return True
+	elif len (_lines) == 1 :
+		_line = _lines[0]
+		_line_stripped = _line.rstrip ('\n\r')
+		if _line_stripped == _line :
+			return _yank_lines (_shell, _line)
+		else :
+			return _yank_lines (_shell, [_line_stripped])
+	else :
+		_lines = [_line.rstrip ('\r\n') for _line in _lines]
+		return _yank_lines (_shell, _lines)
 
 
 def store_command (_shell, _arguments) :
