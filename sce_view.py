@@ -34,7 +34,7 @@ class View (core.View) :
 		self._mark_2 = core.Mark ()
 		self._mark_enabled = False
 		self._tab_columns = 4
-		self._limit_columns = 128
+		self._limit_columns = 1024
 		try :
 			import os
 			_limit_columns = int (os.getenv ('SCE_LIMIT_COLUMNS'))
