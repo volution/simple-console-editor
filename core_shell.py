@@ -94,12 +94,17 @@ class Shell :
 		curses.noecho ()
 		curses.nonl ()
 		curses.raw ()
+		curses.meta (1)
 		
 		self._window.leaveok (0)
 		self._window.idcok (0)
 		self._window.idlok (0)
+		self._window.immedok (0)
 		self._window.keypad (1)
+		self._window.notimeout (0)
 		self._window.scrollok (0)
+		
+		curses.flushinp ()
 		
 		return None
 	
@@ -119,6 +124,8 @@ class Shell :
 		del self._color_markup
 		del self._color_message
 		del self._color_input
+		
+		curses.flushinp ()
 		
 		return None
 	
@@ -165,9 +172,6 @@ class Shell :
 		else :
 			_code = None
 		return _code
-	
-	def flush (self) :
-		curses.flushinp ()
 	
 	def alert (self) :
 		curses.beep ()
@@ -284,6 +288,7 @@ class Shell :
 		_color_error = self._color_error
 		_color_message = self._color_message
 		
+		_window.noutrefresh ()
 		_window.erase ()
 		
 		_max_lines = _window_lines
