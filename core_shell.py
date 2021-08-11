@@ -173,10 +173,16 @@ class Shell :
 		curses.beep ()
 	
 	def notify (self, _format, *_arguments) :
+		return self.notify_0 (_format, _arguments, False)
+	
+	def notify_no_tty (self, _format, *_arguments) :
+		return self.notify_0 (_format, _arguments, True)
+	
+	def notify_0 (self, _format, _arguments, _tty_skip) :
 		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), (_format % _arguments)))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
-		if not self._opened :
+		if not self._opened and not _tty_skip :
 			print >> sys.stderr, '[..]', _format % _arguments
 	
 	def loop (self) :

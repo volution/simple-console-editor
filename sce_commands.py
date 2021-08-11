@@ -629,7 +629,7 @@ def open_command (_shell, _arguments) :
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_get_command (_shell, [])
-	_shell.notify ('open: succeeded %s', _open_path)
+	_shell.notify_no_tty ('open: succeeded %s', _open_path)
 	return True
 
 
@@ -647,7 +647,7 @@ def save_command (_shell, _arguments) :
 		return None
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_set_command (_shell, [])
-	_shell.notify ('save: succeeded %s', _open_path)
+	_shell.notify_no_tty ('save: succeeded %s', _open_path)
 	return True
 
 
@@ -668,7 +668,8 @@ def fpos_get_command (_shell, _arguments) :
 		else :
 			_shell.notify ('fpos-get: line is not int; ignoring.')
 	else :
-		_shell.notify ('fpos-get: line is unknown; ignoring.')
+		# _shell.notify_no_tty ('fpos-get: line is unknown; ignoring.')
+		pass
 	return True
 
 def fpos_set_command (_shell, _arguments) :
