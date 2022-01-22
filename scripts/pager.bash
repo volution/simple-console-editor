@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -e -E -u -o pipefail -o noclobber -o noglob +o braceexpand || exit 1
-trap 'printf "[ee] failed: %s\n" "${BASH_COMMAND}" >&2' ERR || exit 1
+set -e -E -u -o pipefail -o noclobber -o noglob +o braceexpand || exit -- 1
+trap -- 'printf -- "[ee]  failed:  %s\\n" "${BASH_COMMAND}" >&2 ; exit -- 1' ERR || exit -- 1
 
 
 _root="$( readlink -e -- "$( dirname -- "$( readlink -e -- "${0}" )" )/.." )"
@@ -26,15 +26,17 @@ _python_environment=(
 )
 
 _python_exec=(
-	env -i "${_python_environment[@]}"
 	"${_scripts}/python" "${_python_arguments[@]}"
 )
 
 
+export -- "${_python_environment[@]}"
+
 if test "${#}" -eq 0 ; then
-	exec "${_python_exec[@]}" "${_sources}/commands/pager_command.py"
+	exec -- "${_python_exec[@]}" "${_sources}/commands/pager_command.py"
 else
-	exec "${_python_exec[@]}" "${_sources}/commands/pager_command.py" "${@}"
+	exec -- "${_python_exec[@]}" "${_sources}/commands/pager_command.py" "${@}"
 fi
 
-exit 1
+exit -- 1
+
