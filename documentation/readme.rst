@@ -1,5 +1,11 @@
 
 
+.. image:: ./documentation/logo.png
+
+
+--------
+
+
 ############################
 SCE -- Simple Console Editor
 ############################
@@ -27,3 +33,4 @@ Notice
 ======
 
 For details about the copyright and licensing, please consult the `notice <./documentation/licensing/notice.txt>`__ file in the ``documentation/licensing`` folder.  (In short the code is licensed under GPL 3 or later.)
+
