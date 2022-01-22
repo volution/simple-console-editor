@@ -75,6 +75,22 @@ class Shell :
 		
 		curses.setupterm (os.environ['TERM'], _terminal_descriptor)
 		
+		self._curses_open ()
+		
+		self._opened = True
+		
+		return None
+	
+	def close (self) :
+		
+		self._curses_close ()
+		
+		self._opened = False
+		
+		return None
+	
+	def _curses_open (self) :
+		
 		self._window = curses.initscr ()
 		
 		curses.start_color ()
@@ -87,7 +103,7 @@ class Shell :
 		curses.init_pair (6, curses.COLOR_YELLOW, -1)
 		curses.init_pair (7, curses.COLOR_RED, -1)
 		self._color_text = curses.color_pair (1) | curses.A_NORMAL
-		self._color_markup = curses.color_pair (2) | curses.A_DIM
+		self._color_markup = curses.color_pair (2) | curses.A_NORMAL
 		self._color_error = curses.color_pair (3) | curses.A_BOLD
 		self._color_message = curses.color_pair (4) | curses.A_NORMAL
 		self._color_input = curses.color_pair (5) | curses.A_NORMAL
@@ -97,18 +113,21 @@ class Shell :
 		curses.noecho ()
 		curses.nonl ()
 		curses.raw ()
+		curses.meta (1)
 		
 		self._window.leaveok (0)
 		self._window.idcok (0)
 		self._window.idlok (0)
+		self._window.immedok (0)
 		self._window.keypad (1)
+		self._window.notimeout (0)
 		self._window.scrollok (0)
 		
-		self._opened = True
+		curses.flushinp ()
 		
 		return None
 	
-	def close (self) :
+	def _curses_close (self) :
 		
 		self._window.scrollok (1)
 		self._window.keypad (0)
@@ -127,7 +146,7 @@ class Shell :
 		del self._color_message
 		del self._color_input
 		
-		self._opened = False
+		curses.flushinp ()
 		
 		return None
 	
@@ -175,19 +194,22 @@ class Shell :
 			_code = None
 		return _code
 	
-	def flush (self) :
-		curses.flushinp ()
-	
 	def alert (self) :
 		curses.beep ()
 	
 	def notify (self, _format, *_arguments) :
+		return self.notify_0 (_format, _arguments, False)
+	
+	def notify_no_tty (self, _format, *_arguments) :
+		return self.notify_0 (_format, _arguments, True)
+	
+	def notify_0 (self, _format, _arguments, _tty_skip) :
 		_message = _format % _arguments
 		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), _message))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
-		if not self._opened :
-			print >> self._terminal, '[..]', _message
+		if not self._opened and not _tty_skip :
+			print >> sys.stderr, '[..]', _format % _arguments
 	
 	def loop (self) :
 		try :
@@ -291,6 +313,7 @@ class Shell :
 		_color_highlight_1 = self._color_highlight_1
 		_color_highlight_2 = self._color_highlight_2
 		
+		_window.noutrefresh ()
 		_window.erase ()
 		
 		_max_lines = _window_lines

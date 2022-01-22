@@ -157,6 +157,13 @@ def yank_lines_command (_shell, _arguments) :
 	if _yank_buffer is None :
 		_shell.notify ('yank-lines: yank buffer is empty.')
 		return None
+	return _yank_lines (_shell, _yank_buffer)
+
+
+def _yank_lines (_shell, _yank_buffer) :
+	if _yank_buffer is None :
+		_shell.notify ('yank-lines: yank buffer is empty.')
+		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
@@ -512,6 +519,33 @@ def pipe_command (_shell, _arguments) :
 	return True
 
 
+def paste_command (_shell, _arguments) :
+	_system_arguments = ["sce-paste"] + _arguments
+#!	_shell._curses_close ()
+	try :
+		_process = subprocess.Popen (
+				_system_arguments, shell = False, env = None,
+				stdin = None, stdout = subprocess.PIPE, stderr = None,
+				bufsize = 1, close_fds = True, universal_newlines = True)
+	except :
+#!		_shell._curses_open ()
+		_shell.notify ('paste: spawn failed; aborting.')
+		return None
+	try :
+		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+		_lines = _stream.readlines ()
+		_stream.close ()
+		_error = _process.wait ()
+	except :
+#!		_shell._curses_open ()
+		_shell.notify ('paste: input failed; aborting.')
+		return None
+#!	_shell._curses_open ()
+	if _error != 0 :
+		_shell.notify ('paste: command failed (non zero exit code); ignoring.')
+	return _load_file_lines (_shell, 'i', _lines)
+
+
 def _load_file_lines (_shell, _mode, _lines) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -521,18 +555,21 @@ def _load_file_lines (_shell, _mode, _lines) :
 	elif _mode == 'i' :
 		_insert_line = _view.get_cursor () .get_line ()
 	elif _mode == 'a' :
-		_insert_line = -1
+		_insert_line = _scroll.get_length ()
 	else :
-		_insert_line = -1
-	if _insert_line >= 0 :
-		for _line in reversed (_lines) :
-			_line = _line.rstrip ('\r\n')
-			_scroll.include_before (_insert_line, _line)
+		_insert_line = _scroll.get_length ()
+	if len (_lines) == 0 :
+		return True
+	elif len (_lines) == 1 :
+		_line = _lines[0]
+		_line_stripped = _line.rstrip ('\n\r')
+		if _line_stripped == _line :
+			return _yank_lines (_shell, _line)
+		else :
+			return _yank_lines (_shell, [_line_stripped])
 	else :
-		for _line in _lines :
-			_line = _line.rstrip ('\r\n')
-			_scroll.append (_line)
-	return True
+		_lines = [_line.rstrip ('\r\n') for _line in _lines]
+		return _yank_lines (_shell, _lines)
 
 
 def store_command (_shell, _arguments) :
@@ -592,7 +629,7 @@ def open_command (_shell, _arguments) :
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_get_command (_shell, [])
-	_shell.notify ('open: succeeded %s', _open_path)
+	_shell.notify_no_tty ('open: succeeded %s', _open_path)
 	return True
 
 
@@ -610,7 +647,7 @@ def save_command (_shell, _arguments) :
 		return None
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_set_command (_shell, [])
-	_shell.notify ('save: succeeded %s', _open_path)
+	_shell.notify_no_tty ('save: succeeded %s', _open_path)
 	return True
 
 
@@ -631,7 +668,8 @@ def fpos_get_command (_shell, _arguments) :
 		else :
 			_shell.notify ('fpos-get: line is not int; ignoring.')
 	else :
-		_shell.notify ('fpos-get: line is unknown; ignoring.')
+		# _shell.notify_no_tty ('fpos-get: line is unknown; ignoring.')
+		pass
 	return True
 
 def fpos_set_command (_shell, _arguments) :

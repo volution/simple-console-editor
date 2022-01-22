@@ -145,6 +145,9 @@ def _initialize (_terminal) :
 	_handler.register_command ('open', open_command)
 	_handler.register_command ('save', save_command)
 	
+	_handler.register_control ('T', paste_command)
+	_handler.register_command ('paste', paste_command)
+	
 	_handler.register_command ('load', load_command)
 	_handler.register_command ('store', store_command)
 	_handler.register_command ('sys', sys_command)
