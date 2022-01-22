@@ -1,8 +1,10 @@
 
+
 if __name__ == '__main__' :
 	
 	import sys, os
-	sys.path.append (os.environ['SCE_SOURCES'])
+	if 'SCE_SOURCES' in os.environ :
+		sys.path.append (os.environ['SCE_SOURCES'])
 	
 	import editor, commands
 	commands.main (editor.main)

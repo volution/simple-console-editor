@@ -33,9 +33,9 @@ _python_exec=(
 export -- "${_python_environment[@]}"
 
 if test "${#}" -eq 0 ; then
-	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_command.py"
+	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_main.py"
 else
-	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_command.py" "${@}"
+	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_main.py" "${@}"
 fi
 
 exit -- 1

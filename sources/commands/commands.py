@@ -1,6 +1,6 @@
 
 if __name__ == '__main__' :
-	raise Exception ()
+	raise Exception ('70b091f2')
 
 
 import os
