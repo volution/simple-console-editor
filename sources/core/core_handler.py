@@ -31,21 +31,21 @@ class Handler :
 	def handle_key (self, _shell, _code) :
 		
 		if _code is None :
-			return self.handle_key_unknown (_shell, 'Code:[none]')
+			return self.handle_key_unknown (_shell, '[none]')
 		
 		elif isinstance (_code, basestring) :
 			if len (_code) == 1 :
 				return self.handle_key_character (_shell, _code)
 			else :
-				raise Exception ('a078bdfa', _code)
+				return self.handle_key_unknown (_shell, '[string][%s]', _code)
 		
 		elif not isinstance (_code, int) :
-			raise Exception ('9196652b', _code)
+			return self.handle_key_unknown (_shell, '[type][%s]', _code)
 		
 		elif _code < 0 :
-			raise Exception ('5cab08de', _code)
+			return self.handle_key_unknown (_shell, '[code][%d]' % (_code))
 		
-		elif _code == _shell._backspace_code or _code == 8 : # Backspace
+		elif (_code == _shell._backspace_code) or (_code == 8) : # Backspace
 			return self.handle_key_backspace (_shell)
 		elif _code == _shell._delete_code : # Delete
 			return self.handle_key_delete (_shell)
@@ -59,7 +59,7 @@ class Handler :
 		elif _code == 27 : # Escape
 			return self.handle_key_escape (_shell)
 		
-		elif _code >= 0 and _code < 32 :
+		elif (_code >= 0) and (_code < 32) :
 			return self.handle_key_control (_shell, _code)
 		
 		elif _code == curses.KEY_UP :
@@ -95,7 +95,7 @@ class Handler :
 			return self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
 		else :
-			return self.handle_key_unknown (_shell, _code)
+			return self.handle_key_unknown (_shell, '[code][%d]' % (_code))
 		
 		raise Exception ('ba0402d0')
 	
@@ -154,6 +154,6 @@ class Handler :
 		return self.handle_key_unknown (_shell, _key)
 	
 	def handle_key_unknown (self, _shell, _key) :
-		_shell.notify ('Unhandled key [%s]; ignoring.', _key)
+		_shell.notify ('Unhandled key `%s`; ignoring.', _key)
 		return False
 #
