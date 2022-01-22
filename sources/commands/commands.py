@@ -21,6 +21,12 @@ def main (_main) :
 	_transcript = Transcript (_transcript_stream)
 	
 	_arguments = sys.argv[1:]
+	if len (_arguments) == 1 :
+		if _arguments[0] == "-v" or _arguments[0] == "--version" :
+			import embedded
+			_embedded = embedded.Embedded ()
+			_embedded.write_version (sys.stdout)
+			sys.exit (0)
 	
 	try :
 		_error = _main (_arguments, _terminal_stream, _transcript)
