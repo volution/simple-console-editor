@@ -1,5 +1,4 @@
 
-
 import itertools
 
 
@@ -81,3 +80,4 @@ def next_highlight_command (_shell, _arguments) :
 	else :
 		_shell.notify ('next-highlight: no match found')
 	return True
+
