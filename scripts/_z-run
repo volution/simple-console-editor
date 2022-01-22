@@ -1,0 +1,297 @@
+#!/dev/null
+
+
+
+
+
+
+
+
+<< sources / run / editor
+	exec -- ./scripts/editor "${@}"
+!!
+
+<< sources / run / pager
+	exec -- ./scripts/pager "${@}"
+!!
+
+
+
+
+
+
+
+
+:: bundle / run / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' editor "${@}"
+:: bundle / run / pager :: exec -- "${ZRUN[@]}" ':: bundle / run / *' pager "${@}"
+
+:: bundle / build / editor :: exec -- "${ZRUN[@]}" ':: bundle / build / *' editor "${@}"
+:: bundle / build / pager :: exec -- "${ZRUN[@]}" ':: bundle / build / *' pager "${@}"
+
+
+--<< bundle / run / *
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
+	exec -- "./.outputs/${_main}--bundle.zip" "${@}"
+!!
+
+--<< bundle / build / *
+	
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	
+	test "${#}" -eq 0
+	test -d ./.outputs
+	test -f "./sources/commands/${_main}_main.py"
+	
+	"${ZRUN[@]}" ':: sources / embedded / hash'
+	
+	_bundle_sources="$( readlink -m -- "./.outputs/${_main}--bundle.sources" )"
+	_bundle_zip="$( readlink -m -- "./.outputs/${_main}--bundle.zip" )"
+	
+	if test -e "${_bundle_zip}" ; then
+		mv -T -- "${_bundle_zip}" "${_bundle_zip}.old"
+	fi
+	
+	if test ! -e "${_bundle_sources}" ; then
+		mkdir -- "${_bundle_sources}"
+	fi
+	
+	rsync \
+			-a \
+			--delete \
+			--exclude '/__main__.py' \
+			-- \
+			./sources/ \
+			"${_bundle_sources}/" \
+	#
+	
+	if test ! -e "${_bundle_sources}/__main__.py" ; then
+		ln -s -T -- \
+				"./commands/${_main}_main.py" \
+				"${_bundle_sources}/__main__.py" \
+		#
+	fi
+	
+	if test -e "${_bundle_zip}.tmp.1" ; then
+		rm -- "${_bundle_zip}.tmp.1"
+	fi
+	if test -e "${_bundle_zip}.tmp.2" ; then
+		rm -- "${_bundle_zip}.tmp.2"
+	fi
+	
+	_build_target=release
+	_build_number="$( exec -- cat -- ./sources/embedded/build/number.txt )"
+	_build_version="$( exec -- cat -- ./sources/embedded/build/version.txt )"
+	_build_timestamp="$( exec -- cat -- ./sources/embedded/build/timestamp.txt )"
+	_build_sources_hash="$( exec -- cat -- ./sources/embedded/build/sources.hash )"
+	_build_git_hash="$( exec -- cat -- ./.outputs/markers/build-git-hash.txt )"
+	
+	sed -r \
+			-e 's#@\{SCE_BUILD_TARGET}#'"${_build_target}"'#' \
+			-e 's#@\{SCE_BUILD_NUMBER}#'"${_build_number}"'#' \
+			-e 's#@\{SCE_BUILD_VERSION}#'"${_build_version}"'#' \
+			-e 's#@\{SCE_BUILD_TIMESTAMP}#'"${_build_timestamp}"'#' \
+			-e 's#@\{SCE_BUILD_SOURCES_HASH}#'"${_build_sources_hash}"'#' \
+			-e 's#@\{SCE_BUILD_GIT_HASH}#'"${_build_git_hash}"'#' \
+		< "${_bundle_sources}/embedded/embedded.py" \
+		> "${_bundle_sources}/embedded/embedded.py.tmp" \
+	#
+	
+	touch -c -r "${_bundle_sources}/embedded/embedded.py" -- "${_bundle_sources}/embedded/embedded.py.tmp"
+	mv -T -- "${_bundle_sources}/embedded/embedded.py.tmp" "${_bundle_sources}/embedded/embedded.py"
+	
+	execline-cd "${_bundle_sources}" \
+		find . -xtype f -print \
+	| LC_ALL=C sort \
+	| execline-cd "${_bundle_sources}" \
+		zip \
+			-0 \
+			-q \
+			-o \
+			-X \
+			"${_bundle_zip}.tmp.1" \
+			-@ \
+	#
+	
+	_python_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
+	
+	cat -- \
+			<( printf '#!/usr/bin/env -S python2 %s\n' "${_python_arguments[*]}" ) \
+			"${_bundle_zip}.tmp.1" \
+		> "${_bundle_zip}.tmp.2" \
+	#
+	
+	chmod +x -- "${_bundle_zip}.tmp.2"
+	
+	rm -- "${_bundle_zip}.tmp.1"
+	
+	mv -T -- "${_bundle_zip}.tmp.2" "${_bundle_zip}.new"
+	
+	if test ! -e "${_bundle_zip}.old" ; then
+		mv -T -- "${_bundle_zip}.new" "${_bundle_zip}"
+	elif ! cmp -s -- "${_bundle_zip}.new" "${_bundle_zip}.old" ; then
+		mv -T -- "${_bundle_zip}.new" "${_bundle_zip}"
+		rm -- "${_bundle_zip}.old"
+	else
+		mv -T -- "${_bundle_zip}.old" "${_bundle_zip}"
+		rm -- "${_bundle_zip}.new"
+	fi
+!!
+
+
+
+
+
+
+
+
+<< sources / embedded / hash
+	
+	test "${#}" -eq 0
+	
+	if test -e ./.git ; then
+		_git_hash="$( exec -- git rev-parse HEAD )"
+		if ! git diff --quiet || ! git diff --quiet --cached ; then
+			_git_hash+="-uncommitted"
+		fi
+	else
+		_git_hash='unknown'
+	fi
+	
+	execline-cd ./sources \
+	find . \
+			-type f \
+			-not -path './embedded/build/*' \
+			-printf '%P\0' \
+	| LC_ALL=C sort -z \
+		>| ./.outputs/markers/build-sources.list.tmp \
+	#
+	
+	execline-cd ./sources \
+	xargs -0 -I {} -- md5sum -b -z -- {} \
+		< ./.outputs/markers/build-sources.list.tmp \
+	| tr '\0' '\n' \
+		>| ./.outputs/markers/build-sources.md5.tmp \
+	#
+	
+	md5sum -b \
+		< ./.outputs/markers/build-sources.md5.tmp \
+	| cut -f 1 -d ' ' \
+		>| ./.outputs/markers/build-sources.hash.tmp \
+	#
+	
+	if ! cmp -s -- ./.outputs/markers/build-sources.hash.tmp ./sources/embedded/build/sources.hash ; then
+		
+		_build_number="$( exec -- cat -- ./sources/embedded/build/number.txt )"
+		_build_number="$(( _build_number + 1 ))"
+		_build_timestamp="$( exec -- date -- '+%Y-%m-%d-%H-%M-%S' )"
+		
+		printf -- '%d\n' "${_build_number}" >| ./sources/embedded/build/number.txt.tmp
+		printf -- '%s\n' "${_build_timestamp}" >| ./sources/embedded/build/timestamp.txt.tmp
+		
+		mv -T -- ./sources/embedded/build/number.txt.tmp ./sources/embedded/build/number.txt
+		mv -T -- ./sources/embedded/build/timestamp.txt.tmp ./sources/embedded/build/timestamp.txt
+		
+		mv -T -- ./.outputs/markers/build-sources.list.tmp ./.outputs/markers/build-sources.list
+		
+		mv -T -- ./.outputs/markers/build-sources.md5.tmp ./sources/embedded/build/sources.md5
+		mv -T -- ./.outputs/markers/build-sources.hash.tmp ./sources/embedded/build/sources.hash
+		
+	else
+		
+		rm -- ./.outputs/markers/build-sources.list.tmp
+		rm -- ./.outputs/markers/build-sources.md5.tmp
+		rm -- ./.outputs/markers/build-sources.hash.tmp
+	fi
+	
+	printf -- '%s\n' "${_git_hash}" >| ./.outputs/markers/build-git-hash.txt.tmp
+	mv -T -- ./.outputs/markers/build-git-hash.txt.tmp ./.outputs/markers/build-git-hash.txt
+!!
+
+
+
+
+
+
+
+
+<< workspace / initialize
+	
+	test "${#}" -eq 0
+	
+	"${ZRUN[@]}" ':: workspace / initialize / outputs'
+	"${ZRUN[@]}" ':: workspace / initialize / python'
+!!
+
+
+
+
+<< workspace / initialize / python
+	
+	test "${#}" -eq 0
+	
+	_outputs="$( exec -- readlink -e -- ./.outputs )"
+	_sources="$( exec -- readlink -e -- ./sources )"
+	
+	_markers="${_outputs}/markers"
+	
+	for _folder in  "${_markers}" ; do
+		if test ! -e "${_folder}" ; then
+			mkdir -- "${_folder}"
+		fi
+	done
+!!
+
+
+
+
+<< workspace / initialize / outputs
+	
+	test "${#}" -eq 0
+	
+	if test ! -d ./.outputs ; then
+		_outputs_store="${TMPDIR:-/tmp}/sce--${UID}--${RANDOM}-${RANDOM}-${RANDOM}-${RANDOM}"
+		mkdir -- "${_outputs_store}"
+		_outputs_store="$( exec -- readlink -e -- "${_outputs_store}" )"
+		ln -s -f -T -- "${_outputs_store}" ./.outputs
+	fi
+!!
+
+
+
+
+
+
+
+
+:: deploy / rsync / editor :: exec -- "${ZRUN[@]}" ':: deploy / rsync / *' editor "${@}"
+:: deploy / rsync / pager :: exec -- "${ZRUN[@]}" ':: deploy / rsync / *' pager "${@}"
+
+--<< deploy / rsync / *
+	test "${#}" -eq 2
+	_main="${1}"
+	_target="${2}"
+	shift -- 2
+	"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
+	_source="./.outputs/${_main}--bundle.zip"
+	printf -- '[ii]  deploying `%s` to `%s`...\n' "${_main}" "${_target}" >&2
+	exec -- rsync -i -t -p --chmod=0555 -- "${_source}" "${_target}"
+!!
+
+
+
+
+
+
+
+
+&&?? _/.local.z-run
+
