@@ -34,9 +34,9 @@ class Scroll :
 	def append (self, _string) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = list ()
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
 		_line = (_revision, _string)
 		self._lines.append (_line)
@@ -44,10 +44,10 @@ class Scroll :
 	def append_all (self, _strings) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
+			_revision = self._updated_next ()
 			_string = self._coerce (_string)
 			_line = (_revision, _string)
 			self._lines.append (_line)
@@ -65,10 +65,10 @@ class Scroll :
 	def include_all_before (self, _index, _strings) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
+			_revision = self._updated_next ()
 			_string = self._coerce (_string)
 			_line = (_revision, _string)
 			self._lines.insert (_index, _line)
@@ -87,10 +87,10 @@ class Scroll :
 	def include_all_after (self, _index, _strings) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
+			_revision = self._updated_next ()
 			_string = self._coerce (_string)
 			_line = (_revision, _string)
 			self._lines.insert (_index + 1, _line)
@@ -109,6 +109,8 @@ class Scroll :
 	def exclude_all (self) :
 		if self._sealed :
 			raise Exception ()
+		if self._lines is None :
+			return
 		_revision = self._updated_next ()
 		self._lines = None
 	

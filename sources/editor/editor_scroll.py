@@ -10,15 +10,16 @@ class Scroll (common.Scroll) :
 	def split (self, _index, _column) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = [(0, u'')]
-		if (_column == 0) :
+		if _column == 0 :
 			self._lines.insert (_index, (0, u''))
 		else :
+			_revision_1 = self._updated_next ()
+			_revision_2 = self._updated_next ()
 			_string = self._lines[_index][1]
-			_line_1 = (_revision, _string[: _column])
-			_line_2 = (_revision, _string[_column :])
+			_line_1 = (_revision_1, _string[: _column])
+			_line_2 = (_revision_2, _string[_column :])
 			self._lines[_index] = _line_1
 			self._lines.insert (_index + 1, _line_2)
 	
@@ -38,9 +39,9 @@ class Scroll (common.Scroll) :
 	def insert (self, _index, _column, _string) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = [(0, u'')]
+		_revision = self._updated_next ()
 		_string = self._coerce (_string)
 		_line_string = self._lines[_index][1]
 		if (_column == 0) :
@@ -57,18 +58,18 @@ class Scroll (common.Scroll) :
 	def delete (self, _index, _column, _length) :
 		if self._sealed :
 			raise Exception ()
-		_revision = self._updated_next ()
 		if self._lines is None :
 			self._lines = [(0, u'')]
 		_line_string = self._lines[_index][1]
 		if (_column > len (_line_string)) :
-			pass
+			return
 		elif (_column + _length) >= len (_line_string) :
 			_line_string = _line_string[: _column]
 		elif _column == 0 :
 			_line_string = _line_string[_length :]
 		else :
 			_line_string = _line_string[: _column] + _line_string[_column + _length :]
+		_revision = self._updated_next ()
 		_line = (_revision, _line_string)
 		self._lines[_index] = _line
 
