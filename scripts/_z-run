@@ -13,7 +13,7 @@
 
 --<< sources / run / *
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
-	test -f "./sources/${_main}_main.py"
+	test -f "./sources/${_main}_exec.py"
 	
 	_python_arguments=(
 			-u # unbuffered `stdin` and `stdout`
@@ -25,7 +25,7 @@
 			-R # hash randomization
 		)
 	
-	exec -- python2 "${_python_arguments[@]}" "./sources/${_main}_main.py" "${@}"
+	exec -- python2 "${_python_arguments[@]}" "./sources/${_main}_exec.py" "${@}"
 !!
 
 
@@ -57,7 +57,7 @@
 	
 	test "${#}" -eq 0
 	test -d ./.outputs
-	test -f "./sources/${_main}_main.py"
+	test -f "./sources/${_main}_exec.py"
 	
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
@@ -83,7 +83,7 @@
 	
 	if test ! -e "${_bundle_sources}/__main__.py" ; then
 		ln -s -T -- \
-				"./${_main}_main.py" \
+				"./${_main}_exec.py" \
 				"${_bundle_sources}/__main__.py" \
 		#
 	fi
