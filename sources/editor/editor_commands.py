@@ -434,7 +434,7 @@ def pipe_command (_shell, _arguments) :
 				_stream = NbStream (_stream)
 				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				_line = _stream.readline ()
-				while _line is not "" :
+				while _line != "" :
 					_output_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
@@ -452,7 +452,7 @@ def pipe_command (_shell, _arguments) :
 				_stream = NbStream (_stream)
 				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				_line = _stream.readline ()
-				while _line is not "" :
+				while _line != "" :
 					_error_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
