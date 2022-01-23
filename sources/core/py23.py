@@ -11,6 +11,7 @@ __all__ = [
 		"basestring_",
 		"unicode_",
 		"thread_",
+		"unichr_",
 	]
 
 
@@ -20,6 +21,7 @@ if sys.version_info.major == 2 :
 		xrange_ = xrange
 		basestring_ = basestring
 		unicode_ = unicode
+		unichr_ = unichr
 		
 		thread_ = __import__ ("thread")
 		
@@ -32,6 +34,7 @@ elif sys.version_info.major == 3 :
 		xrange_ = range
 		basestring_ = str
 		unicode_ = str
+		unichr_ = chr
 		
 		thread_ = __import__ ("_thread")
 		

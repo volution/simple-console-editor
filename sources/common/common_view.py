@@ -337,7 +337,7 @@ class View (core.View) :
 					_coalesced_codes = list ()
 				_coalesced_buffer.append (_code)
 			else :
-				_coalesced_codes.append (unichr (_code))
+				_coalesced_codes.append (unichr_ (_code))
 		if len (_coalesced_codes) > 0 :
 			_coalesced_codes = "".join (_coalesced_codes)
 			_coalesced_buffer.append (_coalesced_codes)

@@ -146,11 +146,11 @@ class Scroll (object) :
 		return _revision
 	
 	def _coerce (self, _string) :
-		if isinstance (_string, unicode) :
+		if isinstance (_string, unicode_) :
 			pass
 		elif isinstance (_string, str) :
-			_string = unicode (_string, "utf-8", "replace")
+			_string = unicode_ (_string, "utf-8", "replace")
 		else :
-			_string = unicode (str (_string))
+			_string = unicode_ (str (_string))
 		return _string
 

@@ -142,7 +142,7 @@ class Shell (object) :
 		elif (_code >= 0) and (_code < 32) :
 			pass
 		elif (_code >= 32) and (_code < 127) :
-			_code = unicode (chr (_code))
+			_code = unicode_ (chr (_code))
 		elif _code == 127 :
 			pass
 		elif (_code >= 128) and (_code < 192) :
@@ -245,7 +245,7 @@ class Shell (object) :
 			_code = self.scan ()
 			if _code is None :
 				curses.beep ()
-			elif isinstance (_code, basestring) :
+			elif isinstance (_code, basestring_) :
 				_buffer.append (_code)
 			elif not isinstance (_code, int) :
 				curses.beep ()
@@ -339,7 +339,7 @@ class Shell (object) :
 					_column += 1
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
 				for _code in _buffer :
-					if isinstance (_code, basestring) :
+					if isinstance (_code, basestring_) :
 						_window.insstr (i, _column, _code.encode ("utf-8"))
 						_column += len (_code)
 					elif _code == -1 :

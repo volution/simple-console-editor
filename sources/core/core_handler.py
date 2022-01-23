@@ -17,7 +17,7 @@ class Handler (object) :
 		if _code is None :
 			return self.handle_key_unknown (_shell, "[none]")
 		
-		elif isinstance (_code, basestring) :
+		elif isinstance (_code, basestring_) :
 			if len (_code) == 1 :
 				return self.handle_key_character (_shell, _code)
 			else :
