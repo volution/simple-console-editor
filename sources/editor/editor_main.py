@@ -51,7 +51,7 @@ def main (_arguments, _terminal, _transcript) :
 			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
 			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
 			if not store_fd_command (_shell, [], _dump_stream) :
-				raise Exception ()
+				raise Exception ("[ba4ff271]")
 			_transcript.error ("dumpped to scroll to `%s`...", _dump_path)
 		except :
 			_transcript.error ("dumping scroll failed!")

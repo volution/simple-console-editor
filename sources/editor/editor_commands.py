@@ -71,7 +71,7 @@ def mark_command (_shell, _arguments) :
 			#elif _mark_2_column < _cursor_column < _mark_1_column :
 			#	_view.set_mark_enabled (False)
 			else :
-				raise Exception ("wtf!1")
+				raise Exception ("[c3d363c0]")
 		elif _cursor_line < _mark_1_line < _mark_2_line :
 			_mark_1.set (_cursor_line, _cursor_column)
 		elif _cursor_line > _mark_1_line > _mark_2_line :
@@ -101,7 +101,7 @@ def mark_command (_shell, _arguments) :
 		#elif _mark_2_line < _cursor_line < _mark_1_line :
 		#	_view.set_mark_enabled (False)
 		else :
-			raise Exception ("wtf!2")
+			raise Exception ("[354659be]")
 	else :
 		_view.set_mark_enabled (True)
 		_mark_1.set (_cursor_line, _cursor_column)
@@ -387,7 +387,7 @@ def pipe_command (_shell, _arguments) :
 						_do = False
 					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
-							raise _error
+							raise Exception ("[63fb2777]", _error)
 						time.sleep (0.01)
 				return _data
 			def write (self, _data) :
@@ -398,7 +398,7 @@ def pipe_command (_shell, _arguments) :
 						_do = False
 					except IOError as _error :
 						if _error.errno != errno.EAGAIN :
-							raise _error
+							raise Exception ("[b13529ca]", _error)
 						time.sleep (0.01)
 				return _outcome
 		def _handle_stdin () :
@@ -757,7 +757,7 @@ def _go_search (_shell, _matcher) :
 		elif _matched_column == -1 :
 			pass
 		else :
-			raise Exception ("4b15d9af")
+			raise Exception ("[4b15d9af]")
 	_shell.notify ("gs: no match found")
 	return False
 

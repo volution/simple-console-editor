@@ -291,7 +291,7 @@ class View (core.View) :
 								_buffer.append (-5)
 								_last_mode = -5
 						else :
-							raise Exception ("44cdf198")
+							raise Exception ("[44cdf198]")
 					elif _column >= _limit_column :
 						if _last_mode != -3 :
 							_buffer.append (-3)

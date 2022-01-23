@@ -14,7 +14,7 @@ class Scroll (common.Scroll) :
 	
 	def split (self, _index, _column) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[fe5d770f]")
 		if self._lines is None :
 			self._lines = [(0, "")]
 		if _column == 0 :
@@ -30,7 +30,7 @@ class Scroll (common.Scroll) :
 	
 	def unsplit (self, _index) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[3177f7b2]")
 		if self._lines is None :
 			return
 		_revision = self._updated_next ()
@@ -43,7 +43,7 @@ class Scroll (common.Scroll) :
 	
 	def insert (self, _index, _column, _string) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[9f4e8ab5]")
 		if self._lines is None :
 			self._lines = [(0, "")]
 		_revision = self._updated_next ()
@@ -62,7 +62,7 @@ class Scroll (common.Scroll) :
 	
 	def delete (self, _index, _column, _length) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[5a90f1fe]")
 		if self._lines is None :
 			self._lines = [(0, "")]
 		_line_string = self._lines[_index][1]

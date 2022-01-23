@@ -29,7 +29,7 @@ class Scroll (object) :
 	
 	def update (self, _index, _string) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[60772cd2]")
 		if self._lines is None :
 			return self.append (_string)
 		_revision = self._updated_next ()
@@ -39,7 +39,7 @@ class Scroll (object) :
 	
 	def append (self, _string) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[fcff0164]")
 		if self._lines is None :
 			self._lines = list ()
 		_revision = self._updated_next ()
@@ -49,7 +49,7 @@ class Scroll (object) :
 	
 	def append_all (self, _strings) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[5eed1f90]")
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
@@ -60,7 +60,7 @@ class Scroll (object) :
 	
 	def include_before (self, _index, _string) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[b1715548]")
 		if self._lines is None :
 			return self.append (_string)
 		_revision = self._updated_next ()
@@ -70,7 +70,7 @@ class Scroll (object) :
 	
 	def include_all_before (self, _index, _strings) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[169106a8]")
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
@@ -82,7 +82,7 @@ class Scroll (object) :
 	
 	def include_after (self, _index, _string) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[1b0f2dd9]")
 		if self._lines is None :
 			return self.append (_string)
 		_revision = self._updated_next ()
@@ -92,7 +92,7 @@ class Scroll (object) :
 	
 	def include_all_after (self, _index, _strings) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[2cc96b08]")
 		if self._lines is None :
 			self._lines = list ()
 		for _string in _strings :
@@ -104,7 +104,7 @@ class Scroll (object) :
 	
 	def exclude (self, _index) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[34b17317]")
 		if self._lines is None :
 			return
 		_revision = self._updated_next ()
@@ -114,7 +114,7 @@ class Scroll (object) :
 	
 	def exclude_all (self) :
 		if self._sealed :
-			raise Exception ()
+			raise Exception ("[3a8a79df]")
 		if self._lines is None :
 			return
 		_revision = self._updated_next ()

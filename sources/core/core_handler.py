@@ -79,7 +79,7 @@ class Handler (object) :
 		else :
 			return self.handle_key_unknown (_shell, "[code][%d]" % (_code))
 		
-		raise Exception ("ba0402d0")
+		raise Exception ("[ba0402d0]")
 	
 	def handle_key_backspace (self, _shell) :
 		return self.handle_key_special (_shell, "Backspace")

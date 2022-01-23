@@ -46,9 +46,9 @@ def main (_main) :
 		_transcript_stream.write ("[--]  ----------------------------------------\n")
 		sys.exit (1)
 	else :
-		raise Exception ("86d46dd2", _error)
+		raise Exception ("[86d46dd2]", _error)
 	
-	raise Exception ("019db0ea")
+	raise Exception ("[019db0ea]")
 
 
 class Transcript (object) :
