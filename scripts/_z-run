@@ -44,7 +44,7 @@
 	
 	test "${#}" -eq 0
 	test -d ./.outputs
-	test -f "./sources/commands/${_main}_main.py"
+	test -f "./sources/${_main}_main.py"
 	
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
@@ -70,7 +70,7 @@
 	
 	if test ! -e "${_bundle_sources}/__main__.py" ; then
 		ln -s -T -- \
-				"./commands/${_main}_main.py" \
+				"./${_main}_main.py" \
 				"${_bundle_sources}/__main__.py" \
 		#
 	fi

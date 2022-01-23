@@ -20,22 +20,21 @@ _python_arguments=(
 )
 
 _python_environment=(
-		SCE_SOURCES="${_sources}"
 		TERM="${TERM}"
 		TMPDIR="${TMPDIR:-/tmp}"
 )
 
 _python_exec=(
-	"${_scripts}/python" "${_python_arguments[@]}"
+	"${_scripts}/python2" "${_python_arguments[@]}"
 )
 
 
 export -- "${_python_environment[@]}"
 
 if test "${#}" -eq 0 ; then
-	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_main.py"
+	exec -- "${_python_exec[@]}" "${_sources}/editor_main.py"
 else
-	exec -- "${_python_exec[@]}" "${_sources}/commands/editor_main.py" "${@}"
+	exec -- "${_python_exec[@]}" "${_sources}/editor_main.py" "${@}"
 fi
 
 exit -- 1
