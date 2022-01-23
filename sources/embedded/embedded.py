@@ -2,10 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
-from core.py23 import *
-
-import os
-import sys
+from py23 import *
 
 
 class Embedded (object) :
@@ -57,7 +54,6 @@ class Embedded (object) :
 	def uname_fingerprint (self) :
 		if self._uname_fingerprint is not None :
 			return self._uname_fingerprint
-		import hashlib
 		_hasher = hashlib.sha256 ()
 		_chunks = [
 				"98ff673c677ffaeb481ce53a8deef977",

@@ -2,18 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
-from core.py23 import *
-
-import codecs
-import errno
-import fcntl
-import itertools
-import os
-import os.path
-import re
-import subprocess
-import sys
-import time
+from py23 import *
 
 
 def exit_command (_shell, _arguments) :
@@ -466,9 +455,9 @@ def pipe_command (_shell, _arguments) :
 				except :
 					pass
 				_done_threads.append (2)
-		_stdin_thread = thread_.start_new_thread (_handle_stdin, ())
-		_stdout_thread = thread_.start_new_thread (_handle_stdout, ())
-		_stderr_thread = thread_.start_new_thread (_handle_stderr, ())
+		_stdin_thread = thread.start_new_thread (_handle_stdin, ())
+		_stdout_thread = thread.start_new_thread (_handle_stdout, ())
+		_stderr_thread = thread.start_new_thread (_handle_stderr, ())
 		_error = _process.wait ()
 		while len (_done_threads) != 3 :
 			time.sleep (0.1)
