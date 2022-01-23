@@ -14,7 +14,7 @@ def main (_main) :
 	_terminal_stream = sys.stderr
 	
 	if not os.isatty (_terminal_stream.fileno ()) :
-		print >> _terminal_stream, "[ee]", "invalid terminal;  expected a TTY;  aborting!"
+		_terminal_stream.write ("[ee]  invalid terminal;  expected a TTY;  aborting!\n")
 		sys.exit (1)
 	
 	_transcript_stream = _terminal_stream
@@ -42,11 +42,11 @@ def main (_main) :
 	elif _error is False :
 		sys.exit (1)
 	elif isinstance (_error, tuple) and (len (_error) == 2) :
-		print >> _transcript_stream, "[ee]", "failed!"
-		print >> _transcript_stream, "[--]", "----------------------------------------"
+		_transcript_stream.write ("[ee]  failed!\n")
+		_transcript_stream.write ("[--]  ----------------------------------------\n")
 		for _line in _error[1] :
-			print >> _transcript_stream, _line.strip ("\n\r")
-		print >> _transcript_stream, "[--]", "----------------------------------------"
+			_transcript_stream.write (_line.strip ("\n\r") + "\n")
+		_transcript_stream.write ("[--]  ----------------------------------------\n")
 		sys.exit (1)
 	else :
 		raise Exception ("86d46dd2", _error)
@@ -73,5 +73,5 @@ class Transcript (object) :
 	
 	def _push (self, _prefix, _format, _parts) :
 		_message = _format % _parts
-		print >> self._stream, _prefix, _message
+		self._stream.write (_prefix + "  " + _message + "\n")
 

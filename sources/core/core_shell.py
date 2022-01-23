@@ -192,7 +192,8 @@ class Shell (object) :
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
 		if not self._opened and not _tty_skip :
-			print >> sys.stderr, "[..]", _format % _arguments
+			_message = _format % _arguments
+			self._terminal.write ("[..]  " + _message + "\n")
 	
 	def loop (self) :
 		try :
