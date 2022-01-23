@@ -1,3 +1,4 @@
+#!/usr/bin/env -S python2 -u -O -O -B -E -S -s -R
 
 if __name__ == "__main__" :
 	import pager, commands
