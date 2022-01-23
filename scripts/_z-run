@@ -7,12 +7,25 @@
 
 
 
-<< sources / run / editor
-	exec -- ./scripts/editor "${@}"
-!!
+:: sources / run / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' editor "${@}"
+:: sources / run / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' pager "${@}"
 
-<< sources / run / pager
-	exec -- ./scripts/pager "${@}"
+
+--<< sources / run / *
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	test -f "./sources/${_main}_main.py"
+	
+	_python_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
+	
+	exec -- python2 "${_python_arguments[@]}" "./sources/${_main}_main.py" "${@}"
 !!
 
 
