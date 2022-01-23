@@ -18,7 +18,7 @@ class Scroll :
 	
 	def select_r (self, _index) :
 		if self._lines is None :
-			return (0, u'')
+			return (0, u"")
 		return self._lines[_index]
 	
 	def update (self, _index, _string) :
@@ -143,7 +143,7 @@ class Scroll :
 		if isinstance (_string, unicode) :
 			pass
 		elif isinstance (_string, str) :
-			_string = unicode (_string, 'utf-8', 'replace')
+			_string = unicode (_string, "utf-8", "replace")
 		else :
 			_string = unicode (str (_string))
 		return _string

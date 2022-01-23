@@ -14,7 +14,7 @@ class View (core.View) :
 		self._limit_columns = 1024
 		try :
 			import os
-			_limit_columns = int (os.getenv ('SCE_LIMIT_COLUMNS'))
+			_limit_columns = int (os.getenv ("SCE_LIMIT_COLUMNS"))
 			if _limit_columns >= 0 :
 				self._limit_columns = _limit_columns
 		except :
@@ -48,13 +48,13 @@ class View (core.View) :
 	
 	def select_real_string (self, _line) :
 		if self._scroll is None :
-			return ''
+			return ""
 		return self._scroll.select (_line)
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
 		_revision, _real_string = self._scroll.select_r (_line)
 		_highlights = self._scroll.highlights (_line)
-		_cache_key = ('visual_string', _line, _head_column, _tail_column)
+		_cache_key = ("visual_string", _line, _head_column, _tail_column)
 		_visual_string = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
@@ -70,7 +70,7 @@ class View (core.View) :
 	
 	def select_real_column (self, _line, _visual_column) :
 		_revision, _real_string = self._scroll.select_r (_line)
-		_cache_key = ('real_column', _line, _visual_column)
+		_cache_key = ("real_column", _line, _visual_column)
 		_real_column = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
@@ -86,7 +86,7 @@ class View (core.View) :
 	
 	def select_visual_column (self, _line, _real_column) :
 		_revision, _real_string = self._scroll.select_r (_line)
-		_cache_key = ('visual_column', _line, _real_column)
+		_cache_key = ("visual_column", _line, _real_column)
 		_visual_column = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
@@ -105,7 +105,7 @@ class View (core.View) :
 	
 	def select_visual_length (self, _line) :
 		_revision, _real_string = self._scroll.select_r (_line)
-		_cache_key = ('visual_length', _line)
+		_cache_key = ("visual_length", _line)
 		_visual_length = None
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
@@ -225,12 +225,12 @@ class View (core.View) :
 		_length = self.compute_visual_length (_string)
 		_column = 0
 		_code = 0
-		_h_code = ord ('-')
-		_l_code = ord ('<')
-		_g_code = ord ('>')
-		_e_code = ord ('!')
-		_q_code = ord ('\'')
-		_s_code = ord (' ')
+		_h_code = ord ("-")
+		_l_code = ord ("<")
+		_g_code = ord (">")
+		_e_code = ord ("!")
+		_q_code = ord ("\'")
+		_s_code = ord (" ")
 		_last_mode = None
 		_last_code = None
 		_left_trimmed = _head_column > 0
@@ -287,7 +287,7 @@ class View (core.View) :
 								_buffer.append (-5)
 								_last_mode = -5
 						else :
-							raise Exception ('44cdf198')
+							raise Exception ("44cdf198")
 					elif _column >= _limit_column :
 						if _last_mode != -3 :
 							_buffer.append (-3)
@@ -327,14 +327,14 @@ class View (core.View) :
 		for _code in _buffer :
 			if _code < 0 :
 				if len (_coalesced_codes) > 0 :
-					_coalesced_codes = ''.join (_coalesced_codes)
+					_coalesced_codes = "".join (_coalesced_codes)
 					_coalesced_buffer.append (_coalesced_codes)
 					_coalesced_codes = list ()
 				_coalesced_buffer.append (_code)
 			else :
 				_coalesced_codes.append (unichr (_code))
 		if len (_coalesced_codes) > 0 :
-			_coalesced_codes = ''.join (_coalesced_codes)
+			_coalesced_codes = "".join (_coalesced_codes)
 			_coalesced_buffer.append (_coalesced_codes)
 			_coalesced_codes = list ()
 		return _coalesced_buffer

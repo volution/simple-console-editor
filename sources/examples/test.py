@@ -1,7 +1,7 @@
 
 from core import *
 
-if __name__ == '__main__' :
+if __name__ == "__main__" :
 	
 	_shell = Shell ()
 	_view = View ()
@@ -11,6 +11,6 @@ if __name__ == '__main__' :
 	_shell.set_handler (_handler)
 	_shell.open ()
 	_shell.refresh ()
-	_shell.input ('Hello?')
+	_shell.input ("Hello?")
 	_shell.close ()
 

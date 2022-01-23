@@ -10,19 +10,19 @@ class Handler :
 	def handle_key (self, _shell, _code) :
 		
 		if _code is None :
-			return self.handle_key_unknown (_shell, '[none]')
+			return self.handle_key_unknown (_shell, "[none]")
 		
 		elif isinstance (_code, basestring) :
 			if len (_code) == 1 :
 				return self.handle_key_character (_shell, _code)
 			else :
-				return self.handle_key_unknown (_shell, '[string][%s]', _code)
+				return self.handle_key_unknown (_shell, "[string][%s]", _code)
 		
 		elif not isinstance (_code, int) :
-			return self.handle_key_unknown (_shell, '[type][%s]', _code)
+			return self.handle_key_unknown (_shell, "[type][%s]", _code)
 		
 		elif _code < 0 :
-			return self.handle_key_unknown (_shell, '[code][%d]' % (_code))
+			return self.handle_key_unknown (_shell, "[code][%d]" % (_code))
 		
 		elif (_code == _shell._backspace_code) or (_code == 8) : # Backspace
 			return self.handle_key_backspace (_shell)
@@ -74,65 +74,65 @@ class Handler :
 			return self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
 		else :
-			return self.handle_key_unknown (_shell, '[code][%d]' % (_code))
+			return self.handle_key_unknown (_shell, "[code][%d]" % (_code))
 		
-		raise Exception ('ba0402d0')
+		raise Exception ("ba0402d0")
 	
 	def handle_key_backspace (self, _shell) :
-		return self.handle_key_special (_shell, 'Backspace')
+		return self.handle_key_special (_shell, "Backspace")
 	
 	def handle_key_tab (self, _shell) :
-		return self.handle_key_special (_shell, 'Tab')
+		return self.handle_key_special (_shell, "Tab")
 	
 	def handle_key_enter (self, _shell) :
-		return self.handle_key_special (_shell, 'Enter')
+		return self.handle_key_special (_shell, "Enter")
 	
 	def handle_key_escape (self, _shell) :
-		return self.handle_key_special (_shell, 'Escape')
+		return self.handle_key_special (_shell, "Escape")
 	
 	def handle_key_delete (self, _shell) :
-		return self.handle_key_special (_shell, 'Delete')
+		return self.handle_key_special (_shell, "Delete")
 	
 	def handle_key_control (self, _shell, _code) :
-		return self.handle_key_special (_shell, 'Ctrl+%s' % (chr (64 + _code)))
+		return self.handle_key_special (_shell, "Ctrl+%s" % (chr (64 + _code)))
 	
 	def handle_key_character (self, _shell, _character) :
 		return self.handle_key_special (_shell, _character)
 	
 	def handle_key_up (self, _shell) :
-		return self.handle_key_special (_shell, 'Up')
+		return self.handle_key_special (_shell, "Up")
 	
 	def handle_key_down (self, _shell) :
-		return self.handle_key_special (_shell, 'Down')
+		return self.handle_key_special (_shell, "Down")
 	
 	def handle_key_left (self, _shell) :
-		return self.handle_key_special (_shell, 'Left')
+		return self.handle_key_special (_shell, "Left")
 	
 	def handle_key_right (self, _shell) :
-		return self.handle_key_special (_shell, 'Right')
+		return self.handle_key_special (_shell, "Right")
 	
 	def handle_key_home (self, _shell) :
-		return self.handle_key_special (_shell, 'Home')
+		return self.handle_key_special (_shell, "Home")
 	
 	def handle_key_end (self, _shell) :
-		return self.handle_key_special (_shell, 'End')
+		return self.handle_key_special (_shell, "End")
 	
 	def handle_key_page_up (self, _shell) :
-		return self.handle_key_special (_shell, 'Page up')
+		return self.handle_key_special (_shell, "Page up")
 	
 	def handle_key_page_down (self, _shell) :
-		return self.handle_key_special (_shell, 'Page down')
+		return self.handle_key_special (_shell, "Page down")
 	
 	def handle_key_insert (self, _shell) :
-		return self.handle_key_special (_shell, 'Insert')
+		return self.handle_key_special (_shell, "Insert")
 	
 	def handle_key_function (self, _shell, _code) :
-		return self.handle_key_special (_shell, 'F%d' % (_code))
+		return self.handle_key_special (_shell, "F%d" % (_code))
 	
 	def handle_key_special (self, _shell, _code) :
 		return self.handle_key_unknown (_shell, _key)
 	
 	def handle_key_unknown (self, _shell, _key) :
-		_shell.notify ('Unhandled key `%s`; ignoring.', _key)
+		_shell.notify ("Unhandled key `%s`; ignoring.", _key)
 		return False
 

@@ -50,9 +50,9 @@ class Shell :
 		if _terminal_descriptor != 2 :
 			os.dup2 (_terminal_descriptor, 2)
 		
-		locale.setlocale (locale.LC_ALL, '')
+		locale.setlocale (locale.LC_ALL, "")
 		
-		curses.setupterm (os.environ['TERM'], _terminal_descriptor)
+		curses.setupterm (os.environ["TERM"], _terminal_descriptor)
 		
 		self._curses_open ()
 		
@@ -147,18 +147,18 @@ class Shell :
 		elif (_code >= 194) and (_code < 224) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2)) .decode ('utf-8')
+			_code = (chr (_code_1) + chr (_code_2)) .decode ("utf-8")
 		elif (_code >= 224) and (_code < 240) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
 			_code_3 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3)) .decode ('utf-8')
+			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3)) .decode ("utf-8")
 		elif (_code >= 240) and (_code < 245) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
 			_code_3 = _window.getch ()
 			_code_4 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3) + chr (_code_4)) .decode ('utf-8')
+			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3) + chr (_code_4)) .decode ("utf-8")
 		elif (_code >= 245) and (_code < 248) :
 			_code = None
 		elif (_code >= 248) and (_code < 252) :
@@ -184,11 +184,11 @@ class Shell :
 	
 	def notify_0 (self, _format, _arguments, _tty_skip) :
 		_message = _format % _arguments
-		self._messages.insert (0, (('[%s]' % (time.strftime ('%H:%M:%S'))), _message))
+		self._messages.insert (0, (("[%s]" % (time.strftime ("%H:%M:%S"))), _message))
 		del self._messages[self._max_message_lines :]
 		self._messages_touched = True
 		if not self._opened and not _tty_skip :
-			print >> sys.stderr, '[..]', _format % _arguments
+			print >> sys.stderr, "[..]", _format % _arguments
 	
 	def loop (self) :
 		try :
@@ -216,24 +216,24 @@ class Shell :
 		_response_max_length = _window_columns - 5 - 1
 		_request = _format % _arguments
 		if len (_request) > _request_max_length :
-			_request = _request[:_request_max_length - 6] + ' [...]'
+			_request = _request[:_request_max_length - 6] + " [...]"
 		_window.attrset (self._color_input)
 		_window.move (_request_line, 0)
 		_window.clrtoeol ()
-		_window.insstr (('[??] ' + _request) .encode ('utf-8'))
+		_window.insstr (("[??] " + _request) .encode ("utf-8"))
 		_buffer = []
 		_inputs = self._inputs
 		_inputs_count = len (_inputs)
 		_input = _inputs_count
 		while True :
-			_string = u''.join (_buffer)
+			_string = u"".join (_buffer)
 			_response = _string
 			if len (_response) > _response_max_length :
 				_response_drop = len (_response) - _response_max_length + 6
-				_response = '[...] ' + _response[_response_drop:]
+				_response = "[...] " + _response[_response_drop:]
 			_window.move (_response_line, 0)
 			_window.clrtoeol ()
-			_window.insstr (('[>>] ' + _response) .encode ('utf-8'))
+			_window.insstr (("[>>] " + _response) .encode ("utf-8"))
 			_window.move (_response_line, 5 + len (_response))
 			_window.refresh ()
 			_code = self.scan ()
@@ -326,15 +326,15 @@ class Shell :
 			if _line < _lines :
 				_window.attrset (_color_markup)
 				if _view.select_is_tagged (_line) :
-					_window.insstr (i, _column, '|')
+					_window.insstr (i, _column, "|")
 					_column += 1
 				else :
-					_window.insstr (i, _column, ' ')
+					_window.insstr (i, _column, " ")
 					_column += 1
 				_buffer = _view.select_visual_string (_line, _head_column, _tail_column)
 				for _code in _buffer :
 					if isinstance (_code, basestring) :
-						_window.insstr (i, _column, _code.encode ('utf-8'))
+						_window.insstr (i, _column, _code.encode ("utf-8"))
 						_column += len (_code)
 					elif _code == -1 :
 						_window.attrset (_color_text)
@@ -347,11 +347,11 @@ class Shell :
 					elif _code == -5 :
 						_window.attrset (_color_highlight_2)
 					else :
-						_window.insstr (_i, _column, '?')
+						_window.insstr (_i, _column, "?")
 						_column += 1
 			else :
 				_window.attrset (_color_markup)
-				_window.insstr (i, _column, '~~~~')
+				_window.insstr (i, _column, "~~~~")
 				break
 		
 		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)
@@ -363,7 +363,7 @@ class Shell :
 				_line = _max_lines - _index - 1
 				_window.move (_line, 0)
 				_window.clrtoeol ()
-				_window.insstr ((_time + ' [..] ' + _text) .encode ('utf-8'))
+				_window.insstr ((_time + " [..] " + _text) .encode ("utf-8"))
 				_index += 1
 			_window.move (_max_lines - 1, _max_columns - 1)
 		

@@ -48,7 +48,7 @@ class BasicHandler (Handler) :
 	
 	def handle_key_control (self, _shell, _code) :
 		if _code not in self._controls :
-			return self.handle_key_unknown (_shell, 'Ctrl+%s' % (chr (64 + _code)))
+			return self.handle_key_unknown (_shell, "Ctrl+%s" % (chr (64 + _code)))
 		_handler = self._controls[_code]
 		return self._execute_handler (_shell, _handler, [])
 	
@@ -59,14 +59,14 @@ class BasicHandler (Handler) :
 		return self._execute_handler (_shell, _handler, [])
 	
 	def handle_command (self, _shell) :
-		_command = _shell.input ('Command?')
+		_command = _shell.input ("Command?")
 		if _command is None :
 			return True
 		_parts = _command.split ()
 		if len (_parts) == 0 :
 			return True
 		if _parts[0] not in self._commands :
-			_shell.notify ('Unhandled command [%s]; ignoring.', _parts[0])
+			_shell.notify ("Unhandled command [%s]; ignoring.", _parts[0])
 			return False
 		_handler = self._commands[_parts[0]]
 		return self._execute_handler (_shell, _handler, _parts[1:])
@@ -75,11 +75,11 @@ class BasicHandler (Handler) :
 		try :
 			_outcome = _handler (_shell, _arguments)
 			#if _outcome is None :
-			#	_shell.notify ('Command [%s] failed.', _command)
+			#	_shell.notify ("Command [%s] failed.", _command)
 		except Exception as _error :
-			_shell.notify ('Unhandled exception [%s]; ignoring.', str (_error))
+			_shell.notify ("Unhandled exception [%s]; ignoring.", str (_error))
 		except :
-			_shell.notify ('Unhandled unknown exception; ignoring.')
+			_shell.notify ("Unhandled unknown exception; ignoring.")
 		return True
 	
 	def register_command (self, _command, _handler) :

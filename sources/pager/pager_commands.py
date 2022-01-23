@@ -21,7 +21,7 @@ def filter_command (_shell, _arguments) :
 		_filter_re = _arguments[0]
 		_filter_context = int (_arguments[1])
 	else :
-		_shell.notify ('filter: wrong syntax: filter <pattern> [<context>] | filter')
+		_shell.notify ("filter: wrong syntax: filter <pattern> [<context>] | filter")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -30,7 +30,7 @@ def filter_command (_shell, _arguments) :
 
 def select_highlight_command (_shell, _arguments, _delegate) :
 	if len (_arguments) != 0 :
-		_shell.notify ('output-highlight: wrong syntax: output-highlight')
+		_shell.notify ("output-highlight: wrong syntax: output-highlight")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -46,14 +46,14 @@ def select_highlight_command (_shell, _arguments, _delegate) :
 		if not _found :
 			_highlight = None
 	if _highlight is None :
-		_shell.notify ('output-highlight: no match selected')
+		_shell.notify ("output-highlight: no match selected")
 		return None
 	return _delegate (_shell, _line, _highlight)
 
 
 def next_highlight_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('next-highlight: wrong syntax: next-highlight')
+		_shell.notify ("next-highlight: wrong syntax: next-highlight")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -78,6 +78,6 @@ def next_highlight_command (_shell, _arguments) :
 		_cursor.set_line (_line)
 		_cursor.set_column (_view.select_visual_column (_line, _column))
 	else :
-		_shell.notify ('next-highlight: no match found')
+		_shell.notify ("next-highlight: no match found")
 	return True
 

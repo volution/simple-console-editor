@@ -12,7 +12,7 @@ class View :
 		return 0
 	
 	def select_real_string (self, _line) :
-		return ''
+		return ""
 	
 	def select_visual_string (self, _line, _head_column, _tail_column) :
 		_string = self.select_real_string (_line)

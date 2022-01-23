@@ -14,7 +14,7 @@ import thread
 
 def exit_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('exit: wrong syntax: exit')
+		_shell.notify ("exit: wrong syntax: exit")
 		return None
 	_shell.loop_stop ()
 	return True
@@ -22,17 +22,17 @@ def exit_command (_shell, _arguments) :
 
 def quick_exit_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('quick-exit: wrong syntax: quick-exit')
+		_shell.notify ("quick-exit: wrong syntax: quick-exit")
 		return None
 	if _shell.get_view () .get_scroll () .is_touched () :
-		_shell.notify ('quick-exit: scroll is touched; aborting.')
+		_shell.notify ("quick-exit: scroll is touched; aborting.")
 		return None
 	return exit_command (_shell, [])
 
 
 def mark_command (_shell, _arguments) :
 	if len (_arguments) != 0 and (_arguments != ["s"]):
-		_shell.notify ('mark: wrong syntax: mark')
+		_shell.notify ("mark: wrong syntax: mark")
 		return None
 	_view = _shell.get_view ()
 	_cursor = _view.get_cursor ()
@@ -118,30 +118,30 @@ def mark_command (_shell, _arguments) :
 
 def clear_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('clear: wrong syntax: clear')
+		_shell.notify ("clear: wrong syntax: clear")
 		return None
 	_shell.get_view () .get_scroll () .exclude_all ()
 	return True
 
 
-_yank_path = '/tmp/sce.%d.yank' % (os.getuid (),)
+_yank_path = "/tmp/sce.%d.yank" % (os.getuid (),)
 _yank_buffer = None
 
 
 def yank_lines_command (_shell, _arguments) :
 	global _yank_buffer
 	if len (_arguments) != 0 :
-		_shell.notify ('yank-lines: wrong syntax: yank-lines')
+		_shell.notify ("yank-lines: wrong syntax: yank-lines")
 		return None
 	if _yank_buffer is None :
-		_shell.notify ('yank-lines: yank buffer is empty.')
+		_shell.notify ("yank-lines: yank buffer is empty.")
 		return None
 	return _yank_lines (_shell, _yank_buffer)
 
 
 def _yank_lines (_shell, _yank_buffer) :
 	if _yank_buffer is None :
-		_shell.notify ('yank-lines: yank buffer is empty.')
+		_shell.notify ("yank-lines: yank buffer is empty.")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -172,7 +172,7 @@ def copy_lines_command (_shell, _arguments) :
 def _copy_lines (_shell, _arguments) :
 	global _yank_buffer
 	if len (_arguments) != 0 :
-		_shell.notify ('copy-lines: wrong syntax: copy-lines')
+		_shell.notify ("copy-lines: wrong syntax: copy-lines")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -185,7 +185,7 @@ def _copy_lines (_shell, _arguments) :
 		_mark_2_line = _mark_2.get_line ()
 		_mark_2_column = _mark_2.get_column ()
 		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
-			_shell.notify ('copy-lines: non-marked')
+			_shell.notify ("copy-lines: non-marked")
 			return None
 		if _mark_1_line == _mark_2_line :
 			_mark_1_real_column = _view.select_real_column (_mark_1_line, _mark_1_column)
@@ -219,7 +219,7 @@ def delete_lines_command (_shell, _arguments) :
 
 def _delete_lines (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('delete-lines: wrong syntax: delete-lines')
+		_shell.notify ("delete-lines: wrong syntax: delete-lines")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -232,7 +232,7 @@ def _delete_lines (_shell, _arguments) :
 		_mark_2_line = _mark_2.get_line ()
 		_mark_2_column = _mark_2.get_column ()
 		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
-			_shell.notify ('delete-lines: non-marked')
+			_shell.notify ("delete-lines: non-marked")
 			return None
 		if _mark_1_line == _mark_2_line :
 			_mark_1_real_column = _view.select_real_column (_mark_1_line, _mark_1_column)
@@ -255,7 +255,7 @@ def _delete_lines (_shell, _arguments) :
 
 def cut_lines_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('cut-lines: wrong syntax: cut-lines')
+		_shell.notify ("cut-lines: wrong syntax: cut-lines")
 		return None
 	_view = _shell.get_view ()
 	if _view.is_mark_enabled () :
@@ -271,27 +271,27 @@ def cut_lines_command (_shell, _arguments) :
 
 def load_command (_shell, _arguments) :
 	if len (_arguments) == 0 :
-		_mode = 'i'
+		_mode = "i"
 		_path = _yank_path
 	elif len (_arguments) == 2 :
 		_mode = _arguments[0]
 		_path = _arguments[1]
 	else :
-		_shell.notify ('load: wrong syntax: load r|i|a <file>')
+		_shell.notify ("load: wrong syntax: load r|i|a <file>")
 		return None
-	if _mode not in ['r', 'i', 'a'] :
-		_shell.notify ('load: wrong mode (r|i|a); aborting.')
+	if _mode not in ["r", "i", "a"] :
+		_shell.notify ("load: wrong mode (r|i|a); aborting.")
 		return None
 	if not os.path.isfile (_path) :
-		_shell.notify ('load: target file does not exist; aborting.')
+		_shell.notify ("load: target file does not exist; aborting.")
 		return None
 	try :
 		_stream = None
-		_stream = codecs.open (_path, 'r', 'utf-8', 'replace')
+		_stream = codecs.open (_path, "r", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
 	except :
-		_shell.notify ('load: input failed; aborting.')
+		_shell.notify ("load: input failed; aborting.")
 		if _stream is not None :
 			try :
 				_stream.close ()
@@ -302,12 +302,12 @@ def load_command (_shell, _arguments) :
 
 def sys_command (_shell, _arguments) :
 	if len (_arguments) < 2 :
-		_shell.notify ('sys: wrong syntax: sys r|i|a <command> <argument> ...')
+		_shell.notify ("sys: wrong syntax: sys r|i|a <command> <argument> ...")
 		return None
 	_mode = _arguments[0]
 	_system_arguments = _arguments[1 :]
-	if _mode not in ['r', 'i', 'a'] :
-		_shell.notify ('sys: wrong mode (r|i|a); aborting.')
+	if _mode not in ["r", "i", "a"] :
+		_shell.notify ("sys: wrong mode (r|i|a); aborting.")
 		return None
 	try :
 		_process = subprocess.Popen (
@@ -315,31 +315,31 @@ def sys_command (_shell, _arguments) :
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
-		_shell.notify ('sys: spawn failed; aborting.')
+		_shell.notify ("sys: spawn failed; aborting.")
 		return None
 	try :
-		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stderr, 'utf-8', 'utf-8', 'replace')
+		_stream = codecs.EncodedFile (_process.stderr, "utf-8", "utf-8", "replace")
 		_error_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
 	except :
-		_shell.notify ('sys: input failed; aborting.')
+		_shell.notify ("sys: input failed; aborting.")
 		return None
 	if _error != 0 :
-		_shell.notify ('sys: command failed (non zero exit code); ignoring.')
+		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
 	if len (_error_lines) != 0 :
 		for _line in _error_lines :
-			_line = _line.rstrip ('\r\n')
-			_shell.notify ('sys: %s', _line)
+			_line = _line.rstrip ("\r\n")
+			_shell.notify ("sys: %s", _line)
 	return _load_file_lines (_shell, _mode, _lines)
 
 
 def pipe_command (_shell, _arguments) :
 	if len (_arguments) < 1 :
-		_shell.notify ('pipe: wrong syntax: pipe <command> <arguments> ...')
+		_shell.notify ("pipe: wrong syntax: pipe <command> <arguments> ...")
 		return None
 	_system_arguments = _arguments
 	try :
@@ -348,7 +348,7 @@ def pipe_command (_shell, _arguments) :
 				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
-		_shell.notify ('pipe: spawn failed; aborting.')
+		_shell.notify ("pipe: spawn failed; aborting.")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -362,7 +362,7 @@ def pipe_command (_shell, _arguments) :
 		_mark_1_line = _mark_1.get_line ()
 		_mark_2_line = _mark_2.get_line ()
 		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
-			_shell.notify ('pipe: non-marked')
+			_shell.notify ("pipe: non-marked")
 			return None
 		_first_line = min (_mark_1_line, _mark_2_line)
 		_last_line = max (_mark_1_line, _mark_2_line)
@@ -412,10 +412,10 @@ def pipe_command (_shell, _arguments) :
 			try :
 				_stream = _process.stdin
 				_stream = NbStream (_stream)
-				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
+				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				for _line in _lines :
 					_stream.write (_line)
-					_stream.write ('\n')
+					_stream.write ("\n")
 					_stream.flush ()
 				_stream.close ()
 			except :
@@ -430,9 +430,9 @@ def pipe_command (_shell, _arguments) :
 			try :
 				_stream = _process.stdout
 				_stream = NbStream (_stream)
-				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
+				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				_line = _stream.readline ()
-				while _line is not '' :
+				while _line is not "" :
 					_output_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
@@ -448,9 +448,9 @@ def pipe_command (_shell, _arguments) :
 			try :
 				_stream = _process.stderr
 				_stream = NbStream (_stream)
-				_stream = codecs.EncodedFile (_stream, 'utf-8', 'utf-8', 'replace')
+				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				_line = _stream.readline ()
-				while _line is not '' :
+				while _line is not "" :
 					_error_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
@@ -470,22 +470,22 @@ def pipe_command (_shell, _arguments) :
 			time.sleep (0.1)
 		_lines = _output_lines
 	except Exception as _error:
-		_shell.notify ('pipe: input failed; aborting.' + str (_error))
+		_shell.notify ("pipe: input failed; aborting." + str (_error))
 		return
 	except :
-		_shell.notify ('pipe: input failed; aborting.')
+		_shell.notify ("pipe: input failed; aborting.")
 		return
 	if _error != 0 :
-		_shell.notify ('sys: command failed (non zero exit code); ignoring.')
+		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
 	if len (_error_lines) != 0 :
 		for _line in _error_lines :
-			_line = _line.rstrip ('\r\n')
-			_shell.notify ('sys: %s', _line)
+			_line = _line.rstrip ("\r\n")
+			_shell.notify ("sys: %s", _line)
 	for _line in xrange (_first_line, _last_line + 1) :
 		_scroll.exclude (_first_line)
 	_lines.reverse ()
 	for _line in _lines :
-		_line = _line.rstrip ('\r\n')
+		_line = _line.rstrip ("\r\n")
 		_scroll.include_before (_first_line, _line)
 	if _view.is_mark_enabled () :
 		if len (_lines) == 0 :
@@ -508,32 +508,32 @@ def paste_command (_shell, _arguments) :
 				bufsize = 1, close_fds = True, universal_newlines = True)
 	except :
 #!		_shell._curses_open ()
-		_shell.notify ('paste: spawn failed; aborting.')
+		_shell.notify ("paste: spawn failed; aborting.")
 		return None
 	try :
-		_stream = codecs.EncodedFile (_process.stdout, 'utf-8', 'utf-8', 'replace')
+		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
 	except :
 #!		_shell._curses_open ()
-		_shell.notify ('paste: input failed; aborting.')
+		_shell.notify ("paste: input failed; aborting.")
 		return None
 #!	_shell._curses_open ()
 	if _error != 0 :
-		_shell.notify ('paste: command failed (non zero exit code); ignoring.')
-	return _load_file_lines (_shell, 'i', _lines)
+		_shell.notify ("paste: command failed (non zero exit code); ignoring.")
+	return _load_file_lines (_shell, "i", _lines)
 
 
 def _load_file_lines (_shell, _mode, _lines) :
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
-	if _mode == 'r' :
+	if _mode == "r" :
 		_scroll.exclude_all ()
 		_insert_line = 0
-	elif _mode == 'i' :
+	elif _mode == "i" :
 		_insert_line = _view.get_cursor () .get_line ()
-	elif _mode == 'a' :
+	elif _mode == "a" :
 		_insert_line = _scroll.get_length ()
 	else :
 		_insert_line = _scroll.get_length ()
@@ -541,50 +541,50 @@ def _load_file_lines (_shell, _mode, _lines) :
 		return True
 	elif len (_lines) == 1 :
 		_line = _lines[0]
-		_line_stripped = _line.rstrip ('\n\r')
+		_line_stripped = _line.rstrip ("\n\r")
 		if _line_stripped == _line :
 			return _yank_lines (_shell, _line)
 		else :
 			return _yank_lines (_shell, [_line_stripped])
 	else :
-		_lines = [_line.rstrip ('\r\n') for _line in _lines]
+		_lines = [_line.rstrip ("\r\n") for _line in _lines]
 		return _yank_lines (_shell, _lines)
 
 
 def store_command (_shell, _arguments) :
 	if len (_arguments) == 0 :
-		_selector = 't'
-		_mode = 'o'
+		_selector = "t"
+		_mode = "o"
 		_path = _yank_path
 	elif len (_arguments) == 3 :
 		_selector = _arguments[0]
 		_mode = _arguments[1]
 		_path = _arguments[2]
 	else :
-		_shell.notify ('store: wrong syntax: store a|t o|c <file>')
+		_shell.notify ("store: wrong syntax: store a|t o|c <file>")
 		return None
-	if _selector not in ['a', 't'] :
-		_shell.notify ('store: wrong selector (a|t); aborting.')
+	if _selector not in ["a", "t"] :
+		_shell.notify ("store: wrong selector (a|t); aborting.")
 		return None
-	if _mode not in ['o', 'c', 'a'] :
-		_shell.notify ('store: wrong mode (o|c); aborting.')
+	if _mode not in ["o", "c", "a"] :
+		_shell.notify ("store: wrong mode (o|c); aborting.")
 		return None
-	if _mode == 'c' and os.path.isfile (_path) :
-		_shell.notify ('store: target file exists; aborting.')
+	if _mode == "c" and os.path.isfile (_path) :
+		_shell.notify ("store: target file exists; aborting.")
 		return None
 	try :
 		_stream = None
-		_stream = codecs.open (_path, 'w', 'utf-8', 'replace')
+		_stream = codecs.open (_path, "w", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
 		for _line in xrange (0, _lines) :
-			if _selector == 'a' or _view.select_is_tagged (_line) :
+			if _selector == "a" or _view.select_is_tagged (_line) :
 				_string = _view.select_real_string (_line)
 				_stream.write (_string)
-				_stream.write ('\n')
+				_stream.write ("\n")
 		_stream.close ()
 	except :
-		_shell.notify ('store: output failed; target file might have been destroyed!')
+		_shell.notify ("store: output failed; target file might have been destroyed!")
 		if _stream is not None :
 			try :
 				_stream.close ()
@@ -600,44 +600,44 @@ _open_path = None
 def open_command (_shell, _arguments) :
 	global _open_path
 	if len (_arguments) != 1 :
-		_shell.notify ('open: wrong syntax: open <file>')
+		_shell.notify ("open: wrong syntax: open <file>")
 		return None
 	_path = _arguments[0]
-	if load_command (_shell, ['r', _path]) is None :
+	if load_command (_shell, ["r", _path]) is None :
 		return None
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_get_command (_shell, [])
-	_shell.notify_no_tty ('open: succeeded %s', _open_path)
+	_shell.notify_no_tty ("open: succeeded %s", _open_path)
 	return True
 
 
 def save_command (_shell, _arguments) :
 	global _open_path
 	if len (_arguments) != 0 :
-		_shell.notify ('save: wrong syntax: save')
+		_shell.notify ("save: wrong syntax: save")
 		return None
 	_shell.get_view () .get_scroll () .force_touched ()
 	_path = _open_path
 	if _path is None :
-		_shell.notify ('save: no previous open command; aborting.')
+		_shell.notify ("save: no previous open command; aborting.")
 		return None
-	if store_command (_shell, ['a', 'o', _path]) is None :
+	if store_command (_shell, ["a", "o", _path]) is None :
 		return None
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_set_command (_shell, [])
-	_shell.notify_no_tty ('save: succeeded %s', _open_path)
+	_shell.notify_no_tty ("save: succeeded %s", _open_path)
 	return True
 
 
-_fpos_path = '/tmp/sce.%d.fpos' % (os.getuid())
+_fpos_path = "/tmp/sce.%d.fpos" % (os.getuid())
 
 
 def fpos_get_command (_shell, _arguments) :
 	global _open_path
 	_path = os.path.realpath (_open_path)
 	if len (_arguments) != 0 :
-		_shell.notify ('fpos-get: wrong syntax: fpos-get')
+		_shell.notify ("fpos-get: wrong syntax: fpos-get")
 	_dict = _fpos_load (_shell)
 	if _path in _dict :
 		_line = _dict[_path]
@@ -645,9 +645,9 @@ def fpos_get_command (_shell, _arguments) :
 			_shell.get_view () .get_cursor () .set_line (_line)
 			return True
 		else :
-			_shell.notify ('fpos-get: line is not int; ignoring.')
+			_shell.notify ("fpos-get: line is not int; ignoring.")
 	else :
-		# _shell.notify_no_tty ('fpos-get: line is unknown; ignoring.')
+		# _shell.notify_no_tty ("fpos-get: line is unknown; ignoring.")
 		pass
 	return True
 
@@ -655,7 +655,7 @@ def fpos_set_command (_shell, _arguments) :
 	global _open_path
 	_path = os.path.realpath (_open_path)
 	if len (_arguments) != 0 :
-		_shell.notify ('fpos-set: wrong syntax: fpos-set')
+		_shell.notify ("fpos-set: wrong syntax: fpos-set")
 	_dict = _fpos_load (_shell)
 	_line = _shell.get_view () .get_cursor () .get_line ()
 	_dict[_path] = _line
@@ -666,11 +666,11 @@ def _fpos_load (_shell) :
 	_data = None
 	try :
 		_stream = None
-		_stream = codecs.open (_fpos_path, 'r', 'utf-8', 'replace')
+		_stream = codecs.open (_fpos_path, "r", "utf-8", "replace")
 		_data = _stream.read ()
 		_stream.close ()
 	except :
-		_shell.notify ('fpos-load: input fpos failed; ignoring.')
+		_shell.notify ("fpos-load: input fpos failed; ignoring.")
 		try :
 			_stream.close ()
 		except :
@@ -679,10 +679,10 @@ def _fpos_load (_shell) :
 		return dict ()
 	_dict = None
 	try :
-		_globals = {'__builtins__' : {}}
+		_globals = {"__builtins__" : {}}
 		_dict = eval (_data, _globals, _globals)
 	except :
-		_shell.notify ('fpos-load: eval failed; ignoring.')
+		_shell.notify ("fpos-load: eval failed; ignoring.")
 	if _dict is None :
 		return dict ()
 	return _dict
@@ -692,11 +692,11 @@ def _fpos_store (_shell, _dict) :
 	_data = repr (_dict)
 	try :
 		_stream = None
-		_stream = codecs.open (_fpos_path, 'w', 'utf-8', 'replace')
+		_stream = codecs.open (_fpos_path, "w", "utf-8", "replace")
 		_stream.write (_data)
 		_stream.close ()
 	except :
-		_shell.notify ('fpos-store: output fpos failed; ignoring.')
+		_shell.notify ("fpos-store: output fpos failed; ignoring.")
 		try :
 			_stream.close ()
 		except :
@@ -711,36 +711,36 @@ def go_command (_shell, _arguments) :
 	global _go_matcher
 	if len (_arguments) == 0 :
 		if _go_matcher is None :
-			_shell.notify ('go: no previous go command; aborting.')
+			_shell.notify ("go: no previous go command; aborting.")
 			return None
 		_matcher = _go_matcher
 	elif len (_arguments) != 2 :
-		_shell.notify ('go: wrong syntax: go l|s|r <argument>')
+		_shell.notify ("go: wrong syntax: go l|s|r <argument>")
 		return None
-	elif _arguments[0] == 'l' :
+	elif _arguments[0] == "l" :
 		_target_line = _arguments[1]
 		try :
 			_target_line = int (_target_line)
 			_target_line -= 1
 		except :
-			_shell.notify ('go: wrong line syntax; aborting.')
+			_shell.notify ("go: wrong line syntax; aborting.")
 			return None
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line)
-	elif _arguments[0] == 's' :
+	elif _arguments[0] == "s" :
 		_pattern = _arguments[1]
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_string (_cursor_line, _cursor_column, _current_line, _string, _pattern)
-	elif _arguments[0] == 'r' :
+	elif _arguments[0] == "r" :
 		_pattern = _arguments[1]
 		try :
 			_pattern = re.compile (_pattern)
 		except :
-			_shell.notify ('go: wrong pattern syntax; aborting.')
+			_shell.notify ("go: wrong pattern syntax; aborting.")
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pattern)
 	else :
-		_shell.notify ('go: wrong mode (l|s|r); aborting.')
+		_shell.notify ("go: wrong mode (l|s|r); aborting.")
 		return None
 	_go_matcher = _matcher
 	return _go_search (_shell, _matcher)
@@ -765,7 +765,7 @@ def _go_search (_shell, _matcher) :
 			pass
 		else :
 			raise Exception ("4b15d9af")
-	_shell.notify ('gs: no match found')
+	_shell.notify ("gs: no match found")
 	return False
 
 
@@ -795,30 +795,30 @@ def _go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pat
 
 def go_line_command (_shell, _arguments) :
 	if len (_arguments) != 1 :
-		_shell.notify ('go-line: wrong syntax: go-line <line>')
+		_shell.notify ("go-line: wrong syntax: go-line <line>")
 		return None
 	_line = _arguments[0]
-	if go_command (_shell, ['l', _line]) is None :
+	if go_command (_shell, ["l", _line]) is None :
 		return None
 	return True
 
 
 def go_string_command (_shell, _arguments) :
 	if len (_arguments) != 1 :
-		_shell.notify ('go-string: wrong syntax: go-string <string>')
+		_shell.notify ("go-string: wrong syntax: go-string <string>")
 		return None
 	_string = _arguments[0]
-	if go_command (_shell, ['s', _string]) is None :
+	if go_command (_shell, ["s", _string]) is None :
 		return None
 	return True
 
 
 def go_regexp_command (_shell, _arguments) :
 	if len (_arguments) != 1 :
-		_shell.notify ('go-regexp: wrong syntax: go-regexp <pattern>')
+		_shell.notify ("go-regexp: wrong syntax: go-regexp <pattern>")
 		return None
 	_pattern = _arguments[0]
-	if go_command (_shell, ['r', _pattern]) is None :
+	if go_command (_shell, ["r", _pattern]) is None :
 		return None
 	return True
 
@@ -830,11 +830,11 @@ def replace_command (_shell, _arguments) :
 	global _replace_arguments
 	if len (_arguments) == 0 :
 		if _replace_arguments is None :
-			_shell.notify ('replace: no previous replace command; aborting.')
+			_shell.notify ("replace: no previous replace command; aborting.")
 			return None
 		_arguments = _replace_arguments
 	if len (_arguments) != 2 :
-		_shell.notify ('replace: wrong syntax: replace <wath> <with>')
+		_shell.notify ("replace: wrong syntax: replace <wath> <with>")
 		return None
 	_what = _arguments[0]
 	_with = _arguments[1]
@@ -864,7 +864,7 @@ def replace_command (_shell, _arguments) :
 			_cursor.set_line (_line)
 			_cursor.set_column (_view.select_visual_column (_line, _column))
 		else :
-			_shell.notify ('replace: no match found')
+			_shell.notify ("replace: no match found")
 		return True
 	return None
 
@@ -875,22 +875,22 @@ _jump_line = None
 def jump_command (_shell, _arguments) :
 	global _jump_line
 	if len (_arguments) == 0 :
-		_arguments = ['j']
+		_arguments = ["j"]
 	if len (_arguments) != 1 :
-		_shell.notify ('go: wrong syntax: jump s|j')
+		_shell.notify ("go: wrong syntax: jump s|j")
 		return None
 	_mode = _arguments[0]
-	if _mode not in ['s', 'j'] :
-		_shell.notify ('go: wrong mode (s|j); aborting.')
+	if _mode not in ["s", "j"] :
+		_shell.notify ("go: wrong mode (s|j); aborting.")
 		return None
 	_view = _shell.get_view ()
 	_cursor = _view.get_cursor ()
-	if _mode == 's' :
+	if _mode == "s" :
 		_jump_line = _cursor.get_line ()
 		return True
-	elif _mode == 'j' :
+	elif _mode == "j" :
 		if _jump_line is None :
-			_shell.notify ('jump: no previous jump set command; aborting.')
+			_shell.notify ("jump: no previous jump set command; aborting.")
 			return None
 		_old_jump_line = _jump_line
 		_jump_line = _cursor.get_line ()
@@ -901,50 +901,50 @@ def jump_command (_shell, _arguments) :
 
 def jump_set_command (_shell, _arguments) :
 	if len (_arguments) != 0 :
-		_shell.notify ('jump-set: wrong syntax: jump-set')
+		_shell.notify ("jump-set: wrong syntax: jump-set")
 		return None
-	if jump_command (_shell, ['s']) is None :
+	if jump_command (_shell, ["s"]) is None :
 		return None
 	return True
 
 
 def load_fd_command (_shell, _arguments, _input) :
 	if len (_arguments) != 0 :
-		_shell.notify ('load-fd: wrong syntax: load-fd')
+		_shell.notify ("load-fd: wrong syntax: load-fd")
 		return None
 	try :
 		_stream = None
-		_stream = codecs.EncodedFile (os.fdopen (_input, 'r'), 'utf-8', 'utf-8', 'replace')
+		_stream = codecs.EncodedFile (os.fdopen (_input, "r"), "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
 	except :
-		_shell.notify ('load-fd: input failed; aborting.')
+		_shell.notify ("load-fd: input failed; aborting.")
 		if _stream is not None :
 			try :
 				_stream.close ()
 			except :
 				pass
 		return None
-	return _load_file_lines (_shell, 'a', _lines)
+	return _load_file_lines (_shell, "a", _lines)
 
 
 def store_fd_command (_shell, _arguments, _output) :
 	if len (_arguments) != 0 :
-		_shell.notify ('store-fd: wrong syntax: store-fd')
+		_shell.notify ("store-fd: wrong syntax: store-fd")
 		return None
 	try :
 		_stream = None
-		_stream = codecs.EncodedFile (os.fdopen (_output, 'a'), 'utf-8', 'utf-8', 'replace')
+		_stream = codecs.EncodedFile (os.fdopen (_output, "a"), "utf-8", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
 		for _line in xrange (0, _lines) :
 			_string = _view.select_real_string (_line)
 			_stream.write (_string)
-			_stream.write ('\n')
+			_stream.write ("\n")
 			_stream.flush ()
 		_stream.close ()
 	except :
-		_shell.notify ('store-fd: output failed; aborting.')
+		_shell.notify ("store-fd: output failed; aborting.")
 		if _stream is not None :
 			try :
 				_stream.close ()

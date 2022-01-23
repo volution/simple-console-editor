@@ -13,19 +13,19 @@ from pager_scroll import *
 def main (_arguments, _terminal, _transcript) :
 	
 	if len (_arguments) == 0 :
-		_highlight_re = '^.*$'
-		_highlight_strings_sub = ('', '-- ', '\\g<0>')
-		_highlight_data_sub = '\\g<0>'
+		_highlight_re = "^.*$"
+		_highlight_strings_sub = ("", "-- ", "\\g<0>")
+		_highlight_data_sub = "\\g<0>"
 	elif len (_arguments) == 1 :
 		_highlight_re = _arguments[0]
-		_highlight_strings_sub = ('', '\\g<0>', '')
-		_highlight_data_sub = '\\g<0>'
+		_highlight_strings_sub = ("", "\\g<0>", "")
+		_highlight_data_sub = "\\g<0>"
 	elif len (_arguments) == 5 :
 		_highlight_re = _arguments[0]
 		_highlight_strings_sub = (_arguments[1], _arguments[2], _arguments[3])
 		_highlight_data_sub = _arguments[4]
 	else :
-		_transcript.error ('invalid arguments;  expected: [<pattern> [<display-prefix> <display-anchor> <display-suffix> <output>]];  aborting!')
+		_transcript.error ("invalid arguments;  expected: [<pattern> [<display-prefix> <display-anchor> <display-suffix> <output>]];  aborting!")
 		return False
 	
 	_multiple_selection = True
@@ -42,11 +42,11 @@ def main (_arguments, _terminal, _transcript) :
 		_redirected_output = os.dup (1)
 	
 	if _redirected_input is None :
-		_transcript.error ('invalid standard input;  expected a non-TTY;  aborting!')
+		_transcript.error ("invalid standard input;  expected a non-TTY;  aborting!")
 		return False
 	
 	if _redirected_output is None :
-		_transcript.error ('invalid standard output;  expected a non-TTY;  aborting!')
+		_transcript.error ("invalid standard output;  expected a non-TTY;  aborting!")
 		return False
 	
 	_selection = set ()
@@ -89,7 +89,7 @@ def main (_arguments, _terminal, _transcript) :
 	
 	if len (_selection) > 0 :
 		for _selected in sorted (_selection) :
-			os.write (_redirected_output, _selected + '\n')
+			os.write (_redirected_output, _selected + "\n")
 		return True
 	else :
 		return False
@@ -122,29 +122,29 @@ def _initialize (_terminal, _highlight_select) :
 	
 	_handler = Handler ()
 	
-	_handler.register_control ('X', quick_exit_command)
-	_handler.register_command ('exit', exit_command)
-	_handler.register_command ('quick-exit', quick_exit_command)
+	_handler.register_control ("X", quick_exit_command)
+	_handler.register_command ("exit", exit_command)
+	_handler.register_command ("quick-exit", quick_exit_command)
 	
-	_handler.register_command ('filter', filter_command)
+	_handler.register_command ("filter", filter_command)
 	
-	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
+	_handler.register_control ("R", lambda _shell, _arguments : _handler.handle_command (_shell))
 	
-	_handler.register_special ('Enter', lambda _shell, _arguments : select_highlight_command (_shell, _arguments, _highlight_select))
-	_handler.register_special ('Tab', next_highlight_command)
+	_handler.register_special ("Enter", lambda _shell, _arguments : select_highlight_command (_shell, _arguments, _highlight_select))
+	_handler.register_special ("Tab", next_highlight_command)
 	
-	_handler.register_control ('@', mark_command)
-	_handler.register_control ('G', go_command)
-	_handler.register_control ('Z', jump_command)
-	_handler.register_control ('V', jump_set_command)
-	_handler.register_command ('mark', mark_command)
-	_handler.register_command ('go', go_command)
-	_handler.register_command ('gl', go_line_command)
-	_handler.register_command ('gs', go_string_command)
-	_handler.register_command ('jump', jump_command)
-	_handler.register_command ('js', jump_set_command)
+	_handler.register_control ("@", mark_command)
+	_handler.register_control ("G", go_command)
+	_handler.register_control ("Z", jump_command)
+	_handler.register_control ("V", jump_set_command)
+	_handler.register_command ("mark", mark_command)
+	_handler.register_command ("go", go_command)
+	_handler.register_command ("gl", go_line_command)
+	_handler.register_command ("gs", go_string_command)
+	_handler.register_command ("jump", jump_command)
+	_handler.register_command ("js", jump_set_command)
 	
-	_handler.register_command ('store', store_command)
+	_handler.register_command ("store", store_command)
 	
 	_shell = Shell ()
 	_shell.set_view (_view)

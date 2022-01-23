@@ -29,7 +29,7 @@ class Handler (core.BasicHandler) :
 			_shell.alert ()
 	
 	def handle_key_tab (self, _shell) :
-		self._insert_character (_shell, '\t')
+		self._insert_character (_shell, "\t")
 	
 	def handle_key_enter (self, _shell) :
 		_view = _shell.get_view ()
@@ -41,13 +41,13 @@ class Handler (core.BasicHandler) :
 		_string = _scroll.select (_line)
 		_prefix = []
 		for _char in _string :
-			if _char == ' ' :
+			if _char == " " :
 				_prefix.append (_char)
-			elif _char == '\t' :
+			elif _char == "\t" :
 				_prefix.append (_char)
 			else :
 				break
-		_prefix = ''.join (_prefix)
+		_prefix = "".join (_prefix)
 		_scroll.insert (_line + 1, 0, _prefix)
 		_column = _view.compute_visual_length (_prefix)
 		_cursor.increment_line (1)

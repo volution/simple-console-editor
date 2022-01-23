@@ -10,7 +10,7 @@ class Scroll (common.Scroll) :
 		self._filter_re = None
 		self._filter_prefix_lines = 0
 		self._filter_suffix_lines = 0
-		self._filter_break = '~'
+		self._filter_break = "~"
 		self._filtered_lines = None
 		self._filtered_revision = 0
 		self._highlights_re = None
@@ -34,11 +34,11 @@ class Scroll (common.Scroll) :
 	def select_r (self, _index) :
 		_line = self._select_line (_index)
 		if _line is None :
-			return (0, u'')
+			return (0, u"")
 		_revision = max (_line[0], self._highlights_revision)
 		_string = _line[1]
 		_line = None
-		_cache_key = ('line_and_highlights', _index)
+		_cache_key = ("line_and_highlights", _index)
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
 			_cache_revision = _cache_value[0]
@@ -107,13 +107,13 @@ class Scroll (common.Scroll) :
 					elif _index >= _line_max :
 						break
 					if _index_perhaps_cut and _index < _line_index :
-						if _lines[_index] == '' and _index > _line_considered :
+						if _lines[_index] == "" and _index > _line_considered :
 							continue
 						_index_perhaps_cut = False
 					_filtered_lines.append ((_revision, _lines[_index][1]))
 					_line_mark = _index
 				_line_considered = _line_mark
-				while len (_filtered_lines) > 0 and _filtered_lines[-1][1] == '' :
+				while len (_filtered_lines) > 0 and _filtered_lines[-1][1] == "" :
 					del _filtered_lines[-1]
 					_line_mark -= 1
 		if _filter_break is not None and _line_considered < (_line_max - 1) :
@@ -138,7 +138,7 @@ class Scroll (common.Scroll) :
 		_revision = max (_line[0], self._highlights_revision)
 		_string = _line[1]
 		_highlights = None
-		_cache_key = ('line_and_highlights', _index)
+		_cache_key = ("line_and_highlights", _index)
 		if _cache_key in self._cache :
 			_cache_value = self._cache[_cache_key]
 			_cache_revision = _cache_value[0]
@@ -216,6 +216,6 @@ class Scroll (common.Scroll) :
 					_highlight_type)
 			_highlights_2.append (_highlight)
 		_buffer.append (_line[_input_marker:])
-		_line = ''.join (_buffer)
+		_line = "".join (_buffer)
 		return (_line, _highlights_2)
 

@@ -47,13 +47,13 @@ def main (_arguments, _terminal, _transcript) :
 	if _error is not None :
 		print _error[1]
 		try :
-			_dump_path = '/tmp/sce.%d.dump.%s' % (os.getuid (), uuid.uuid4 () .hex)
+			_dump_path = "/tmp/sce.%d.dump.%s" % (os.getuid (), uuid.uuid4 () .hex)
 			_dump_stream = os.open (_dump_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_TRUNC)
 			if not store_fd_command (_shell, [], _dump_stream) :
 				raise Exception ()
-			_transcript.error ('dumpped to scroll to `%s`...', _dump_path)
+			_transcript.error ("dumpped to scroll to `%s`...", _dump_path)
 		except :
-			_transcript.error ('dumping scroll failed!')
+			_transcript.error ("dumping scroll failed!")
 		return _error
 	
 	if not _store () :
@@ -89,47 +89,47 @@ def _initialize (_terminal) :
 	
 	_handler = Handler ()
 	
-	_handler.register_control ('X', quick_exit_command)
-	_handler.register_command ('exit', exit_command)
-	_handler.register_command ('quick-exit', quick_exit_command)
+	_handler.register_control ("X", quick_exit_command)
+	_handler.register_command ("exit", exit_command)
+	_handler.register_command ("quick-exit", quick_exit_command)
 	
-	_handler.register_control ('R', lambda _shell, _arguments : _handler.handle_command (_shell))
+	_handler.register_control ("R", lambda _shell, _arguments : _handler.handle_command (_shell))
 	
-	_handler.register_control ('@', mark_command)
-	_handler.register_control ('G', go_command)
-	_handler.register_control ('Z', jump_command)
-	_handler.register_control ('V', jump_set_command)
-	_handler.register_command ('mark', mark_command)
-	_handler.register_command ('go', go_command)
-	_handler.register_command ('gl', go_line_command)
-	_handler.register_command ('gs', go_string_command)
-	_handler.register_command ('gr', go_regexp_command)
-	_handler.register_command ('jump', jump_command)
-	_handler.register_command ('js', jump_set_command)
+	_handler.register_control ("@", mark_command)
+	_handler.register_control ("G", go_command)
+	_handler.register_control ("Z", jump_command)
+	_handler.register_control ("V", jump_set_command)
+	_handler.register_command ("mark", mark_command)
+	_handler.register_command ("go", go_command)
+	_handler.register_command ("gl", go_line_command)
+	_handler.register_command ("gs", go_string_command)
+	_handler.register_command ("gr", go_regexp_command)
+	_handler.register_command ("jump", jump_command)
+	_handler.register_command ("js", jump_set_command)
 	
-	_handler.register_control ('Y', yank_lines_command)
-	_handler.register_control ('D', copy_lines_command)
-	_handler.register_control ('K', cut_lines_command)
-	_handler.register_command ('yank', yank_lines_command)
-	_handler.register_command ('copy', copy_lines_command)
-	_handler.register_command ('cut', cut_lines_command)
-	_handler.register_command ('delete', delete_lines_command)
+	_handler.register_control ("Y", yank_lines_command)
+	_handler.register_control ("D", copy_lines_command)
+	_handler.register_control ("K", cut_lines_command)
+	_handler.register_command ("yank", yank_lines_command)
+	_handler.register_command ("copy", copy_lines_command)
+	_handler.register_command ("cut", cut_lines_command)
+	_handler.register_command ("delete", delete_lines_command)
 	
-	_handler.register_control ('N', replace_command)
-	_handler.register_command ('replace', replace_command)
+	_handler.register_control ("N", replace_command)
+	_handler.register_command ("replace", replace_command)
 	
-	_handler.register_control ('S', save_command)
-	_handler.register_command ('clear', clear_command)
-	_handler.register_command ('open', open_command)
-	_handler.register_command ('save', save_command)
+	_handler.register_control ("S", save_command)
+	_handler.register_command ("clear", clear_command)
+	_handler.register_command ("open", open_command)
+	_handler.register_command ("save", save_command)
 	
-	_handler.register_control ('T', paste_command)
-	_handler.register_command ('paste', paste_command)
+	_handler.register_control ("T", paste_command)
+	_handler.register_command ("paste", paste_command)
 	
-	_handler.register_command ('load', load_command)
-	_handler.register_command ('store', store_command)
-	_handler.register_command ('sys', sys_command)
-	_handler.register_command ('pipe', pipe_command)
+	_handler.register_command ("load", load_command)
+	_handler.register_command ("store", store_command)
+	_handler.register_command ("sys", sys_command)
+	_handler.register_command ("pipe", pipe_command)
 	
 	_shell = Shell ()
 	_shell.set_view (_view)
