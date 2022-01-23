@@ -175,7 +175,7 @@ class View (core.View) :
 		for _character in _string :
 			_code = ord (_character)
 			if _code == 9 :
-				_length = ((_length / _tab_columns) + 1) * _tab_columns
+				_length = ((_length // _tab_columns) + 1) * _tab_columns
 			else :
 				_length += 1
 			if _length > _column :
@@ -194,7 +194,7 @@ class View (core.View) :
 			if _index == _column :
 				break
 			if _code == 9 :
-				_length = ((_length / _tab_columns) + 1) * _tab_columns
+				_length = ((_length // _tab_columns) + 1) * _tab_columns
 			else :
 				_length += 1
 			_index += 1
@@ -208,7 +208,7 @@ class View (core.View) :
 		for _character in _string :
 			_code = ord (_character)
 			if _code == 9 :
-				_length = ((_length / _tab_columns) + 1) * _tab_columns
+				_length = ((_length // _tab_columns) + 1) * _tab_columns
 			else :
 				_length += 1
 		return _length
@@ -263,7 +263,7 @@ class View (core.View) :
 					break
 			_code = ord (_character)
 			if _code == 9 :
-				_delta = (((_column / _tab_columns) + 1) * _tab_columns) - _column
+				_delta = (((_column // _tab_columns) + 1) * _tab_columns) - _column
 				if ((_column + _delta) > _head_column) and (_column <= _tail_column) :
 					if _last_mode != -2 :
 						_buffer.append (-2)

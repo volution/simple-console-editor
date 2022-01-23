@@ -127,7 +127,7 @@ class Scroll (common.Scroll) :
 				if _line is None :
 					continue
 				_line_size = max (_line_size, len (_line[1]))
-			_filter_break = _filter_break * max (1, _line_size / len (_filter_break))
+			_filter_break = _filter_break * max (1, _line_size // len (_filter_break))
 			for _index in xrange (len (_filtered_lines)) :
 				if _filtered_lines[_index] is None :
 					_filtered_lines[_index] = (_revision, _filter_break)

@@ -48,8 +48,8 @@ def mark_command (_shell, _arguments) :
 		_mark_1_column = _mark_1.get_column ()
 		_mark_2_line = _mark_2.get_line ()
 		_mark_2_column = _mark_2.get_column ()
-		_mark_m_line = (_mark_1_line + _mark_2_line) / 2
-		_mark_m_column = (_mark_1_column + _mark_2_column) / 2
+		_mark_m_line = (_mark_1_line + _mark_2_line) // 2
+		_mark_m_column = (_mark_1_column + _mark_2_column) // 2
 		if _mark_1_line == _cursor_line and _mark_1_column == _cursor_column :
 			if not _stabilize :
 				_view.set_mark_enabled (False)
