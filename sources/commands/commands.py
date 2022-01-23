@@ -1,8 +1,4 @@
 
-if __name__ == "__main__" :
-	raise Exception ("70b091f2")
-
-
 import os
 import sys
 import traceback
