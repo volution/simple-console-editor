@@ -1,6 +1,7 @@
 #!/usr/bin/env -S python2 -u -O -O -B -E -S -s -R
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 if __name__ == "__main__" :
 	import editor, commands

@@ -1,5 +1,6 @@
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import re
 
@@ -37,7 +38,7 @@ class Scroll (common.Scroll) :
 	def select_r (self, _index) :
 		_line = self._select_line (_index)
 		if _line is None :
-			return (0, u"")
+			return (0, "")
 		_revision = max (_line[0], self._highlights_revision)
 		_string = _line[1]
 		_line = None

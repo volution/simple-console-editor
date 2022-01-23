@@ -1,5 +1,6 @@
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import common
 
@@ -13,9 +14,9 @@ class Scroll (common.Scroll) :
 		if self._sealed :
 			raise Exception ()
 		if self._lines is None :
-			self._lines = [(0, u"")]
+			self._lines = [(0, "")]
 		if _column == 0 :
-			self._lines.insert (_index, (0, u""))
+			self._lines.insert (_index, (0, ""))
 		else :
 			_revision_1 = self._updated_next ()
 			_revision_2 = self._updated_next ()
@@ -42,7 +43,7 @@ class Scroll (common.Scroll) :
 		if self._sealed :
 			raise Exception ()
 		if self._lines is None :
-			self._lines = [(0, u"")]
+			self._lines = [(0, "")]
 		_revision = self._updated_next ()
 		_string = self._coerce (_string)
 		_line_string = self._lines[_index][1]
@@ -61,7 +62,7 @@ class Scroll (common.Scroll) :
 		if self._sealed :
 			raise Exception ()
 		if self._lines is None :
-			self._lines = [(0, u"")]
+			self._lines = [(0, "")]
 		_line_string = self._lines[_index][1]
 		if (_column > len (_line_string)) :
 			return

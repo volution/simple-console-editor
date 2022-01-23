@@ -1,5 +1,6 @@
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import curses
 import locale
@@ -228,7 +229,7 @@ class Shell (object) :
 		_inputs_count = len (_inputs)
 		_input = _inputs_count
 		while True :
-			_string = u"".join (_buffer)
+			_string = "".join (_buffer)
 			_response = _string
 			if len (_response) > _response_max_length :
 				_response_drop = len (_response) - _response_max_length + 6

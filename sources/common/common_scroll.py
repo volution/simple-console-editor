@@ -1,5 +1,6 @@
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 
 class Scroll (object) :
@@ -21,7 +22,7 @@ class Scroll (object) :
 	
 	def select_r (self, _index) :
 		if self._lines is None :
-			return (0, u"")
+			return (0, "")
 		return self._lines[_index]
 	
 	def update (self, _index, _string) :
