@@ -352,7 +352,7 @@ class Shell (object) :
 					elif _code == -5 :
 						_window.attrset (_color_highlight_2)
 					else :
-						_window.insstr (_i, _column, "?")
+						_window.insstr (i, _column, "?")
 						_column += 1
 			else :
 				_window.attrset (_color_markup)
