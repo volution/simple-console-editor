@@ -5,7 +5,7 @@ import os
 import sys
 
 
-class Embedded :
+class Embedded (object) :
 	
 	def __init__ (self) :
 		

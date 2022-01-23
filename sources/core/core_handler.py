@@ -4,7 +4,7 @@ from __future__ import absolute_import
 import curses
 
 
-class Handler :
+class Handler (object) :
 	
 	def __init__ (self) :
 		pass

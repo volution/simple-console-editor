@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 
-class Scroll :
+class Scroll (object) :
 	
 	def __init__ (self) :
 		self._lines = None

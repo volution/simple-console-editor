@@ -2,7 +2,7 @@
 from __future__ import absolute_import
 
 
-class View :
+class View (object) :
 	
 	def __init__ (self) :
 		self._cursor = Mark ()
@@ -132,7 +132,7 @@ class View :
 		self._tail.set (_tail_line, _tail_column)
 
 
-class Mark :
+class Mark (object) :
 	
 	def __init__ (self) :
 		self._line = 0

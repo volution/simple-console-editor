@@ -52,7 +52,7 @@ def main (_main) :
 	raise Exception ("019db0ea")
 
 
-class Transcript :
+class Transcript (object) :
 	
 	def __init__ (self, _stream) :
 		self._stream = _stream

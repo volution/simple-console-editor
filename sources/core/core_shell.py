@@ -9,7 +9,7 @@ import time
 import traceback
 
 
-class Shell :
+class Shell (object) :
 	
 	def __init__ (self) :
 		self._view = None
