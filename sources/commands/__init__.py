@@ -1,3 +1,5 @@
 
-from commands import main
+from __future__ import absolute_import
+
+from .commands import main
 

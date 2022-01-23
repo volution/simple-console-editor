@@ -1,13 +1,16 @@
 
+from __future__ import absolute_import
+
 import os
 import sys
 import uuid
 
 from core import *
 from common import *
-from pager_commands import *
-from pager_handler import *
-from pager_scroll import *
+
+from .pager_commands import *
+from .pager_handler import *
+from .pager_scroll import *
 
 
 def main (_arguments, _terminal, _transcript) :

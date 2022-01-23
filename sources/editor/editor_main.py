@@ -1,13 +1,16 @@
 
+from __future__ import absolute_import
+
 import os
 import sys
 import uuid
 
 from core import *
 from common import *
-from editor_commands import *
-from editor_handler import *
-from editor_scroll import *
+
+from .editor_commands import *
+from .editor_handler import *
+from .editor_scroll import *
 
 
 def main (_arguments, _terminal, _transcript) :

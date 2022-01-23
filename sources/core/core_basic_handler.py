@@ -1,5 +1,7 @@
 
-from core_handler import Handler
+from __future__ import absolute_import
+
+from .core_handler import Handler
 
 
 class BasicHandler (Handler) :

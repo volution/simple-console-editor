@@ -1,4 +1,6 @@
 
+from __future__ import absolute_import
+
 import itertools
 
 
@@ -7,7 +9,8 @@ from editor.editor_commands import \
 		mark_command, \
 		store_command, load_fd_command, \
 		go_command, go_line_command, go_string_command, \
-		jump_command, jump_set_command
+		jump_command, jump_set_command \
+#
 
 
 def filter_command (_shell, _arguments) :

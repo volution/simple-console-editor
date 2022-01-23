@@ -1,7 +1,10 @@
 
+from __future__ import absolute_import
+
 import re
 
 import common
+
 
 class Scroll (common.Scroll) :
 	

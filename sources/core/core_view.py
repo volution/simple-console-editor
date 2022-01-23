@@ -1,4 +1,7 @@
 
+from __future__ import absolute_import
+
+
 class View :
 	
 	def __init__ (self) :
