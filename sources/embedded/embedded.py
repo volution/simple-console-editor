@@ -79,6 +79,7 @@ class Embedded :
 				"* uname node    : %s" % (self.uname_node (),),
 				"* uname system  : %s, %s, %s" % (self.uname_system (), self.uname_release (), self.uname_machine (),),
 				"* uname hash    : %s" % (self.uname_fingerprint (),),
+				"",
 			]
 		_buffer = "\n".join (_lines)
 		_stream.write (_buffer.encode ("utf-8"))
