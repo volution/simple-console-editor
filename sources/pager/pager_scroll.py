@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
+from core.py23 import *
 
 import re
 
@@ -100,13 +101,13 @@ class Scroll (common.Scroll) :
 		_line_max = len (_lines)
 		_line_mark = -1
 		_line_limit = -1
-		for _line_index in xrange (_line_max) :
+		for _line_index in xrange_ (_line_max) :
 			_match = _filter_re.search (_lines[_line_index][1])
 			if _match is not None :
 				if _filter_break is not None and _line_mark < (_line_index - _filter_prefix - 1) :
 					_filtered_lines.append (None)
 				_index_perhaps_cut = True
-				for _index in xrange (_line_index - _filter_prefix, _line_index + _filter_suffix + 1) :
+				for _index in xrange_ (_line_index - _filter_prefix, _line_index + _filter_suffix + 1) :
 					if _index <= _line_mark :
 						continue
 					elif _index >= _line_max :
@@ -130,7 +131,7 @@ class Scroll (common.Scroll) :
 					continue
 				_line_size = max (_line_size, len (_line[1]))
 			_filter_break = _filter_break * max (1, _line_size // len (_filter_break))
-			for _index in xrange (len (_filtered_lines)) :
+			for _index in xrange_ (len (_filtered_lines)) :
 				if _filtered_lines[_index] is None :
 					_filtered_lines[_index] = (_revision, _filter_break)
 		self._filtered_lines = _filtered_lines

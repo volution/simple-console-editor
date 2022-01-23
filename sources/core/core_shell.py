@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
+from core.py23 import *
 
 import curses
 import locale
@@ -324,7 +325,7 @@ class Shell (object) :
 		_messages_touched = self._messages_touched
 		self._messages_touched = False
 		
-		for i in xrange (0, _max_lines) :
+		for i in xrange_ (0, _max_lines) :
 			_window.move (i, 0)
 			_line = _head_line + i
 			_column = 0

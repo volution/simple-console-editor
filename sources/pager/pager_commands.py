@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
+from core.py23 import *
 
 import itertools
 
@@ -69,7 +70,7 @@ def next_highlight_command (_shell, _arguments) :
 	_line = _cursor.get_line ()
 	_column = _view.select_real_column (_line, _cursor.get_column ()) + 1
 	_found = False
-	for _line in itertools.chain (xrange (_line, _lines), xrange (0, _line)) :
+	for _line in itertools.chain (xrange_ (_line, _lines), xrange_ (0, _line)) :
 		_found = False
 		for _highlight in _scroll.highlights (_line) :
 			if _column <= _highlight[0] :

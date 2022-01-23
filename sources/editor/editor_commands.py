@@ -2,6 +2,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import division
+from core.py23 import *
 
 import codecs
 import errno
@@ -13,7 +14,6 @@ import re
 import subprocess
 import sys
 import time
-import thread
 
 
 def exit_command (_shell, _arguments) :
@@ -202,7 +202,7 @@ def _copy_lines (_shell, _arguments) :
 			_first_line = min (_mark_1_line, _mark_2_line)
 			_last_line = max (_mark_1_line, _mark_2_line)
 			_yank_buffer = []
-			for _line in xrange (_first_line, _last_line + 1) :
+			for _line in xrange_ (_first_line, _last_line + 1) :
 				_yank_buffer.append (_scroll.select (_line))
 	else :
 		_cursor_line = _cursor.get_line ()
@@ -248,7 +248,7 @@ def _delete_lines (_shell, _arguments) :
 		else :
 			_first_line = min (_mark_1_line, _mark_2_line)
 			_last_line = max (_mark_1_line, _mark_2_line)
-			for _line in xrange (_first_line, _last_line + 1) :
+			for _line in xrange_ (_first_line, _last_line + 1) :
 				_scroll.exclude (_first_line)
 			_cursor.set_line (_first_line)
 	else :
@@ -373,7 +373,7 @@ def pipe_command (_shell, _arguments) :
 	else :
 		_first_line = 0
 		_last_line = _scroll.get_length () - 1
-	for _line in xrange (_first_line, _last_line + 1) :
+	for _line in xrange_ (_first_line, _last_line + 1) :
 		_lines.append (_scroll.select (_line))
 	try :
 		_output_lines = []
@@ -466,9 +466,9 @@ def pipe_command (_shell, _arguments) :
 				except :
 					pass
 				_done_threads.append (2)
-		_stdin_thread = thread.start_new_thread (_handle_stdin, ())
-		_stdout_thread = thread.start_new_thread (_handle_stdout, ())
-		_stderr_thread = thread.start_new_thread (_handle_stderr, ())
+		_stdin_thread = thread_.start_new_thread (_handle_stdin, ())
+		_stdout_thread = thread_.start_new_thread (_handle_stdout, ())
+		_stderr_thread = thread_.start_new_thread (_handle_stderr, ())
 		_error = _process.wait ()
 		while len (_done_threads) != 3 :
 			time.sleep (0.1)
@@ -485,7 +485,7 @@ def pipe_command (_shell, _arguments) :
 		for _line in _error_lines :
 			_line = _line.rstrip ("\r\n")
 			_shell.notify ("sys: %s", _line)
-	for _line in xrange (_first_line, _last_line + 1) :
+	for _line in xrange_ (_first_line, _last_line + 1) :
 		_scroll.exclude (_first_line)
 	_lines.reverse ()
 	for _line in _lines :
@@ -581,7 +581,7 @@ def store_command (_shell, _arguments) :
 		_stream = codecs.open (_path, "w", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
-		for _line in xrange (0, _lines) :
+		for _line in xrange_ (0, _lines) :
 			if _selector == "a" or _view.select_is_tagged (_line) :
 				_string = _view.select_real_string (_line)
 				_stream.write (_string)
@@ -758,7 +758,7 @@ def _go_search (_shell, _matcher) :
 	_lines = _view.get_lines ()
 	_cursor_line = _cursor.get_line ()
 	_cursor_column_0 = _cursor.get_column ()
-	for _current_line in itertools.chain (xrange (_cursor_line, _lines), xrange (0, _cursor_line)) :
+	for _current_line in itertools.chain (xrange_ (_cursor_line, _lines), xrange_ (0, _cursor_line)) :
 		_cursor_column = _view.select_real_column (_current_line, _cursor_column_0)
 		_current_string = _view.select_real_string (_current_line)
 		_matched_column = _matcher (_cursor_line, _cursor_column, _current_line, _current_string)
@@ -860,7 +860,7 @@ def replace_command (_shell, _arguments) :
 		else :
 			_column = -1
 			_line = _line + 1
-		for _line in itertools.chain (xrange (_line, _lines), xrange (0, _line)) :
+		for _line in itertools.chain (xrange_ (_line, _lines), xrange_ (0, _line)) :
 			_column = _view.select_real_string (_line) .find (_what, 0 if _column == -1 else _column)
 			if _column >= 0 :
 				break
@@ -941,7 +941,7 @@ def store_fd_command (_shell, _arguments, _output) :
 		_stream = codecs.EncodedFile (os.fdopen (_output, "a"), "utf-8", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
-		for _line in xrange (0, _lines) :
+		for _line in xrange_ (0, _lines) :
 			_string = _view.select_real_string (_line)
 			_stream.write (_string)
 			_stream.write ("\n")
