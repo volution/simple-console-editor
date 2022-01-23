@@ -40,6 +40,8 @@
 	
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	
+	_compress=true
+	
 	test "${#}" -eq 0
 	test -d ./.outputs
 	test -f "./sources/commands/${_main}_main.py"
@@ -73,13 +75,6 @@
 		#
 	fi
 	
-	if test -e "${_bundle_zip}.tmp.1" ; then
-		rm -- "${_bundle_zip}.tmp.1"
-	fi
-	if test -e "${_bundle_zip}.tmp.2" ; then
-		rm -- "${_bundle_zip}.tmp.2"
-	fi
-	
 	_build_target=release
 	_build_number="$( exec -- cat -- ./sources/embedded/build/number.txt )"
 	_build_version="$( exec -- cat -- ./sources/embedded/build/version.txt )"
@@ -98,15 +93,43 @@
 		> "${_bundle_sources}/embedded/embedded.py.tmp" \
 	#
 	
-	touch -c -r "${_bundle_sources}/embedded/embedded.py" -- "${_bundle_sources}/embedded/embedded.py.tmp"
-	mv -T -- "${_bundle_sources}/embedded/embedded.py.tmp" "${_bundle_sources}/embedded/embedded.py"
+	mv -T -- \
+			"${_bundle_sources}/embedded/embedded.py.tmp" \
+			"${_bundle_sources}/embedded/embedded.py" \
+	#
+	
+	_touch_timestamp="${_build_timestamp//-/}"
+	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
+	find "${_bundle_sources}/" -exec touch -t "${_touch_timestamp}" -- {} +
+	
+	python2 -u -O -O -B -E -S -s -R -m compileall -q -- "${_bundle_sources}"
+	
+	if test "${_compress}" == true ; then
+		find "${_bundle_sources}/" -xtype f -name '*.py' -delete
+	fi
+	
+	_touch_timestamp="${_build_timestamp//-/}"
+	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
+	find "${_bundle_sources}/" -exec touch -c -t "${_touch_timestamp}" -- {} +
+	
+	if test -e "${_bundle_zip}.tmp.1" ; then
+		rm -- "${_bundle_zip}.tmp.1"
+	fi
+	if test -e "${_bundle_zip}.tmp.2" ; then
+		rm -- "${_bundle_zip}.tmp.2"
+	fi
+	
+	_zip_level="-0"
+	if test "${_compress}" == true ; then
+		_zip_level="-9"
+	fi
 	
 	execline-cd "${_bundle_sources}" \
 		find . -xtype f -print \
 	| LC_ALL=C sort \
 	| execline-cd "${_bundle_sources}" \
 		zip \
-			-0 \
+			"${_zip_level}" \
 			-q \
 			-o \
 			-X \
