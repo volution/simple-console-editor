@@ -6,13 +6,18 @@ from py23 import *
 
 from core import *
 from common import *
+from commands import main as commands_main
 
 from .pager_commands import *
 from .pager_handler import *
 from .pager_scroll import *
 
 
-def main (_arguments, _terminal, _transcript) :
+def main () :
+	commands_main (main_0)
+
+
+def main_0 (_arguments, _terminal, _transcript) :
 	
 	if len (_arguments) == 0 :
 		_highlight_re = "^.*$"

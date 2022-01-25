@@ -6,13 +6,18 @@ from py23 import *
 
 from core import *
 from common import *
+from commands import main as commands_main
 
 from .editor_commands import *
 from .editor_handler import *
 from .editor_scroll import *
 
 
-def main (_arguments, _terminal, _transcript) :
+def main () :
+	commands_main (main_0)
+
+
+def main_0 (_arguments, _terminal, _transcript) :
 	
 	_redirected_input = None
 	if not os.isatty (0) :

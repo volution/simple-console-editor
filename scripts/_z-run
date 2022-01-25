@@ -41,7 +41,7 @@
 					-E # ignore `PYTHON*` environment variables
 					-S # disable `sys.path` manipulation
 					-s # disable user-site
-					-R # hash randomization
+					-b # warn about `str` and `bytes` mixes
 				)
 		;;
 		( * )

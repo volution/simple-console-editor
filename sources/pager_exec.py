@@ -4,8 +4,9 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 if __name__ == "__main__" :
-	import pager, commands
-	commands.main (pager.main)
+	import py23
+	import pager
+	pager.main ()
 	raise Exception ("6e701fee")
 else :
 	raise Exception ("dcbee9f0")
