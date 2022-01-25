@@ -86,7 +86,7 @@ class BasicHandler (Handler) :
 			#if _outcome is None :
 			#	_shell.notify ("Command [%s] failed.", _command)
 		except Exception as _error :
-			_shell.notify ("Unhandled exception [%s]; ignoring.", str (_error))
+			_shell.notify ("Unhandled exception; ignoring.  //  %s", _error)
 		except :
 			_shell.notify ("Unhandled unknown exception; ignoring.")
 		return True

@@ -321,8 +321,8 @@ def load_command (_shell, _arguments) :
 		_stream = codecs.open (_path, "r", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
-	except :
-		_shell.notify ("load: input failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("load: input failed; aborting.  //  %s", _error)
 		if _stream is not None :
 			try :
 				_stream.close ()
@@ -345,8 +345,8 @@ def sys_command (_shell, _arguments) :
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 1, close_fds = True, universal_newlines = True)
-	except :
-		_shell.notify ("sys: spawn failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
 		return None
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
@@ -356,8 +356,8 @@ def sys_command (_shell, _arguments) :
 		_error_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
-	except :
-		_shell.notify ("sys: input failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("sys: input failed; aborting.  //  %s", _error)
 		return None
 	if _error != 0 :
 		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
@@ -378,8 +378,8 @@ def pipe_command (_shell, _arguments) :
 				_system_arguments, shell = False, env = None,
 				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 1, close_fds = True, universal_newlines = True)
-	except :
-		_shell.notify ("pipe: spawn failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("pipe: spawn failed; aborting.  //  %s", _error)
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
@@ -449,8 +449,8 @@ def pipe_command (_shell, _arguments) :
 					_stream.write ("\n")
 					_stream.flush ()
 				_stream.close ()
-			except :
-				pass
+			except Exception as _error :
+				_shell.notify ("pipe: input failed; aborting.  //  %s", _error)
 			finally :
 				try :
 					_stream.close ()
@@ -467,8 +467,8 @@ def pipe_command (_shell, _arguments) :
 					_output_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
-			except :
-				pass
+			except Exception as _error :
+				_shell.notify ("pipe: output failed; aborting.  //  %s", _error)
 			finally :
 				try :
 					_stream.close ()
@@ -485,8 +485,8 @@ def pipe_command (_shell, _arguments) :
 					_error_lines.append (_line)
 					_line = _stream.readline ()
 				_stream.close ()
-			except :
-				pass
+			except Exception as _error :
+				_shell.notify ("pipe: stderr failed; aborting.  //  %s", _error)
 			finally :
 				try :
 					_stream.close ()
@@ -501,10 +501,7 @@ def pipe_command (_shell, _arguments) :
 			time.sleep (0.1)
 		_lines = _output_lines
 	except Exception as _error:
-		_shell.notify ("pipe: input failed; aborting." + str (_error))
-		return
-	except :
-		_shell.notify ("pipe: input failed; aborting.")
+		_shell.notify ("pipe: input failed; aborting.  //  %s", _error)
 		return
 	if _error != 0 :
 		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
@@ -537,18 +534,18 @@ def paste_command (_shell, _arguments) :
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = None,
 				bufsize = 1, close_fds = True, universal_newlines = True)
-	except :
+	except Exception as _error :
 #!		_shell._curses_open ()
-		_shell.notify ("paste: spawn failed; aborting.")
+		_shell.notify ("paste: spawn failed; aborting.  //  %s", _error)
 		return None
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
 		_error = _process.wait ()
-	except :
+	except Exception as _error :
 #!		_shell._curses_open ()
-		_shell.notify ("paste: input failed; aborting.")
+		_shell.notify ("paste: input failed; aborting.  //  %s", _error)
 		return None
 #!	_shell._curses_open ()
 	if _error != 0 :
@@ -614,8 +611,8 @@ def store_command (_shell, _arguments) :
 				_stream.write (_string)
 				_stream.write ("\n")
 		_stream.close ()
-	except :
-		_shell.notify ("store: output failed; target file might have been destroyed!")
+	except Exception as _error :
+		_shell.notify ("store: output failed; target file might have been destroyed!  //  %s", _error)
 		if _stream is not None :
 			try :
 				_stream.close ()
@@ -700,8 +697,8 @@ def _fpos_load (_shell) :
 		_stream = codecs.open (_fpos_path, "r", "utf-8", "replace")
 		_data = _stream.read ()
 		_stream.close ()
-	except :
-		_shell.notify ("fpos-load: input fpos failed; ignoring.")
+	except Exception as _error :
+		_shell.notify ("fpos-load: input fpos failed; ignoring.  //  %s", _error)
 		try :
 			_stream.close ()
 		except :
@@ -712,8 +709,8 @@ def _fpos_load (_shell) :
 	try :
 		_globals = {"__builtins__" : {}}
 		_dict = eval (_data, _globals, _globals)
-	except :
-		_shell.notify ("fpos-load: eval failed; ignoring.")
+	except Exception as _error :
+		_shell.notify ("fpos-load: eval failed; ignoring.  //  %s", _error)
 	if _dict is None :
 		return dict ()
 	return _dict
@@ -726,8 +723,8 @@ def _fpos_store (_shell, _dict) :
 		_stream = codecs.open (_fpos_path, "w", "utf-8", "replace")
 		_stream.write (_data)
 		_stream.close ()
-	except :
-		_shell.notify ("fpos-store: output fpos failed; ignoring.")
+	except Exception as _error :
+		_shell.notify ("fpos-store: output fpos failed; ignoring.  //  %s", _error)
 		try :
 			_stream.close ()
 		except :
@@ -753,8 +750,8 @@ def go_command (_shell, _arguments) :
 		try :
 			_target_line = int (_target_line)
 			_target_line -= 1
-		except :
-			_shell.notify ("go: wrong line syntax; aborting.")
+		except Exception as _error :
+			_shell.notify ("go: wrong line syntax; aborting.  //  %s", _error)
 			return None
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line)
@@ -766,8 +763,8 @@ def go_command (_shell, _arguments) :
 		_pattern = _arguments[1]
 		try :
 			_pattern = re.compile (_pattern)
-		except :
-			_shell.notify ("go: wrong pattern syntax; aborting.")
+		except Exception as _error :
+			_shell.notify ("go: wrong pattern syntax; aborting.  //  %s", _error)
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pattern)
 	else :
@@ -948,8 +945,8 @@ def load_fd_command (_shell, _arguments, _input) :
 		_stream = codecs.EncodedFile (os.fdopen (_input, "r"), "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
 		_stream.close ()
-	except :
-		_shell.notify ("load-fd: input failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("load-fd: input failed; aborting.  //  %s", _error)
 		if _stream is not None :
 			try :
 				_stream.close ()
@@ -974,8 +971,8 @@ def store_fd_command (_shell, _arguments, _output) :
 			_stream.write ("\n")
 			_stream.flush ()
 		_stream.close ()
-	except :
-		_shell.notify ("store-fd: output failed; aborting.")
+	except Exception as _error :
+		_shell.notify ("store-fd: output failed; aborting.  //  %s", _error)
 		if _stream is not None :
 			try :
 				_stream.close ()
