@@ -89,9 +89,9 @@ Invocation syntax
 
 ::
 
-	sce-editor
-	sce-editor <file>
-	produce | sce-editor | consume
+	sce
+	sce <file>
+	produce | sce | consume
 
 
 In the first variant, the editor
@@ -209,7 +209,7 @@ Choose GPG key identifiers
 Run the following script (by pasting it in your shell): ::
 
 	gpg2 --list-keys --keyid-format short \
-	| ./scripts/pager '^(pub +[0-9a-zA-Z]+/)([0-9a-fA-F]+) ' '\g<1>' '[\g<2>]' ' ' '\g<2>' \
+	| sce-pager '^(pub +[0-9a-zA-Z]+/)([0-9a-fA-F]+) ' '\g<1>' '[\g<2>]' ' ' '\g<2>' \
 	| cat
 
 
@@ -242,7 +242,7 @@ Advanced "tricks":
 
 * you can run various commands by pressing ``Ctrl+R``;
 
-* one of those commands is ``filter <<pattern>> <<context-lines>>``,
+* one of those commands is ``filter <pattern> <context-lines>``,
   which will show only those lines matching the pattern,
   plus the choosen number of lines before and after the match;
   (to clear the filter just run ``filter``;)
