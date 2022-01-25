@@ -87,5 +87,5 @@ class Embedded (object) :
 				"",
 			]
 		_buffer = "\n".join (_lines)
-		_stream.write (_buffer.encode ("utf-8"))
+		_stream.write (_buffer)
 
