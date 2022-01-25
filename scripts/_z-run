@@ -21,7 +21,7 @@
 	
 	case "${_python}" in
 		( python2 )
-			_python_executable="$( type -P -- python2 )"
+			_python_executable="$( type -P -- python2.7 )"
 			_python_arguments=(
 					-u # unbuffered `stdin` and `stdout`
 					-O -O # optimizations enabled
@@ -144,7 +144,7 @@
 	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
 	find "${_bundle_sources}/" -exec touch -t "${_touch_timestamp}" -- {} +
 	
-	python2 -u -O -O -B -E -S -s -R -m compileall -q -- "${_bundle_sources}"
+	python2.7 -u -O -O -B -E -S -s -R -m compileall -q -- "${_bundle_sources}"
 	
 	if test "${_compress}" == true ; then
 		find "${_bundle_sources}/" -xtype f -name '*.py' -delete
@@ -190,7 +190,7 @@
 		)
 	
 	cat -- \
-			<( printf '#!/usr/bin/env -S python2 %s\n' "${_python_arguments[*]}" ) \
+			<( printf '#!/usr/bin/env -S python2.7 %s\n' "${_python_arguments[*]}" ) \
 			"${_bundle_zip}.tmp.1" \
 		> "${_bundle_zip}.tmp.2" \
 	#
