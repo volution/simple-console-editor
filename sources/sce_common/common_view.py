@@ -4,20 +4,20 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
-import core
+import sce_core
 
 __all__ = [
 		"View",
 	]
 
 
-class View (core.View) :
+class View (sce_core.View) :
 	
 	def __init__ (self) :
-		core.View.__init__ (self)
+		sce_core.View.__init__ (self)
 		self._scroll = None
-		self._mark_1 = core.Mark ()
-		self._mark_2 = core.Mark ()
+		self._mark_1 = sce_core.Mark ()
+		self._mark_2 = sce_core.Mark ()
 		self._mark_enabled = False
 		self._tab_columns = 4
 		self._limit_columns = 1024
@@ -149,7 +149,7 @@ class View (core.View) :
 	
 	def refresh (self) :
 		
-		core.View.refresh (self)
+		sce_core.View.refresh (self)
 		
 		_mark_1_line = self._mark_1.get_line ()
 		_mark_1_column = self._mark_1.get_column ()

@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
-from core import *
-from common import *
-from commands import main as commands_main
+from sce_core import *
+from sce_common import *
+from sce_commands import main as commands_main
 
 from .editor_commands import *
 from .editor_handler import *

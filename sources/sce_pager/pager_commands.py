@@ -28,7 +28,7 @@ __all__ = [
 	]
 
 
-from editor.editor_commands import \
+from sce_editor.editor_commands import \
 		exit_command, quick_exit_command, \
 		mark_command, \
 		jump_command, jump_set_command, \

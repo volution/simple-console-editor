@@ -25,8 +25,8 @@ def main (_main) :
 	_arguments = sys.argv[1:]
 	if len (_arguments) == 1 :
 		if _arguments[0] == "-v" or _arguments[0] == "--version" :
-			import embedded
-			_embedded = embedded.Embedded ()
+			import sce_embedded
+			_embedded = sce_embedded.Embedded ()
 			_embedded.write_version (sys.stdout)
 			sys.exit (0)
 	

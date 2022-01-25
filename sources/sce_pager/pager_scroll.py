@@ -4,17 +4,17 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
-import common
+import sce_common
 
 __all__ = [
 		"Scroll",
 	]
 
 
-class Scroll (common.Scroll) :
+class Scroll (sce_common.Scroll) :
 	
 	def __init__ (self) :
-		common.Scroll.__init__ (self)
+		sce_common.Scroll.__init__ (self)
 		self._filter_re = None
 		self._filter_prefix_lines = 0
 		self._filter_suffix_lines = 0

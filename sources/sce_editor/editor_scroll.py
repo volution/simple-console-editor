@@ -4,17 +4,17 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
-import common
+import sce_common
 
 __all__ = [
 		"Scroll",
 	]
 
 
-class Scroll (common.Scroll) :
+class Scroll (sce_common.Scroll) :
 	
 	def __init__ (self) :
-		common.Scroll.__init__ (self)
+		sce_common.Scroll.__init__ (self)
 	
 	def split (self, _index, _column) :
 		if self._sealed :

@@ -5,8 +5,8 @@ from __future__ import unicode_literals
 
 if __name__ == "__main__" :
 	import py23
-	import pager
-	pager.main ()
+	from sce_pager import main
+	main ()
 	raise Exception ("6e701fee")
 else :
 	raise Exception ("dcbee9f0")

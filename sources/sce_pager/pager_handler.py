@@ -4,15 +4,15 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
-import core
+import sce_core
 
 __all__ = [
 		"Handler",
 	]
 
 
-class Handler (core.BasicHandler) :
+class Handler (sce_core.BasicHandler) :
 	
 	def __init__ (self) :
-		core.BasicHandler.__init__ (self)
+		sce_core.BasicHandler.__init__ (self)
 
