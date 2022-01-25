@@ -17,7 +17,7 @@
 --<< sources / run / *
 	test "${#}" -ge 1 ; _python="${1}" ; shift -- 1
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
-	test -f "./sources/${_main}_exec.py"
+	test -f "./sources/exec_${_main}.py"
 	
 	case "${_python}" in
 		( python2 )
@@ -52,7 +52,7 @@
 	
 	exec -- "${_python_executable}" \
 			"${_python_arguments[@]}" \
-			"./sources/${_main}_exec.py" \
+			"./sources/exec_${_main}.py" \
 			"${@}" \
 	#
 !!
@@ -86,7 +86,7 @@
 	
 	test "${#}" -eq 0
 	test -d ./.outputs
-	test -f "./sources/${_main}_exec.py"
+	test -f "./sources/exec_${_main}.py"
 	
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
@@ -112,16 +112,16 @@
 	
 	if test ! -e "${_bundle_sources}/__main__.py" ; then
 		ln -s -T -- \
-				"./${_main}_exec.py" \
+				"./exec_${_main}.py" \
 				"${_bundle_sources}/__main__.py" \
 		#
 	fi
 	
 	_build_target=release
-	_build_number="$( exec -- cat -- ./sources/embedded/build/number.txt )"
-	_build_version="$( exec -- cat -- ./sources/embedded/build/version.txt )"
-	_build_timestamp="$( exec -- cat -- ./sources/embedded/build/timestamp.txt )"
-	_build_sources_hash="$( exec -- cat -- ./sources/embedded/build/sources.hash )"
+	_build_number="$( exec -- cat -- ./sources/sce_embedded/build/number.txt )"
+	_build_version="$( exec -- cat -- ./sources/sce_embedded/build/version.txt )"
+	_build_timestamp="$( exec -- cat -- ./sources/sce_embedded/build/timestamp.txt )"
+	_build_sources_hash="$( exec -- cat -- ./sources/sce_embedded/build/sources.hash )"
 	_build_git_hash="$( exec -- cat -- ./.outputs/markers/build-git-hash.txt )"
 	
 	sed -r \
@@ -131,13 +131,13 @@
 			-e 's#@\{SCE_BUILD_TIMESTAMP}#'"${_build_timestamp}"'#' \
 			-e 's#@\{SCE_BUILD_SOURCES_HASH}#'"${_build_sources_hash}"'#' \
 			-e 's#@\{SCE_BUILD_GIT_HASH}#'"${_build_git_hash}"'#' \
-		< "${_bundle_sources}/embedded/embedded.py" \
-		> "${_bundle_sources}/embedded/embedded.py.tmp" \
+		< "${_bundle_sources}/sce_embedded/embedded.py" \
+		> "${_bundle_sources}/sce_embedded/embedded.py.tmp" \
 	#
 	
 	mv -T -- \
-			"${_bundle_sources}/embedded/embedded.py.tmp" \
-			"${_bundle_sources}/embedded/embedded.py" \
+			"${_bundle_sources}/sce_embedded/embedded.py.tmp" \
+			"${_bundle_sources}/sce_embedded/embedded.py" \
 	#
 	
 	_touch_timestamp="${_build_timestamp//-/}"
@@ -235,7 +235,7 @@
 	execline-cd ./sources \
 	find . \
 			-type f \
-			-not -path './embedded/build/*' \
+			-not -path './sce_embedded/build/*' \
 			-printf '%P\0' \
 	| LC_ALL=C sort -z \
 		>| ./.outputs/markers/build-sources.list.tmp \
@@ -254,22 +254,22 @@
 		>| ./.outputs/markers/build-sources.hash.tmp \
 	#
 	
-	if ! cmp -s -- ./.outputs/markers/build-sources.hash.tmp ./sources/embedded/build/sources.hash ; then
+	if ! cmp -s -- ./.outputs/markers/build-sources.hash.tmp ./sources/sce_embedded/build/sources.hash ; then
 		
-		_build_number="$( exec -- cat -- ./sources/embedded/build/number.txt )"
+		_build_number="$( exec -- cat -- ./sources/sce_embedded/build/number.txt )"
 		_build_number="$(( _build_number + 1 ))"
 		_build_timestamp="$( exec -- date -- '+%Y-%m-%d-%H-%M-%S' )"
 		
-		printf -- '%d\n' "${_build_number}" >| ./sources/embedded/build/number.txt.tmp
-		printf -- '%s\n' "${_build_timestamp}" >| ./sources/embedded/build/timestamp.txt.tmp
+		printf -- '%d\n' "${_build_number}" >| ./sources/sce_embedded/build/number.txt.tmp
+		printf -- '%s\n' "${_build_timestamp}" >| ./sources/sce_embedded/build/timestamp.txt.tmp
 		
-		mv -T -- ./sources/embedded/build/number.txt.tmp ./sources/embedded/build/number.txt
-		mv -T -- ./sources/embedded/build/timestamp.txt.tmp ./sources/embedded/build/timestamp.txt
+		mv -T -- ./sources/sce_embedded/build/number.txt.tmp ./sources/sce_embedded/build/number.txt
+		mv -T -- ./sources/sce_embedded/build/timestamp.txt.tmp ./sources/sce_embedded/build/timestamp.txt
 		
 		mv -T -- ./.outputs/markers/build-sources.list.tmp ./.outputs/markers/build-sources.list
 		
-		mv -T -- ./.outputs/markers/build-sources.md5.tmp ./sources/embedded/build/sources.md5
-		mv -T -- ./.outputs/markers/build-sources.hash.tmp ./sources/embedded/build/sources.hash
+		mv -T -- ./.outputs/markers/build-sources.md5.tmp ./sources/sce_embedded/build/sources.md5
+		mv -T -- ./.outputs/markers/build-sources.hash.tmp ./sources/sce_embedded/build/sources.hash
 		
 	else
 		
@@ -403,7 +403,7 @@
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
 	
-	_build_version="$( exec -- cat -- ./sources/embedded/build/version.txt )"
+	_build_version="$( exec -- cat -- ./sources/sce_embedded/build/version.txt )"
 	case "${_build_version}" in
 		( 0.0.0 | *.0 )
 			_build_release=false
