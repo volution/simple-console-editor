@@ -7,25 +7,54 @@
 
 
 
-:: sources / run / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' editor "${@}"
-:: sources / run / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' pager "${@}"
+:: sources / run / python2 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 editor "${@}"
+:: sources / run / python2 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 pager "${@}"
+
+:: sources / run / python3 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 editor "${@}"
+:: sources / run / python3 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 pager "${@}"
 
 
 --<< sources / run / *
+	test "${#}" -ge 1 ; _python="${1}" ; shift -- 1
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	test -f "./sources/${_main}_exec.py"
 	
-	_python_arguments=(
-			-u # unbuffered `stdin` and `stdout`
-			-O -O # optimizations enabled
-			-B # disable writing `*.py[oc]`
-			-E # ignore `PYTHON*` environment variables
-			-S # disable `sys.path` manipulation
-			-s # disable user-site
-			-R # hash randomization
-		)
+	case "${_python}" in
+		( python2 )
+			_python_executable="$( type -P -- python2 )"
+			_python_arguments=(
+					-u # unbuffered `stdin` and `stdout`
+					-O -O # optimizations enabled
+					-B # disable writing `*.py[oc]`
+					-E # ignore `PYTHON*` environment variables
+					-S # disable `sys.path` manipulation
+					-s # disable user-site
+					-R # hash randomization
+				)
+		;;
+		( python3 )
+			_python_executable="$( type -P -- python3 )"
+			_python_arguments=(
+					-u # unbuffered `stdin` and `stdout`
+					-O -O # optimizations enabled
+					-B # disable writing `*.py[oc]`
+					-E # ignore `PYTHON*` environment variables
+					-S # disable `sys.path` manipulation
+					-s # disable user-site
+					-R # hash randomization
+				)
+		;;
+		( * )
+			printf -- '[ee]  invalid python `%s`;  aborting!\n' "${_python}" >&2
+			exit -- 1
+		;;
+	esac
 	
-	exec -- python2 "${_python_arguments[@]}" "./sources/${_main}_exec.py" "${@}"
+	exec -- "${_python_executable}" \
+			"${_python_arguments[@]}" \
+			"./sources/${_main}_exec.py" \
+			"${@}" \
+	#
 !!
 
 
