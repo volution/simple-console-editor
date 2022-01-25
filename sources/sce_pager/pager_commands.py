@@ -19,7 +19,9 @@ __all__ = [
 		"go_string_command",
 		"go_regexp_command",
 		
+		"load_command",
 		"store_command",
+		"load_fd_command",
 		"store_fd_command",
 		
 		"filter_command",
@@ -33,6 +35,7 @@ from sce_editor.editor_commands import \
 		mark_command, \
 		jump_command, jump_set_command, \
 		go_command, go_line_command, go_string_command, go_regexp_command, \
+		load_command, load_fd_command, \
 		store_command, store_fd_command \
 #
 
