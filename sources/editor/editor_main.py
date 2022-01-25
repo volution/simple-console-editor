@@ -12,6 +12,10 @@ from .editor_commands import *
 from .editor_handler import *
 from .editor_scroll import *
 
+__all__ = [
+		"main",
+	]
+
 
 def main () :
 	commands_main (main_0)

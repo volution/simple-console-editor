@@ -6,6 +6,10 @@ from py23 import *
 
 import common
 
+__all__ = [
+		"Scroll",
+	]
+
 
 class Scroll (common.Scroll) :
 	

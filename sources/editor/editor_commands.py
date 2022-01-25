@@ -4,6 +4,44 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
+__all__ = [
+		
+		"exit_command",
+		"quick_exit_command",
+		
+		"mark_command",
+		
+		"jump_command",
+		"jump_set_command",
+		
+		"go_command",
+		"go_line_command",
+		"go_string_command",
+		"go_regexp_command",
+		
+		"replace_command",
+		
+		"clear_command",
+		"yank_lines_command",
+		"copy_lines_command",
+		"delete_lines_command",
+		"cut_lines_command",
+		
+		"open_command",
+		"save_command",
+		"load_command",
+		"store_command",
+		
+		"sys_command",
+		"pipe_command",
+		"paste_command",
+		"load_fd_command",
+		"store_fd_command",
+		
+		"fpos_get_command",
+		"fpos_set_command",
+	]
+
 
 def exit_command (_shell, _arguments) :
 	if len (_arguments) != 0 :

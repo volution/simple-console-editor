@@ -6,6 +6,10 @@ from py23 import *
 
 import core
 
+__all__ = [
+		"View",
+	]
+
 
 class View (core.View) :
 	

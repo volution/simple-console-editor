@@ -4,13 +4,36 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
+__all__ = [
+		
+		"exit_command",
+		"quick_exit_command",
+		
+		"mark_command",
+		
+		"jump_command",
+		"jump_set_command",
+		
+		"go_command",
+		"go_line_command",
+		"go_string_command",
+		"go_regexp_command",
+		
+		"store_command",
+		"store_fd_command",
+		
+		"filter_command",
+		"select_highlight_command",
+		"next_highlight_command",
+	]
+
 
 from editor.editor_commands import \
 		exit_command, quick_exit_command, \
 		mark_command, \
-		store_command, load_fd_command, \
-		go_command, go_line_command, go_string_command, \
-		jump_command, jump_set_command \
+		jump_command, jump_set_command, \
+		go_command, go_line_command, go_string_command, go_regexp_command, \
+		store_command, store_fd_command \
 #
 
 
@@ -31,6 +54,7 @@ def filter_command (_shell, _arguments) :
 	_scroll = _view.get_scroll ()
 	_scroll.set_filter (_filter_re, _filter_context, _filter_context)
 	return None
+
 
 def select_highlight_command (_shell, _arguments, _delegate) :
 	if len (_arguments) != 0 :

@@ -6,6 +6,10 @@ from py23 import *
 
 import core
 
+__all__ = [
+		"Handler",
+	]
+
 
 class Handler (core.BasicHandler) :
 	

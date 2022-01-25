@@ -4,6 +4,10 @@ from __future__ import unicode_literals
 from __future__ import division
 from py23 import *
 
+__all__ = [
+		"Shell",
+	]
+
 
 class Shell (object) :
 	

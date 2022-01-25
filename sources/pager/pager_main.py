@@ -12,6 +12,10 @@ from .pager_commands import *
 from .pager_handler import *
 from .pager_scroll import *
 
+__all__ = [
+		"main",
+	]
+
 
 def main () :
 	commands_main (main_0)
