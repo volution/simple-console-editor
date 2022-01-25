@@ -344,17 +344,19 @@ def sys_command (_shell, _arguments) :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-				bufsize = 1, close_fds = True, universal_newlines = True)
+				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
 		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
 		return None
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
+		_lines = [_line.decode ("utf-8") for _line in _lines]
 		_stream.close ()
-		_stream = codecs.EncodedFile (_process.stderr, "utf-8", "utf-8", "replace")
-		_error_lines = _stream.readlines ()
-		_stream.close ()
+		_error_stream = codecs.EncodedFile (_process.stderr, "utf-8", "utf-8", "replace")
+		_error_lines = _error_stream.readlines ()
+		_error_lines = [_line.decode ("utf-8") for _line in _error_lines]
+		_error_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
 		_shell.notify ("sys: input failed; aborting.  //  %s", _error)
@@ -377,7 +379,7 @@ def pipe_command (_shell, _arguments) :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-				bufsize = 1, close_fds = True, universal_newlines = True)
+				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
 		_shell.notify ("pipe: spawn failed; aborting.  //  %s", _error)
 		return None
@@ -406,48 +408,14 @@ def pipe_command (_shell, _arguments) :
 		_output_lines = []
 		_error_lines = []
 		_done_threads = []
-		class NbStream (object) :
-			def __init__ (self, _stream) :
-				self.stream = _stream
-				_stream_descriptor = _stream.fileno ()
-				_stream_flags = fcntl.fcntl (_stream_descriptor, fcntl.F_GETFL)
-				_stream_flags |= os.O_NONBLOCK
-				fcntl.fcntl (_stream_descriptor, fcntl.F_SETFL, _stream_flags)
-			def close (self) :
-				return self.stream.close ()
-			def flush (self) :
-				return self.stream.flush ()
-			def read (self, size = None) :
-				_do = True
-				while _do :
-					try :
-						_data = self.stream.read ()
-						_do = False
-					except IOError as _error :
-						if _error.errno != errno.EAGAIN :
-							raise Exception ("[63fb2777]", _error)
-						time.sleep (0.01)
-				return _data
-			def write (self, _data) :
-				_do = True
-				while _do :
-					try :
-						_outcome = self.stream.write (_data)
-						_do = False
-					except IOError as _error :
-						if _error.errno != errno.EAGAIN :
-							raise Exception ("[b13529ca]", _error)
-						time.sleep (0.01)
-				return _outcome
 		def _handle_stdin () :
 			try :
 				_stream = _process.stdin
-				_stream = NbStream (_stream)
 				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
 				for _line in _lines :
-					_stream.write (_line)
-					_stream.write ("\n")
-					_stream.flush ()
+					_string = _line + "\n"
+					_string = _string.encode ("utf-8")
+					_stream.write (_string)
 				_stream.close ()
 			except Exception as _error :
 				_shell.notify ("pipe: input failed; aborting.  //  %s", _error)
@@ -460,13 +428,11 @@ def pipe_command (_shell, _arguments) :
 		def _handle_stdout () :
 			try :
 				_stream = _process.stdout
-				_stream = NbStream (_stream)
 				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
-				_line = _stream.readline ()
-				while _line != "" :
-					_output_lines.append (_line)
-					_line = _stream.readline ()
+				_lines = _stream.readlines ()
+				_lines = [_line.decode ("utf-8") for _line in _lines]
 				_stream.close ()
+				_output_lines.extend (_lines)
 			except Exception as _error :
 				_shell.notify ("pipe: output failed; aborting.  //  %s", _error)
 			finally :
@@ -478,13 +444,11 @@ def pipe_command (_shell, _arguments) :
 		def _handle_stderr () :
 			try :
 				_stream = _process.stderr
-				_stream = NbStream (_stream)
 				_stream = codecs.EncodedFile (_stream, "utf-8", "utf-8", "replace")
-				_line = _stream.readline ()
-				while _line != "" :
-					_error_lines.append (_line)
-					_line = _stream.readline ()
+				_lines = _stream.readlines ()
+				_lines = [_line.decode ("utf-8") for _line in _lines]
 				_stream.close ()
+				_error_lines.extend (_lines)
 			except Exception as _error :
 				_shell.notify ("pipe: stderr failed; aborting.  //  %s", _error)
 			finally :
@@ -498,7 +462,7 @@ def pipe_command (_shell, _arguments) :
 		_stderr_thread = thread.start_new_thread (_handle_stderr, ())
 		_error = _process.wait ()
 		while len (_done_threads) != 3 :
-			time.sleep (0.1)
+			time.sleep (0.01)
 		_lines = _output_lines
 	except Exception as _error:
 		_shell.notify ("pipe: input failed; aborting.  //  %s", _error)
@@ -533,7 +497,7 @@ def paste_command (_shell, _arguments) :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = None,
-				bufsize = 1, close_fds = True, universal_newlines = True)
+				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
 #!		_shell._curses_open ()
 		_shell.notify ("paste: spawn failed; aborting.  //  %s", _error)
@@ -541,6 +505,7 @@ def paste_command (_shell, _arguments) :
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
+		_lines = [_line.decode ("utf-8") for _line in _lines]
 		_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
@@ -942,8 +907,9 @@ def load_fd_command (_shell, _arguments, _input) :
 		return None
 	try :
 		_stream = None
-		_stream = codecs.EncodedFile (os.fdopen (_input, "r"), "utf-8", "utf-8", "replace")
+		_stream = codecs.EncodedFile (os.fdopen (_input, "rb"), "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
+		_lines = [_line.decode ("utf-8") for _line in _lines]
 		_stream.close ()
 	except Exception as _error :
 		_shell.notify ("load-fd: input failed; aborting.  //  %s", _error)
@@ -962,14 +928,14 @@ def store_fd_command (_shell, _arguments, _output) :
 		return None
 	try :
 		_stream = None
-		_stream = codecs.EncodedFile (os.fdopen (_output, "a"), "utf-8", "utf-8", "replace")
+		_stream = codecs.EncodedFile (os.fdopen (_output, "ab"), "utf-8", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
 		for _line in xrange_ (0, _lines) :
 			_string = _view.select_real_string (_line)
+			_string = _string + "\n"
+			_string = _string.encode ("utf-8")
 			_stream.write (_string)
-			_stream.write ("\n")
-			_stream.flush ()
 		_stream.close ()
 	except Exception as _error :
 		_shell.notify ("store-fd: output failed; aborting.  //  %s", _error)
