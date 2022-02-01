@@ -252,7 +252,7 @@ class Shell (object) :
 				_buffer.append (_code)
 			elif not isinstance (_code, int) :
 				curses.beep ()
-			elif (_code == self._backspace_code) or (_code == 8) :
+			elif (_code == curses.KEY_BACKSPACE) or (_code == self._backspace_code) or (_code == 8) :
 				if len (_buffer) > 0 :
 					_buffer.pop ()
 				else :
