@@ -340,14 +340,17 @@ def sys_command (_shell, _arguments) :
 	if _mode not in ["r", "i", "a"] :
 		_shell.notify ("sys: wrong mode (r|i|a); aborting.")
 		return None
+	_shell._curses_close ()
 	try :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
@@ -375,14 +378,17 @@ def pipe_command (_shell, _arguments) :
 		_shell.notify ("pipe: wrong syntax: pipe <command> <arguments> ...")
 		return None
 	_system_arguments = _arguments
+	_shell._curses_close ()
 	try :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
 				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("pipe: spawn failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
@@ -492,16 +498,17 @@ def pipe_command (_shell, _arguments) :
 
 def paste_command (_shell, _arguments) :
 	_system_arguments = ["sce-paste"] + _arguments
-#!	_shell._curses_close ()
+	_shell._curses_close ()
 	try :
 		_process = subprocess.Popen (
 				_system_arguments, shell = False, env = None,
 				stdin = None, stdout = subprocess.PIPE, stderr = None,
 				bufsize = 131072, close_fds = True, universal_newlines = False)
 	except Exception as _error :
-#!		_shell._curses_open ()
+		_shell._curses_open ()
 		_shell.notify ("paste: spawn failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
@@ -509,10 +516,8 @@ def paste_command (_shell, _arguments) :
 		_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
-#!		_shell._curses_open ()
 		_shell.notify ("paste: input failed; aborting.  //  %s", _error)
 		return None
-#!	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("paste: command failed (non zero exit code); ignoring.")
 	return _load_file_lines (_shell, "i", _lines)

@@ -74,6 +74,8 @@ class Shell (object) :
 		
 		self._window = curses.initscr ()
 		
+		curses.savetty ()
+		
 		curses.start_color ()
 		curses.use_default_colors ()
 		curses.init_pair (1, curses.COLOR_WHITE, -1)
@@ -104,22 +106,17 @@ class Shell (object) :
 		self._window.notimeout (0)
 		self._window.scrollok (0)
 		
+		self._window.erase ()
+		curses.doupdate ()
+		
 		curses.flushinp ()
 		
 		return None
 	
 	def _curses_close (self) :
 		
-		self._window.scrollok (1)
-		self._window.keypad (0)
-		self._window.clear ()
-		self._window.refresh ()
-		
-		curses.echo ()
-		curses.nl ()
-		curses.noraw ()
-		
-		curses.endwin ()
+		self._window.erase ()
+		curses.doupdate ()
 		
 		del self._window
 		del self._color_text
@@ -127,7 +124,15 @@ class Shell (object) :
 		del self._color_message
 		del self._color_input
 		
+		curses.echo ()
+		curses.nl ()
+		curses.noraw ()
+		
 		curses.flushinp ()
+		
+		curses.resetty ()
+		
+		curses.endwin ()
 		
 		return None
 	
@@ -238,7 +243,8 @@ class Shell (object) :
 			_window.clrtoeol ()
 			_window.insstr (("[>>] " + _response) .encode ("utf-8"))
 			_window.move (_response_line, 5 + len (_response))
-			_window.refresh ()
+			_window.noutrefresh ()
+			curses.doupdate ()
 			_code = self.scan ()
 			if _code is None :
 				curses.beep ()
@@ -295,7 +301,6 @@ class Shell (object) :
 		_color_highlight_1 = self._color_highlight_1
 		_color_highlight_2 = self._color_highlight_2
 		
-		_window.noutrefresh ()
 		_window.erase ()
 		
 		_max_lines = _window_lines
@@ -370,5 +375,7 @@ class Shell (object) :
 				_index += 1
 			_window.move (_max_lines - 1, _max_columns - 1)
 		
-		_window.refresh ()
+		_window.noutrefresh ()
+		
+		curses.doupdate ()
 
