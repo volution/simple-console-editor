@@ -230,44 +230,92 @@ class Shell (object) :
 		_window.clrtoeol ()
 		_window.insstr (("[??] " + _request) .encode ("utf-8"))
 		_buffer = []
+		_buffer_position = 0
 		_inputs = self._inputs
 		_inputs_count = len (_inputs)
 		_input = _inputs_count
 		while True :
-			_string = "".join (_buffer)
-			_response = _string
-			if len (_response) > _response_max_length :
-				_response_drop = len (_response) - _response_max_length + 6
-				_response = "[...] " + _response[_response_drop:]
+			_buffer_string = "".join (_buffer)
+			_response = _buffer_string
+			_response_length = len (_response)
+			_response_position = _buffer_position
+			if _response_length > _response_max_length :
+				_response_drop = _response_length - _response_max_length + 6
+				if _response_position >= (_response_length - (_response_max_length // 2)) :
+					_response = "[...] " + _response[_response_drop : _response_length]
+					_response_position = _response_position + 6 - _response_drop
+				elif _response_position < (_response_max_length - (_response_max_length // 2) - 1) :
+					_response = _response[0 : _response_length - _response_drop] + " [...]"
+				else :
+					_response_trim_left = (_response_max_length - 6) // 2
+					_response_trim_right = (_response_max_length - 6) // 2 + (_response_max_length - 6) % 2
+					if (_response_position - _response_trim_left) < 0 :
+						_response_trim_left -= _response_position - _response_trim_left
+						_response_trim_right += _response_position - _response_trim_left
+					if (_response_position + _response_trim_right) > _response_length :
+						_response_trim_left -= _response_length - (_response_position + _response_trim_right)
+						_response_trim_right += _response_length - (_response_position + _response_trim_right)
+					if (_response_trim_left + _response_trim_right + 6) != _response_max_length :
+						raise Exception ("[49d65f2a]")
+					_response = "<] " + _response[(_response_position - _response_trim_left) : (_response_position + _response_trim_right)] + " [>"
+					_response_position = 3 + _response_trim_left
 			_window.move (_response_line, 0)
 			_window.clrtoeol ()
 			_window.insstr (("[>>] " + _response) .encode ("utf-8"))
-			_window.move (_response_line, 5 + len (_response))
+			_window.move (_response_line, 5 + _response_position)
 			_window.noutrefresh ()
 			curses.doupdate ()
 			_code = self.scan ()
 			if _code is None :
 				curses.beep ()
 			elif isinstance (_code, basestring_) :
-				_buffer.append (_code)
+				_buffer.insert (_buffer_position, _code)
+				_buffer_position += 1
 			elif not isinstance (_code, int) :
 				curses.beep ()
 			elif (_code == curses.KEY_BACKSPACE) or (_code == self._backspace_code) or (_code == 8) :
-				if len (_buffer) > 0 :
-					_buffer.pop ()
+				if _buffer_position > 0 :
+					_buffer.pop (_buffer_position - 1)
+					_buffer_position -= 1
 				else :
-					curses.beep ()
+					pass #! curses.beep ()
+			elif (_code == curses.KEY_DC) or (_code == self._delete_code) :
+				if _buffer_position < len (_buffer) :
+					_buffer.pop (_buffer_position)
+				else :
+					pass #! curses.beep ()
+			elif (_code == curses.KEY_LEFT) :
+				if _buffer_position > 0 :
+					_buffer_position -= 1
+				else :
+					pass #! curses.beep ()
+			elif (_code == curses.KEY_RIGHT) :
+				if _buffer_position < len (_buffer) :
+					_buffer_position += 1
+				else :
+					pass #! curses.beep ()
+			elif (_code == curses.KEY_HOME) :
+				if _buffer_position > 0 :
+					_buffer_position = 0
+				else :
+					pass #! curses.beep ()
+			elif (_code == curses.KEY_END) :
+				if _buffer_position < len (_buffer) :
+					_buffer_position = len (_buffer)
+				else :
+					pass #! curses.beep ()
 			elif (_code == curses.KEY_ENTER) or (_code == 10) or (_code == 13) :
 				if len (_buffer) > 0 :
-					_inputs.append (_string)
+					_inputs.append (_buffer_string)
 				else :
-					_string = None
+					_buffer_string = None
 				break
-			elif _code == 11 : # Ctrl+K
+			elif (_code == 27) or (_code == 24) : # Escape or Ctrl+X
 				if len (_buffer) == 0 :
 					break
 				else :
 					_buffer = []
+					_buffer_position = 0
 			elif (_code == curses.KEY_UP) or (_code == curses.KEY_DOWN) :
 				if _inputs_count == 0 :
 					curses.beep ()
@@ -277,6 +325,7 @@ class Shell (object) :
 				elif _code == curses.KEY_DOWN :
 					_input += 1
 				_buffer = []
+				_buffer_position = 0
 				if (_input == -1) or (_input == _inputs_count) :
 					curses.beep ()
 					continue
@@ -284,10 +333,11 @@ class Shell (object) :
 					_input = _inputs_count - 1
 				if _input > _inputs_count :
 					_input = 0
-				_buffer.extend (_inputs[_input])
+				_buffer = list (_inputs[_input])
+				_buffer_position = len (_buffer)
 			else :
 				curses.beep ()
-		return _string
+		return _buffer_string
 	
 	def refresh (self) :
 		
