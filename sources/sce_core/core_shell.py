@@ -17,6 +17,7 @@ class Shell (object) :
 		self._messages = []
 		self._messages_touched = False
 		self._max_message_lines = 10
+		self._max_message_timeout = 3
 		self._inputs = []
 		self._backspace_code = 127
 		self._delete_code = 330
@@ -191,9 +192,10 @@ class Shell (object) :
 	
 	def notify_0 (self, _format, _arguments, _tty_skip) :
 		_message = _format % _arguments
-		self._messages.insert (0, (("[%s]" % (time.strftime ("%H:%M:%S"))), _message))
+		_message_timestamp = time.time ()
+		self._messages.insert (0, (_message_timestamp, (time.strftime ("[%H:%M:%S]", time.gmtime (_message_timestamp))), _message))
 		del self._messages[self._max_message_lines :]
-		self._messages_touched = True
+		self._messages_touched = _message_timestamp
 		if not self._opened and not _tty_skip :
 			_message = _format % _arguments
 			self._terminal.write ("[..]  " + _message + "\n")
@@ -356,6 +358,19 @@ class Shell (object) :
 		_max_lines = _window_lines
 		_max_columns = _window_columns - 1
 		
+		if self._messages_touched is not False :
+			_time_now = time.time ()
+			while True :
+				if len (self._messages) == 0 :
+					self._messages_touched = False
+					break
+				if (_time_now - self._messages[-1][0]) >= self._max_message_timeout :
+					self._messages.pop (-1)
+					continue
+				break
+		if self._messages_touched is not False :
+			_max_lines -= len (self._messages)
+		
 		_view = self._view
 		_view.set_max_lines (_max_lines)
 		_view.set_max_columns (_max_columns)
@@ -374,8 +389,6 @@ class Shell (object) :
 		_tail_column = _tail.get_column ()
 		
 		_messages = self._messages
-		_messages_touched = self._messages_touched
-		self._messages_touched = False
 		
 		for i in xrange_ (0, _max_lines) :
 			_window.move (i, 0)
@@ -412,18 +425,18 @@ class Shell (object) :
 				_window.insstr (i, _column, "~~~~")
 				break
 		
-		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)
-		
-		if _messages_touched :
-			_index = 0
+		if self._messages_touched is not False :
+			_message_index = 0
 			_window.attrset (_color_message)
-			for (_time, _text) in _messages :
-				_line = _max_lines - _index - 1
-				_window.move (_line, 0)
+			for (_message_timestamp, _message_prefix, _message_text) in _messages :
+				_message_line = _window_lines - _message_index - 1
+				_window.move (_message_line, 0)
 				_window.clrtoeol ()
-				_window.insstr ((_time + " [..] " + _text) .encode ("utf-8"))
-				_index += 1
-			_window.move (_max_lines - 1, _max_columns - 1)
+				_window.insstr ((_message_prefix + " [..] " + _message_text) .encode ("utf-8"))
+				_message_index += 1
+			_window.move (_window_lines - 1, _max_columns - 1)
+		
+		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)
 		
 		_window.noutrefresh ()
 		
