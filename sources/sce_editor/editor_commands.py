@@ -641,6 +641,7 @@ def fpos_get_command (_shell, _arguments) :
 		_line = _dict[_path]
 		if type (_line) is int :
 			_shell.get_view () .get_cursor () .set_line (_line)
+			_shell.get_view () .set_cursor_center ()
 			return True
 		else :
 			_shell.notify ("fpos-get: line is not int; ignoring.")

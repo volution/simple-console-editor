@@ -14,10 +14,12 @@ class View (object) :
 	
 	def __init__ (self) :
 		self._cursor = Mark ()
+		self._cursor_center = False
 		self._head = Mark ()
 		self._tail = Mark ()
 		self._max_lines = 0
 		self._max_columns = 0
+		self._bread_lines = 0
 	
 	def get_lines (self) :
 		return 0
@@ -68,6 +70,9 @@ class View (object) :
 	def set_max_columns (self, _columns) :
 		self._max_columns = _columns
 	
+	def set_cursor_center (self) :
+		self._cursor_center = True
+	
 	def refresh (self) :
 		
 		_cursor_line = self._cursor.get_line ()
@@ -79,6 +84,8 @@ class View (object) :
 		_max_lines = self._max_lines
 		_max_columns = self._max_columns
 		_lines = self.get_lines ()
+		
+		self._bread_lines = _max_lines // 4
 		
 		if _lines == 0 :
 			_cursor_line = 0
@@ -111,17 +118,26 @@ class View (object) :
 				_tail_line = _lines - 1
 			else :
 				
+				if (_cursor_line < _head_line) or (_cursor_line > _tail_line) :
+					self._cursor_center = True
+				
+				if self._cursor_center :
+					self._cursor_center = False
+					if _cursor_line >= (_max_lines // 2) :
+						_head_line = _cursor_line - (_max_lines // 2)
+						_tail_line = _cursor_line + (_max_lines // 2)
+				
 				if _tail_line - _head_line < _max_lines :
 					_tail_line = _head_line + _max_lines - 1
-				if _cursor_line <= (_head_line + 5) :
-					_head_line = _cursor_line - 5
+				if _cursor_line <= (_head_line + self._bread_lines) :
+					_head_line = _cursor_line - self._bread_lines
 					if _head_line < 0 :
 						_head_line = 0
 					_tail_line = _head_line + _max_lines - 1
-				if _cursor_line >= (_tail_line - 5) :
-					_tail_line = _cursor_line + 5
-					if _tail_line >= _lines :
-						_tail_line = _lines - 1
+				if _cursor_line >= (_tail_line - self._bread_lines) :
+					_tail_line = _cursor_line + self._bread_lines
+				#!	if _tail_line >= _lines :
+				#!		_tail_line = _lines - 1
 					_head_line = _tail_line - _max_lines + 1
 			
 			if _tail_column - _head_column < _max_columns :
