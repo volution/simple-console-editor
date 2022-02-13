@@ -25,43 +25,6 @@
 
 
 
---<< deploy / release
-	if test "${#}" -ge 1 ; then
-		_os_0="${1}"
-		shift -- 1
-	else
-		_os_0='all'
-	fi
-	if test "${#}" -ge 1 ; then
-		_main_0="${1}"
-		shift -- 1
-	else
-		_main_0=all
-	fi
-	test "${#}" -eq 0
-	if test "${__DEPLOY_NORELEASE:-}" == true ; then
-		exit -- 0
-	fi
-	for _main in editor pager ; do
-		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
-			continue
-		fi
-		"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
-		for _os in portable linux darwin freebsd openbsd ; do
-			if test "${_os_0}" != all -a "${_os_0}" != "${_os}" ; then
-				continue
-			fi
-			cp -p -T -- \
-					"./.outputs/${_main}--bundle.zip" \
-					"./.outputs/${_main}--release--${_os}" \
-			#
-		done
-	done
-!!
-
-
-
-
 << deploy / publish
 	
 	if test "${#}" -eq 0 ; then
@@ -223,6 +186,43 @@
 				#
 			fi
 			
+		done
+	done
+!!
+
+
+
+
+--<< deploy / release
+	if test "${#}" -ge 1 ; then
+		_os_0="${1}"
+		shift -- 1
+	else
+		_os_0='all'
+	fi
+	if test "${#}" -ge 1 ; then
+		_main_0="${1}"
+		shift -- 1
+	else
+		_main_0=all
+	fi
+	test "${#}" -eq 0
+	if test "${__DEPLOY_NORELEASE:-}" == true ; then
+		exit -- 0
+	fi
+	for _main in editor pager ; do
+		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
+			continue
+		fi
+		"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
+		for _os in portable linux darwin freebsd openbsd ; do
+			if test "${_os_0}" != all -a "${_os_0}" != "${_os}" ; then
+				continue
+			fi
+			cp -p -T -- \
+					"./.outputs/${_main}--bundle.zip" \
+					"./.outputs/${_main}--release--${_os}" \
+			#
 		done
 	done
 !!
