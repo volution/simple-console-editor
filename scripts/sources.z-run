@@ -1,0 +1,128 @@
+#!/dev/null
+
+
+
+
+::// sources / ...
+
+
+
+
+++:: sources / run / python2 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 editor "${@}"
+:: sources / run / python2 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 pager "${@}"
+
+++:: sources / run / python3 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 editor "${@}"
+:: sources / run / python3 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 pager "${@}"
+
+
+
+
+--<< sources / run / *
+	test "${#}" -ge 1 ; _python="${1}" ; shift -- 1
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	test -f "./sources/exec_${_main}.py"
+	
+	case "${_python}" in
+		( python2 )
+			_python_executable="$( type -P -- python2.7 )"
+			_python_arguments=(
+					-u # unbuffered `stdin` and `stdout`
+					-O -O # optimizations enabled
+					-B # disable writing `*.py[oc]`
+					-E # ignore `PYTHON*` environment variables
+					-S # disable `sys.path` manipulation
+					-s # disable user-site
+					-R # hash randomization
+				)
+		;;
+		( python3 )
+			_python_executable="$( type -P -- python3 )"
+			_python_arguments=(
+					-u # unbuffered `stdin` and `stdout`
+					-O -O # optimizations enabled
+					-B # disable writing `*.py[oc]`
+					-E # ignore `PYTHON*` environment variables
+					-S # disable `sys.path` manipulation
+					-s # disable user-site
+					-b # warn about `str` and `bytes` mixes
+				)
+		;;
+		( * )
+			printf -- '[ee]  invalid python `%s`;  aborting!\n' "${_python}" >&2
+			exit -- 1
+		;;
+	esac
+	
+	exec -- "${_python_executable}" \
+			"${_python_arguments[@]}" \
+			"./sources/exec_${_main}.py" \
+			"${@}" \
+	#
+!!
+
+
+
+
+<< sources / embedded / hash
+	
+	test "${#}" -eq 0
+	
+	if test -e ./.git ; then
+		_git_hash="$( exec -- git rev-parse HEAD )"
+		if ! git diff --quiet || ! git diff --quiet --cached ; then
+			_git_hash+="-uncommitted"
+		fi
+	else
+		_git_hash='unknown'
+	fi
+	
+	execline-cd ./sources \
+	find . \
+			-type f \
+			-not -path './sce_embedded/build/*' \
+			-printf '%P\0' \
+	| LC_ALL=C sort -z \
+		>| ./.outputs/markers/build-sources.list.tmp \
+	#
+	
+	execline-cd ./sources \
+	xargs -0 -I {} -- md5sum -b -z -- {} \
+		< ./.outputs/markers/build-sources.list.tmp \
+	| tr '\0' '\n' \
+		>| ./.outputs/markers/build-sources.md5.tmp \
+	#
+	
+	md5sum -b \
+		< ./.outputs/markers/build-sources.md5.tmp \
+	| cut -f 1 -d ' ' \
+		>| ./.outputs/markers/build-sources.hash.tmp \
+	#
+	
+	if ! cmp -s -- ./.outputs/markers/build-sources.hash.tmp ./sources/sce_embedded/build/sources.hash ; then
+		
+		_build_number="$( exec -- cat -- ./sources/sce_embedded/build/number.txt )"
+		_build_number="$(( _build_number + 1 ))"
+		_build_timestamp="$( exec -- date -- '+%Y-%m-%d-%H-%M-%S' )"
+		
+		printf -- '%d\n' "${_build_number}" >| ./sources/sce_embedded/build/number.txt.tmp
+		printf -- '%s\n' "${_build_timestamp}" >| ./sources/sce_embedded/build/timestamp.txt.tmp
+		
+		mv -T -- ./sources/sce_embedded/build/number.txt.tmp ./sources/sce_embedded/build/number.txt
+		mv -T -- ./sources/sce_embedded/build/timestamp.txt.tmp ./sources/sce_embedded/build/timestamp.txt
+		
+		mv -T -- ./.outputs/markers/build-sources.list.tmp ./.outputs/markers/build-sources.list
+		
+		mv -T -- ./.outputs/markers/build-sources.md5.tmp ./sources/sce_embedded/build/sources.md5
+		mv -T -- ./.outputs/markers/build-sources.hash.tmp ./sources/sce_embedded/build/sources.hash
+		
+	else
+		
+		rm -- ./.outputs/markers/build-sources.list.tmp
+		rm -- ./.outputs/markers/build-sources.md5.tmp
+		rm -- ./.outputs/markers/build-sources.hash.tmp
+	fi
+	
+	printf -- '%s\n' "${_git_hash}" >| ./.outputs/markers/build-git-hash.txt.tmp
+	mv -T -- ./.outputs/markers/build-git-hash.txt.tmp ./.outputs/markers/build-git-hash.txt
+!!
+

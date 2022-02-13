@@ -1,0 +1,162 @@
+#!/dev/null
+
+
+
+
+::// bundle / ...
+
+
+
+
+:: bundle / run / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' editor "${@}"
+:: bundle / run / pager :: exec -- "${ZRUN[@]}" ':: bundle / run / *' pager "${@}"
+
+:: bundle / build / editor :: exec -- "${ZRUN[@]}" ':: bundle / build / *' editor "${@}"
+:: bundle / build / pager :: exec -- "${ZRUN[@]}" ':: bundle / build / *' pager "${@}"
+
+
+
+
+--<< bundle / run / *
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
+	exec -- "./.outputs/${_main}--bundle.zip" "${@}"
+!!
+
+
+
+
+--<< bundle / build / *
+	
+	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	
+	_compress=true
+	
+	test "${#}" -eq 0
+	test -d ./.outputs
+	test -f "./sources/exec_${_main}.py"
+	
+	"${ZRUN[@]}" ':: sources / embedded / hash'
+	
+	_bundle_sources="$( readlink -m -- "./.outputs/${_main}--bundle.sources" )"
+	_bundle_zip="$( readlink -m -- "./.outputs/${_main}--bundle.zip" )"
+	
+	if test -e "${_bundle_zip}" ; then
+		mv -T -- "${_bundle_zip}" "${_bundle_zip}.old"
+	fi
+	
+	if test ! -e "${_bundle_sources}" ; then
+		mkdir -- "${_bundle_sources}"
+	fi
+	
+	rsync \
+			-a \
+			--delete \
+			--exclude '/__main__.py' \
+			-- \
+			./sources/ \
+			"${_bundle_sources}/" \
+	#
+	
+	if test ! -e "${_bundle_sources}/__main__.py" ; then
+		ln -s -T -- \
+				"./exec_${_main}.py" \
+				"${_bundle_sources}/__main__.py" \
+		#
+	fi
+	
+	_build_target=release
+	_build_number="$( exec -- cat -- ./sources/sce_embedded/build/number.txt )"
+	_build_version="$( exec -- cat -- ./sources/sce_embedded/build/version.txt )"
+	_build_timestamp="$( exec -- cat -- ./sources/sce_embedded/build/timestamp.txt )"
+	_build_sources_hash="$( exec -- cat -- ./sources/sce_embedded/build/sources.hash )"
+	_build_git_hash="$( exec -- cat -- ./.outputs/markers/build-git-hash.txt )"
+	
+	sed -r \
+			-e 's#@\{SCE_BUILD_TARGET}#'"${_build_target}"'#' \
+			-e 's#@\{SCE_BUILD_NUMBER}#'"${_build_number}"'#' \
+			-e 's#@\{SCE_BUILD_VERSION}#'"${_build_version}"'#' \
+			-e 's#@\{SCE_BUILD_TIMESTAMP}#'"${_build_timestamp}"'#' \
+			-e 's#@\{SCE_BUILD_SOURCES_HASH}#'"${_build_sources_hash}"'#' \
+			-e 's#@\{SCE_BUILD_GIT_HASH}#'"${_build_git_hash}"'#' \
+		< "${_bundle_sources}/sce_embedded/embedded.py" \
+		> "${_bundle_sources}/sce_embedded/embedded.py.tmp" \
+	#
+	
+	mv -T -- \
+			"${_bundle_sources}/sce_embedded/embedded.py.tmp" \
+			"${_bundle_sources}/sce_embedded/embedded.py" \
+	#
+	
+	_touch_timestamp="${_build_timestamp//-/}"
+	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
+	find "${_bundle_sources}/" -exec touch -t "${_touch_timestamp}" -- {} +
+	
+	python2.7 -u -O -O -B -E -S -s -R -m compileall -q -- "${_bundle_sources}"
+	
+	if test "${_compress}" == true ; then
+		find "${_bundle_sources}/" -xtype f -name '*.py' -delete
+	fi
+	
+	_touch_timestamp="${_build_timestamp//-/}"
+	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
+	find "${_bundle_sources}/" -exec touch -c -t "${_touch_timestamp}" -- {} +
+	
+	if test -e "${_bundle_zip}.tmp.1" ; then
+		rm -- "${_bundle_zip}.tmp.1"
+	fi
+	if test -e "${_bundle_zip}.tmp.2" ; then
+		rm -- "${_bundle_zip}.tmp.2"
+	fi
+	
+	_zip_level="-0"
+	if test "${_compress}" == true ; then
+		_zip_level="-9"
+	fi
+	
+	execline-cd "${_bundle_sources}" \
+		find . -xtype f -print \
+	| LC_ALL=C sort \
+	| execline-cd "${_bundle_sources}" \
+		zip \
+			"${_zip_level}" \
+			-q \
+			-o \
+			-X \
+			"${_bundle_zip}.tmp.1" \
+			-@ \
+	#
+	
+	_python_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
+	
+	cat -- \
+			<( printf '#!/usr/bin/env -S python2.7 %s\n' "${_python_arguments[*]}" ) \
+			"${_bundle_zip}.tmp.1" \
+		> "${_bundle_zip}.tmp.2" \
+	#
+	
+	chmod +x -- "${_bundle_zip}.tmp.2"
+	
+	rm -- "${_bundle_zip}.tmp.1"
+	
+	mv -T -- "${_bundle_zip}.tmp.2" "${_bundle_zip}.new"
+	
+	if test ! -e "${_bundle_zip}.old" ; then
+		mv -T -- "${_bundle_zip}.new" "${_bundle_zip}"
+	elif ! cmp -s -- "${_bundle_zip}.new" "${_bundle_zip}.old" ; then
+		mv -T -- "${_bundle_zip}.new" "${_bundle_zip}"
+		rm -- "${_bundle_zip}.old"
+	else
+		mv -T -- "${_bundle_zip}.old" "${_bundle_zip}"
+		rm -- "${_bundle_zip}.new"
+	fi
+!!
+
