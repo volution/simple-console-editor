@@ -18,7 +18,7 @@
 	test "${#}" -eq 3 ; _os="${1}" ; _main="${2}" ; _target="${3}" ; shift -- 3
 	"${ZRUN[@]}" ':: deploy / release' "${_os}" "${_main}"
 	_source="./.outputs/${_main}--release--${_os}"
-	printf -- '[ii]  deploying `%s` to `%s`...\n' "${_main}" "${_target}" >&2
+	printf -- '[ii]  deploying `%s` for `%s` to `%s`...\n' "${_main}" "${_os}" "${_target}" >&2
 	exec -- rsync -i -t -p --chmod=0555 -- "${_source}" "${_target}"
 !!
 
@@ -121,10 +121,6 @@
 			printf -- '[ii]  publishing `%s` for `%s` for `%s`...\n' "${_main}" "${_os}" "${_build_version}${_build_suffix}" >&2
 			printf -- '[--]\n' >&2
 			
-		#!	if test -f "./.publish/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" ; then
-		#!		rm -- "./.publish/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc"
-		#!	fi
-			
 			rsync -i -t -p --chmod=0555 -- \
 					"./.outputs/${_main}--release--${_os}" \
 					"./.publish/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" \
@@ -193,7 +189,7 @@
 
 
 
---<< deploy / release
+<< deploy / release
 	if test "${#}" -ge 1 ; then
 		_os_0="${1}"
 		shift -- 1
