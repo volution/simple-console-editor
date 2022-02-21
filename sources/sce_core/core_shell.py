@@ -142,6 +142,20 @@ class Shell (object) :
 		_code = _window.getch ()
 		if _code < 0 :
 			pass
+		elif _code == 27 :
+			_window.nodelay (True)
+			_codes = []
+			while True :
+				_code = _window.getch ()
+				if _code == -1 :
+					break
+				_codes.append ("%d" % _code)
+			_window.nodelay (False)
+			if len (_codes) > 0 :
+				_code = ":".join (_codes)
+				_code = "\33:" + _code
+			else :
+				_code = 27
 		elif (_code >= 0) and (_code < 32) :
 			pass
 		elif (_code >= 32) and (_code < 127) :
@@ -271,8 +285,11 @@ class Shell (object) :
 			if _code is None :
 				curses.beep ()
 			elif isinstance (_code, basestring_) :
-				_buffer.insert (_buffer_position, _code)
-				_buffer_position += 1
+				if len (_code) > 1 and _code[0] == "\33" :
+					curses.beep ()
+				else :
+					_buffer.insert (_buffer_position, _code)
+					_buffer_position += 1
 			elif not isinstance (_code, int) :
 				curses.beep ()
 			elif (_code == curses.KEY_BACKSPACE) or (_code == self._backspace_code) or (_code == 8) :

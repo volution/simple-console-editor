@@ -22,14 +22,16 @@ class Handler (object) :
 		elif isinstance (_code, basestring_) :
 			if len (_code) == 1 :
 				return self.handle_key_character (_shell, _code)
+			elif len (_code) > 0 and _code[0] == "\33" :
+				return self.handle_key_unknown (_shell, "[escape:%s]" % (_code[2:]))
 			else :
-				return self.handle_key_unknown (_shell, "[string][%s]", _code)
+				return self.handle_key_unknown (_shell, "[string:%r]" % (_code))
 		
 		elif not isinstance (_code, int) :
-			return self.handle_key_unknown (_shell, "[type][%s]", _code)
+			return self.handle_key_unknown (_shell, "[type:%s]" % (type (_code)))
 		
 		elif _code < 0 :
-			return self.handle_key_unknown (_shell, "[code][%d]" % (_code))
+			return self.handle_key_unknown (_shell, "[code:%d]" % (_code))
 		
 		elif (_code == _shell._backspace_code) or (_code == 8) : # Backspace
 			return self.handle_key_backspace (_shell)
