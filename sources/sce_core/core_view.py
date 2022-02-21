@@ -73,6 +73,25 @@ class View (object) :
 	def set_cursor_center (self) :
 		self._cursor_center = True
 	
+	def glide_cursor (self, _offset, _page) :
+		if _page :
+			_lines = _offset * self._max_lines // 2
+		else :
+			_lines = _offset
+		self._cursor._line += _lines
+	
+	def glide_bracket (self, _offset, _page) :
+		if _page :
+			_lines = _offset * self._max_lines // 2
+		else :
+			_lines = _offset
+		self._head._line += _lines
+		self._tail._line += _lines
+	
+	def glide_cursor_and_bracket (self, _offset, _page) :
+		self.glide_cursor (_offset, _page)
+		self.glide_bracket (_offset, _page)
+	
 	def refresh (self) :
 		
 		_cursor_line = self._cursor.get_line ()

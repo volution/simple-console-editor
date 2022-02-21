@@ -20,11 +20,11 @@ class BasicHandler (Handler) :
 		self._specials = dict ()
 	
 	def handle_key_up (self, _shell) :
-		_shell.get_view () .get_cursor () .increment_line (-1)
+		_shell.get_view () .glide_cursor (-1, False)
 		return True
 	
 	def handle_key_down (self, _shell) :
-		_shell.get_view () .get_cursor () .increment_line (1)
+		_shell.get_view () .glide_cursor (+1, False)
 		return True
 	
 	def handle_key_left (self, _shell) :
@@ -46,13 +46,11 @@ class BasicHandler (Handler) :
 		return True
 	
 	def handle_key_page_up (self, _shell) :
-		_view = _shell.get_view ()
-		_view.get_cursor () .increment_line (- _view.get_max_lines ())
+		_shell.get_view () .glide_cursor_and_bracket (-1, True)
 		return True
 	
 	def handle_key_page_down (self, _shell) :
-		_view = _shell.get_view ()
-		_view.get_cursor () .increment_line (_view.get_max_lines ())
+		_shell.get_view () .glide_cursor_and_bracket (+1, True)
 		return True
 	
 	def handle_key_control (self, _shell, _code) :
