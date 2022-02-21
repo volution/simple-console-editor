@@ -34,6 +34,8 @@ class Handler (sce_core.BasicHandler) :
 			_scroll.unsplit (_line - 1)
 			_cursor.increment_line (-1)
 			_cursor.set_column (_length)
+		elif _length == 0 and _line == 0 and _scroll.get_length () == 1 :
+			_scroll.exclude (0)
 		else :
 			_shell.alert ()
 	
@@ -78,6 +80,8 @@ class Handler (sce_core.BasicHandler) :
 		elif _line < (_scroll.get_length () - 1) :
 			_scroll.unsplit (_line)
 			_cursor.set_column (_length)
+		elif _length == 0 and _line == 0 and _scroll.get_length () == 1 :
+			_scroll.exclude (0)
 		else :
 			_shell.alert ()
 	
