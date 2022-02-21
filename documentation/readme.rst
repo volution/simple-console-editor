@@ -98,27 +98,27 @@ In the first variant, the editor
 opens with an empty buffer
 and allows the user to edit it.
 One can then use a command like
-`save /tmp/file.txt` to save its contents,
-followed by an `exit` command.
+``save /tmp/file.txt`` to save its contents,
+followed by an ``exit`` command.
 
 
 In the second variant, the editor
 opens the specified file
 and allows the user to edit it.
 One can then use a command like
-`save` to save its contents,
-followed by an `exit` command.
+``save`` to save its contents,
+followed by an ``exit`` command.
 
 
 In the third variant, the editor
-reads all the output produced by `produce`,
+reads all the output produced by ``produce``,
 opens with an anonymous buffer
 and allows the user to edit it.
 One can then use a command like
-`exit` to close the editor,
-and write all the output consumed by `consume`.
+``exit`` to close the editor,
+and write all the output consumed by ``consume``.
 This variant basically works with pipes (or plain files)
-as `stdin` and `stdout`,
+as ``stdin`` and ``stdout``,
 and does not require the usage of a termporary file.
 
 
