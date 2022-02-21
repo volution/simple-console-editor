@@ -20,6 +20,7 @@ class View (object) :
 		self._max_lines = 0
 		self._max_columns = 0
 		self._bread_lines = 0
+		self._bread_columns = 0
 	
 	def get_lines (self) :
 		return 0
@@ -104,71 +105,108 @@ class View (object) :
 		_max_columns = self._max_columns
 		_lines = self.get_lines ()
 		
-		self._bread_lines = _max_lines // 4
+		self._bread_lines = _max_lines // 3
+		self._bread_columns = _max_columns // 3
+		
+		if _head_line > _tail_line :
+			_head_line, _tail_line = _tail_line, _head_line
+		if _head_column > _tail_column :
+			_head_column, _tail_column = _tail_column, _head_column
+		
+		if _head_column < 0 :
+			_head_column = 0
+		if _tail_column < 0 :
+			_tail_column = 0
+		if (_tail_column - _head_column + 1) != _max_columns :
+			_tail_column = _head_column + _max_columns - 1
 		
 		if _lines == 0 :
+			
 			_cursor_line = 0
 			_cursor_column = 0
-			_head_line = 0
+			_head_line = 0 - (_max_lines // 2)
 			_head_column = 0
-			_tail_line = 0
-			_tail_column = 0
+			_tail_line = _head_line + _max_lines - 1
+			_tail_column = _head_column + _max_columns - 1
+			self._cursor_center = False
 			
 		else :
 			
+			if _cursor_line >= 0 and _cursor_line < _lines :
+				if _cursor_line < _head_line or _cursor_line > _tail_line :
+					self._cursor_center = True
+			elif _cursor_line < 0 :
+				_head_line -= 1
+				_tail_line -= 1
+				self._cursor_center = False
+			elif _cursor_line >= _lines :
+				_head_line += 1
+				_tail_line += 1
+				self._cursor_center = False
+			
 			if _cursor_line < 0 :
 				_cursor_line = 0
-			elif _cursor_line >= _lines :
+			if _cursor_line >= _lines :
 				_cursor_line = _lines - 1
 			if _cursor_column < 0 :
 				_cursor_column = 0
-			
-			if _head_line < 0 :
-				_head_line = 0
-			elif _head_line >= _lines :
-				_head_line = _lines - 1
-			if _tail_line < 0 :
-				_tail_line = 0
-			elif _tail_line >= _lines :
-				_tail_line = _lines - 1
-			
+		
+		if self._cursor_center :
+			_head_line = _cursor_line - (_max_lines // 2)
+			_tail_line = _head_line + _max_lines - 1
+			self._cursor_center = False
+		
+		if (_tail_line - _head_line + 1) < _max_lines :
+			_head_line = _head_line - (_max_lines - (_tail_line - _head_line + 1)) // 2
+			_tail_line = _head_line + _max_lines - 1
+		if (_tail_line - _head_line + 1) > _max_lines :
+			_head_line = _head_line + ((_tail_line - _head_line + 1) - _max_lines) // 2
+			_tail_line = _head_line + _max_lines - 1
+		
+		if _cursor_line > 0 and _cursor_line < (_lines - 1) :
+			if _cursor_line <= (_head_line + self._bread_lines) :
+				_head_line = _cursor_line - self._bread_lines
+				_tail_line = _head_line + _max_lines - 1
+			if _cursor_line >= (_tail_line - self._bread_lines) :
+				_tail_line = _cursor_line + self._bread_lines
+				_head_line = _tail_line - _max_lines + 1
+		
+		if _head_line < (0 - _max_lines + 1) :
+			_head_line = 0 - _max_lines + 1
+			_tail_line = _head_line + _max_lines - 1
+		elif _tail_line > (_lines + _max_lines - 1 - 1) :
+			_tail_line = _lines + _max_lines - 1 - 1
+			_head_line = _tail_line - _max_lines + 1
+		
+		if _cursor_column <= (_head_column + self._bread_columns) :
+			_head_column = _cursor_column - self._bread_columns
+			if _head_column < 0 :
+				_head_column = 0
+			_tail_column = _head_column + _max_columns - 1
+		elif _cursor_column >= (_tail_column - self._bread_columns) :
+			_tail_column = _cursor_column + self._bread_columns
+			_head_column = _tail_column - _max_columns + 1
+		
+		if False :
 			if _lines < _max_lines :
 				_head_line = 0
-				_tail_line = _lines - 1
+				if _lines > 0 :
+					_tail_line = _lines - 1
+				else :
+					_tail_line = 0
 			else :
-				
-				if (_cursor_line < _head_line) or (_cursor_line > _tail_line) :
-					self._cursor_center = True
-				
-				if self._cursor_center :
-					self._cursor_center = False
-					if _cursor_line >= (_max_lines // 2) :
-						_head_line = _cursor_line - (_max_lines // 2)
-						_tail_line = _cursor_line + (_max_lines // 2)
-				
-				if _tail_line - _head_line < _max_lines :
+				if _head_line >= _lines :
+					_head_line = _lines - 1
 					_tail_line = _head_line + _max_lines - 1
-				if _cursor_line <= (_head_line + self._bread_lines) :
-					_head_line = _cursor_line - self._bread_lines
-					if _head_line < 0 :
-						_head_line = 0
+				if _head_line < 0 :
+					_head_line = 0
 					_tail_line = _head_line + _max_lines - 1
-				if _cursor_line >= (_tail_line - self._bread_lines) :
-					_tail_line = _cursor_line + self._bread_lines
-				#!	if _tail_line >= _lines :
-				#!		_tail_line = _lines - 1
+				if _tail_line >= _lines :
+					_tail_line = _lines - 1
 					_head_line = _tail_line - _max_lines + 1
-			
-			if _tail_column - _head_column < _max_columns :
-				_tail_column = _head_column + _max_columns - 1
-			if _cursor_column <= (_head_column + 10) :
-				_head_column = _cursor_column - 10
-				if _head_column < 0 :
-					_head_column = 0
-				_tail_column = _head_column + _max_columns - 1
-			if _cursor_column >= (_tail_column - 10) :
-				_tail_column = _cursor_column + 10
-				_head_column = _tail_column - _max_columns + 1
+				if _tail_line < 0 :
+					_tail_line = 0
+					_head_line = _tail_line - _max_lines + 1
 		
 		self._cursor.set (_cursor_line, _cursor_column)
 		self._head.set (_head_line, _head_column)
