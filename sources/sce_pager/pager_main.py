@@ -24,8 +24,8 @@ def main () :
 def main_0 (_arguments, _terminal, _transcript) :
 	
 	if len (_arguments) == 0 :
-		_highlight_re = "^.*$"
-		_highlight_strings_sub = ("", "-- ", "\\g<0>")
+		_highlight_re = "^.+$"
+		_highlight_strings_sub = ("", "====", "\\g<0>")
 		_highlight_data_sub = "\\g<0>"
 	elif len (_arguments) == 1 :
 		_highlight_re = _arguments[0]
@@ -100,7 +100,8 @@ def main_0 (_arguments, _terminal, _transcript) :
 	
 	if len (_selection) > 0 :
 		for _selected in sorted (_selection) :
-			os.write (_redirected_output, _selected + "\n")
+			_line = (_selected + "\n") .encode ("utf-8")
+			os.write (_redirected_output, _line)
 		return True
 	else :
 		return False
