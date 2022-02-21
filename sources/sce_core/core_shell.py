@@ -394,7 +394,7 @@ class Shell (object) :
 			_window.move (i, 0)
 			_line = _head_line + i
 			_column = 0
-			if _line < _lines :
+			if _line >= 0 and _line < _lines :
 				_window.attrset (_color_markup)
 				if _view.select_is_tagged (_line) :
 					_window.insstr (i, _column, "|")
@@ -422,8 +422,28 @@ class Shell (object) :
 						_column += 1
 			else :
 				_window.attrset (_color_markup)
-				_window.insstr (i, _column, "~~~~")
-				break
+				if True :
+					if _line == 0 :
+						_window.insstr (i, 0, "#")
+					elif (_line == -1 or _line == _lines) and _lines > 0 :
+						_window.insstr (i, 0, "~~~~~~~~")
+					else :
+						_window.insstr (i, 0, "~")
+				else :
+					if _line == _head_line and _line == _tail_line :
+						_window.insstr (i, 0, "><")
+					elif _line == 0 :
+						_window.insstr (i, 0, "#")
+					elif _line == _head_line :
+						_window.insstr (i, 0, ">>")
+					elif _line == _tail_line :
+						_window.insstr (i, 0, "<<")
+					elif (_line == -1 or _line == _lines) and _lines > 0 :
+						_window.insstr (i, 0, "~~~~~~~~")
+					elif _line < 0 :
+						_window.insstr (i, 0, ">")
+					else :
+						_window.insstr (i, 0, "<")
 		
 		if self._messages_touched is not False :
 			_message_index = 0
@@ -436,7 +456,11 @@ class Shell (object) :
 				_message_index += 1
 			_window.move (_window_lines - 1, _max_columns - 1)
 		
-		_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)
+		if (_cursor_line - _head_line) >= 0 and (_cursor_line - _head_line) < _max_lines and \
+				(_cursor_column - _head_column) >= 0 and (_cursor_column - _head_column) < (_max_columns - 1) :
+			_window.move (_cursor_line - _head_line, _cursor_column - _head_column + 1)
+		else :
+			_window.move (_max_lines - 1, _max_columns - 1)
 		
 		_window.noutrefresh ()
 		
