@@ -22,7 +22,6 @@ __all__ = [
 		"fcntl",
 		"hashlib",
 		"itertools",
-		"locale",
 		"os",
 		"re",
 		"subprocess",
@@ -75,11 +74,30 @@ import errno
 import fcntl
 import hashlib
 import itertools
-import locale
 import os
 import re
 import subprocess
 import time
 import traceback
 import uuid
+
+
+
+
+def _override_locale () :
+	
+	import locale
+	
+	for _locale in ["C.UTF-8", "en_US.UTF-8", "C"] :
+		try :
+			os.environ["LANG"] = _locale
+			os.environ["LC_ALL"] = _locale
+			locale.setlocale (locale.LC_ALL, _locale)
+			break
+		except :
+			if _locale == "C" :
+				raise Exception ("[b8c2b0a2]", _locale)
+
+if True :
+	_override_locale ()
 

@@ -53,17 +53,6 @@ class Shell (object) :
 		if _terminal_descriptor != 2 :
 			os.dup2 (_terminal_descriptor, 2)
 		
-		for _locale in ["C.UTF-8", "en_US.UTF-8", "C"] :
-			try :
-				os.environ["LANG"] = _locale
-				os.environ["LC_ALL"] = _locale
-				locale.setlocale (locale.LC_ALL, _locale)
-				break
-			except :
-				del os.environ["LANG"]
-				del os.environ["LC_ALL"]
-				pass
-		
 		curses.setupterm (os.environ["TERM"], _terminal_descriptor)
 		
 		self._curses_open ()
