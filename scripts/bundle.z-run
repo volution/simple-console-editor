@@ -59,8 +59,8 @@
 	#
 	
 	if test ! -e "${_bundle_sources}/__main__.py" ; then
-		ln -s -T -- \
-				"./exec_${_main}.py" \
+		cp -T -- \
+				"${_bundle_sources}/exec_${_main}.py" \
 				"${_bundle_sources}/__main__.py" \
 		#
 	fi
