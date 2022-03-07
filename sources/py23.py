@@ -88,15 +88,22 @@ def _override_locale () :
 	
 	import locale
 	
-	for _locale in ["C.UTF-8", "en_US.UTF-8", "C"] :
-		try :
-			os.environ["LANG"] = _locale
-			os.environ["LC_ALL"] = _locale
-			locale.setlocale (locale.LC_ALL, _locale)
-			break
-		except :
-			if _locale == "C" :
-				raise Exception ("[b8c2b0a2]", _locale)
+	if "LANG" in os.environ : del os.environ["LANG"]
+	if "LC_ALL" in os.environ : del os.environ["LC_ALL"]
+	if "LC_CTYPE" in os.environ : del os.environ["LC_CTYPE"]
+	
+	try :
+		os.environ["LANG"] = "C.UTF-8"
+		os.environ["LC_ALL"] = "C.UTF-8"
+		os.environ["LC_CTYPE"] = "C.UTF-8"
+		locale.setlocale (locale.LC_ALL, os.environ["LC_ALL"])
+		locale.setlocale (locale.LC_CTYPE, os.environ["LC_CTYPE"])
+	except :
+		os.environ["LANG"] = "en_US.UTF-8"
+		os.environ["LC_ALL"] = "en_US.UTF-8"
+		os.environ["LC_CTYPE"] = "en_US.UTF-8"
+		locale.setlocale (locale.LC_ALL, os.environ["LC_ALL"])
+		locale.setlocale (locale.LC_CTYPE, os.environ["LC_CTYPE"])
 
 if True :
 	_override_locale ()
