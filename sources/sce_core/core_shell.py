@@ -159,7 +159,7 @@ class Shell (object) :
 		elif (_code >= 0) and (_code < 32) :
 			pass
 		elif (_code >= 32) and (_code < 127) :
-			_code = unicode_ (chr (_code))
+			_code = bytechr_ (_code) .decode ("utf-8")
 		elif _code == 127 :
 			pass
 		elif (_code >= 128) and (_code < 192) :
@@ -169,18 +169,18 @@ class Shell (object) :
 		elif (_code >= 194) and (_code < 224) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2)) .decode ("utf-8")
+			_code = (bytechr_ (_code_1) + bytechr_ (_code_2)) .decode ("utf-8")
 		elif (_code >= 224) and (_code < 240) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
 			_code_3 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3)) .decode ("utf-8")
+			_code = (bytechr_ (_code_1) + bytechr_ (_code_2) + bytechr_ (_code_3)) .decode ("utf-8")
 		elif (_code >= 240) and (_code < 245) :
 			_code_1 = _code
 			_code_2 = _window.getch ()
 			_code_3 = _window.getch ()
 			_code_4 = _window.getch ()
-			_code = (chr (_code_1) + chr (_code_2) + chr (_code_3) + chr (_code_4)) .decode ("utf-8")
+			_code = (bytechr_ (_code_1) + bytechr_ (_code_2) + bytechr_ (_code_3) + bytechr_ (_code_4)) .decode ("utf-8")
 		elif (_code >= 245) and (_code < 248) :
 			_code = None
 		elif (_code >= 248) and (_code < 252) :

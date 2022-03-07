@@ -10,6 +10,7 @@ __all__ = [
 		"basestring_",
 		"unicode_",
 		"unichr_",
+		"bytechr_",
 		"thread",
 		
 		"sys",
@@ -43,6 +44,7 @@ if sys.version_info.major == 2 :
 		basestring_ = basestring
 		unicode_ = unicode
 		unichr_ = unichr
+		bytechr_ = chr
 		
 		thread = __import__ ("thread")
 		
@@ -56,6 +58,7 @@ elif sys.version_info.major == 3 :
 		basestring_ = str
 		unicode_ = str
 		unichr_ = chr
+		bytechr_ = lambda _code : bytes ([_code])
 		
 		thread = __import__ ("_thread")
 		
