@@ -494,7 +494,7 @@ def pipe_command (_shell, _arguments) :
 			_view.set_mark_enabled (False)
 		else :
 			_last_line = _first_line + len (_lines) - 1
-			_cursor.set_line (_last_line, 0)
+			_cursor.set_line (_last_line)
 			_mark_1.set (_first_line, 0)
 			_mark_2.set (_last_line, 0)
 	return True
