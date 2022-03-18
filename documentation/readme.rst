@@ -101,6 +101,11 @@ One can then use a command like
 ``save /tmp/file.txt`` to save its contents,
 followed by an ``exit`` command.
 
+To run a command just press ``Ctrl+R``
+and enter the desired command.
+(As an alternative to the ``exit`` command,
+one can just press ``Ctrl+X``.)
+
 
 In the second variant, the editor
 opens the specified file
@@ -108,6 +113,8 @@ and allows the user to edit it.
 One can then use a command like
 ``save`` to save its contents,
 followed by an ``exit`` command.
+(As an alternative to the ``save`` command,
+one can just press ``Ctrl+S``.)
 
 
 In the third variant, the editor
@@ -119,7 +126,57 @@ One can then use a command like
 and write all the output consumed by ``consume``.
 This variant basically works with pipes (or plain files)
 as ``stdin`` and ``stdout``,
-and does not require the usage of a termporary file.
+and does not require the usage of a temporary file.
+
+
+Here are all the supported commands
+(one just needs to press ``Ctrl+R`` to enter them):
+
+* ``exit`` -- exits without asking for or executing a save;
+* ``save`` or ``save /tmp/file.txt``;
+* ``open /tmp/file.txt``;
+* ``clear`` -- empties the current buffer;
+* ``gs text`` -- search for ``text``;
+  (to find the next match, just press ``Ctrl+G``;)
+* ``gr regex`` -- searches for a regular expression;
+  (again use ``Ctrl+G`` to find the next match;)
+* ``gl number`` -- go to the line number;
+* ``replace this that`` --
+  it will search for the first match,
+  and one has to press ``Ctrl+N`` to replace it;
+  to find the next match, press ``Ctrl+N``,
+  then another ``Ctrl+N`` to replace it;
+* ``store`` -- stores the current selection in a temporary file;
+* ``load`` -- inserts at the current cursor the stored selection from the temporary file;
+* (``store`` and ``load`` work across invocations, thus allows one to copy-paste between files;)
+* ``pipe command arguments...`` -- runs the command on the current file or selection, feeding it on ``stdin``, then replacing it with the result from ``stdout``;
+* ``sys i command arguments...`` -- runs the command, and inserts the output from ``stdout``;
+* ``sys o command arguments...`` -- runs the command, feeding the current selection on ``stdin``;
+* ``copy`` -- see ``Ctrl+D``;
+* ``cut`` -- see ``Ctrl+K``;
+* ``yank`` -- see ``Ctrl+Y``;
+* ``paste`` -- see ``Ctrl+T``;
+
+Here are all the supported key bindings / shortcuts:
+
+* up, down, left, right, home, end, page-up, page-down, backspace, delete -- work as expected;
+* ``Ctrl+X`` -- exits the editor, if the file is untouched or already saved;
+* ``Ctrl+S`` -- saves the file;
+* ``Ctrl+R`` -- allows the user to enter a command;
+* ``Ctrl+G`` -- go to the next match;  (as initiated by ``gs`` or ``gr``);
+* ``Ctrl+N`` -- replace the current match, or go to the next replace match;  (as initiated by ``replace``;)
+* ``Ctrl+Space`` -- begins a selection;  press ``Ctrl+Space`` again to end a selection;
+  the selection is permanent across movements;  ``Ctrl+Space`` twice to clear the selection;
+* ``Ctrl+D`` -- copy the selection into the internal buffer;
+* ``Ctrl+K`` -- cut the selection into the internal buffer;
+* ``Ctrl+Y`` -- pastes from the internal buffer;
+* ``Ctrl+V`` -- set a jump marker on the current line;
+* ``Ctrl+Z`` -- go to the previous marker, and set the current line as the new jump marker;
+  (i.e. with ``Ctrl+V`` and ``Ctrl+Z`` one can easily jump between two parts of the same file;)
+* ``Ctrl+T`` -- runs ``sce-paste``, which is a user provided executable,
+  most likely another curses-based application,
+  inserting the output from ``stdout``;
+  (one could for example use ``fzf`` to provide various snippets or other "auto-completion" features;)
 
 
 
