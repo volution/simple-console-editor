@@ -170,15 +170,19 @@ def yank_lines_command (_shell, _arguments) :
 	return _yank_lines (_shell, _yank_buffer)
 
 
-def _yank_lines (_shell, _yank_buffer) :
+def _yank_lines (_shell, _yank_buffer, _line = None) :
 	if _yank_buffer is None :
 		_shell.notify ("yank-lines: yank buffer is empty.")
 		return None
 	_view = _shell.get_view ()
 	_scroll = _view.get_scroll ()
 	_cursor = _view.get_cursor ()
-	_cursor_line = _cursor.get_line ()
-	_cursor_column = _cursor.get_column ()
+	if _line is not None :
+		_cursor_line = _line
+		_cursor_column = 0
+	else :
+		_cursor_line = _cursor.get_line ()
+		_cursor_column = _cursor.get_column ()
 	if isinstance (_yank_buffer, list) :
 		_scroll.include_all_before (_cursor_line, _yank_buffer)
 	else :
@@ -530,14 +534,14 @@ def _load_file_lines (_shell, _mode, _lines) :
 		_scroll.exclude_all ()
 		_insert_line = 0
 	elif _mode == "i" :
-		_insert_line = _view.get_cursor () .get_line ()
+		_insert_line = None
 	elif _mode == "a" :
 		_insert_line = _scroll.get_length ()
 	else :
-		_insert_line = _scroll.get_length ()
+		raise Exception ("[a136b27f]")
 	if len (_lines) == 0 :
 		return True
-	elif len (_lines) == 1 :
+	elif len (_lines) == 1 and _insert_line is None :
 		_line = _lines[0]
 		_line_stripped = _line.rstrip ("\n\r")
 		if _line_stripped == _line :
@@ -546,7 +550,7 @@ def _load_file_lines (_shell, _mode, _lines) :
 			return _yank_lines (_shell, [_line_stripped])
 	else :
 		_lines = [_line.rstrip ("\r\n") for _line in _lines]
-		return _yank_lines (_shell, _lines)
+		return _yank_lines (_shell, _lines, _insert_line)
 
 
 def store_command (_shell, _arguments) :
