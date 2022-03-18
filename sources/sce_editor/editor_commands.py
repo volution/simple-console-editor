@@ -337,13 +337,20 @@ def load_command (_shell, _arguments) :
 
 def sys_command (_shell, _arguments) :
 	if len (_arguments) < 2 :
-		_shell.notify ("sys: wrong syntax: sys r|i|a <command> <argument> ...")
+		_shell.notify ("sys: wrong syntax: sys r|i|a|o <command> <argument> ...")
 		return None
 	_mode = _arguments[0]
 	_system_arguments = _arguments[1 :]
-	if _mode not in ["r", "i", "a"] :
-		_shell.notify ("sys: wrong mode (r|i|a); aborting.")
+	if _mode not in ["r", "i", "a", "o"] :
+		_shell.notify ("sys: wrong mode (r|i|a|o); aborting.")
 		return None
+	if _mode == "o" :
+		return _sys_command_output (_shell, _system_arguments)
+	else :
+		return _sys_command_input (_shell, _mode, _system_arguments)
+
+
+def _sys_command_input (_shell, _mode, _system_arguments) :
 	_shell._curses_close ()
 	try :
 		_process = subprocess.Popen (
@@ -377,11 +384,65 @@ def sys_command (_shell, _arguments) :
 	return _load_file_lines (_shell, _mode, _lines)
 
 
+def _sys_command_output (_shell, _system_arguments) :
+	_view = _shell.get_view ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
+	_lines, _first_line, _last_line = _get_selection_lines (_shell)
+	if _lines is None :
+		_shell.notify ("sys: non-marked")
+		return None
+	_shell._curses_close ()
+	try :
+		_process = subprocess.Popen (
+				_system_arguments, shell = False, env = None,
+				stdin = subprocess.PIPE, stdout = None, stderr = subprocess.PIPE,
+				bufsize = 131072, close_fds = True, universal_newlines = False)
+	except Exception as _error :
+		_shell._curses_open ()
+		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
+		return None
+	_shell._curses_open ()
+	try :
+		_stream = codecs.EncodedFile (_process.stdin, "utf-8", "utf-8", "replace")
+		for _line in _lines :
+			_string = _line + "\n"
+			_string = _string.encode ("utf-8")
+			_stream.write (_string)
+		_stream.close ()
+		_error_stream = codecs.EncodedFile (_process.stderr, "utf-8", "utf-8", "replace")
+		_error_lines = _error_stream.readlines ()
+		_error_lines = [_line.decode ("utf-8") for _line in _error_lines]
+		_error_stream.close ()
+		_error = _process.wait ()
+	except Exception as _error :
+		_shell.notify ("sys: output failed; aborting.  //  %s", _error)
+		return None
+	if _error != 0 :
+		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
+	if len (_error_lines) != 0 :
+		for _line in _error_lines :
+			_line = _line.rstrip ("\r\n")
+			_shell.notify ("sys: %s", _line)
+	return True
+
+
 def pipe_command (_shell, _arguments) :
 	if len (_arguments) < 1 :
 		_shell.notify ("pipe: wrong syntax: pipe <command> <arguments> ...")
 		return None
 	_system_arguments = _arguments
+	_view = _shell.get_view ()
+	_scroll = _view.get_scroll ()
+	_cursor = _view.get_cursor ()
+	_mark_1 = _view.get_mark_1 ()
+	_mark_2 = _view.get_mark_2 ()
+	if _view.is_mark_enabled () :
+		mark_command (_shell, ["s"])
+	_lines, _first_line, _last_line = _get_selection_lines (_shell)
+	if _lines is None :
+		_shell.notify ("pipe: non-marked")
+		return None
 	_shell._curses_close ()
 	try :
 		_process = subprocess.Popen (
@@ -393,27 +454,6 @@ def pipe_command (_shell, _arguments) :
 		_shell.notify ("pipe: spawn failed; aborting.  //  %s", _error)
 		return None
 	_shell._curses_open ()
-	_view = _shell.get_view ()
-	_scroll = _view.get_scroll ()
-	_cursor = _view.get_cursor ()
-	_lines = []
-	if _view.is_mark_enabled () :
-		mark_command (_shell, ["s"])
-	if _view.is_mark_enabled () :
-		_mark_1 = _view.get_mark_1 ()
-		_mark_2 = _view.get_mark_2 ()
-		_mark_1_line = _mark_1.get_line ()
-		_mark_2_line = _mark_2.get_line ()
-		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
-			_shell.notify ("pipe: non-marked")
-			return None
-		_first_line = min (_mark_1_line, _mark_2_line)
-		_last_line = max (_mark_1_line, _mark_2_line)
-	else :
-		_first_line = 0
-		_last_line = _scroll.get_length () - 1
-	for _line in xrange_ (_first_line, _last_line + 1) :
-		_lines.append (_scroll.select (_line))
 	try :
 		_output_lines = []
 		_error_lines = []
@@ -498,6 +538,30 @@ def pipe_command (_shell, _arguments) :
 			_mark_1.set (_first_line, 0)
 			_mark_2.set (_last_line, 0)
 	return True
+
+
+def _get_selection_lines (_shell) :
+	_view = _shell.get_view ()
+	_scroll = _view.get_scroll ()
+	_cursor = _view.get_cursor ()
+	_lines = []
+	if _view.is_mark_enabled () :
+		_mark_1 = _view.get_mark_1 ()
+		_mark_2 = _view.get_mark_2 ()
+		_mark_1_line = _mark_1.get_line ()
+		_mark_2_line = _mark_2.get_line ()
+		_mark_1_column = _mark_1.get_column ()
+		_mark_2_column = _mark_2.get_column ()
+		if _mark_1_line == _mark_2_line and _mark_1_column == _mark_2_column :
+			return None, None, None
+		_first_line = min (_mark_1_line, _mark_2_line)
+		_last_line = max (_mark_1_line, _mark_2_line)
+	else :
+		_first_line = 0
+		_last_line = _scroll.get_length () - 1
+	for _line in xrange_ (_first_line, _last_line + 1) :
+		_lines.append (_scroll.select (_line))
+	return _lines, _first_line, _last_line
 
 
 def paste_command (_shell, _arguments) :
