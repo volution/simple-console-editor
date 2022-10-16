@@ -732,10 +732,11 @@ def _fpos_load (_shell) :
 	global _fpos_path
 	_data = None
 	try :
-		_stream = None
-		_stream = codecs.open (_fpos_path, "r", "utf-8", "replace")
-		_data = _stream.read ()
-		_stream.close ()
+		if os.path.isfile (_fpos_path) :
+			_stream = None
+			_stream = codecs.open (_fpos_path, "r", "utf-8", "replace")
+			_data = _stream.read ()
+			_stream.close ()
 	except Exception as _error :
 		_shell.notify ("fpos-load: input fpos failed; ignoring.  //  %s", _error)
 		try :
