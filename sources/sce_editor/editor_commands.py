@@ -155,7 +155,7 @@ def clear_command (_shell, _arguments) :
 	return True
 
 
-_yank_path = "/tmp/sce.%d.yank" % (os.getuid (),)
+_yank_path = "%s/sce.%d.yank" % (os.environ.get ("TMPDIR", "/tmp"), os.getuid (),)
 _yank_buffer = None
 
 
@@ -696,7 +696,7 @@ def save_command (_shell, _arguments) :
 	return True
 
 
-_fpos_path = "/tmp/sce.%d.fpos" % (os.getuid())
+_fpos_path = "%s/sce.%d.fpos" % (os.environ.get ("TMPDIR", "/tmp"), os.getuid (),)
 
 
 def fpos_get_command (_shell, _arguments) :
