@@ -60,7 +60,7 @@
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
 				continue
 			fi
-			for _os in portable linux darwin freebsd openbsd ; do
+			for _os in portable ; do
 				if test -e "./.publish/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" ; then
 					printf -- '[ee]  release already exists for `%s` for `%s`!\n' "${_main}" "${_os}" >&2
 					exit -- 1
@@ -111,7 +111,7 @@
 	
 	printf -- '[ii]  publishing all for `%s`...\n' "${_build_version}${_build_suffix}" >&2
 	
-	for _os in portable linux darwin freebsd openbsd ; do
+	for _os in portable ; do
 		for _main in editor pager ; do
 			
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
@@ -161,7 +161,7 @@
 	
 	printf -- '[ii]  publishing all for `%s` (on GitHub)...\n' "${_build_version}${_build_suffix}" >&2
 	
-	for _os in portable linux darwin freebsd openbsd ; do
+	for _os in portable ; do
 		for _main in editor pager ; do
 			
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
@@ -211,7 +211,7 @@
 			continue
 		fi
 		"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
-		for _os in portable linux darwin freebsd openbsd ; do
+		for _os in portable ; do
 			if test "${_os_0}" != all -a "${_os_0}" != "${_os}" ; then
 				continue
 			fi
