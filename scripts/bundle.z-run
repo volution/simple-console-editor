@@ -31,6 +31,7 @@
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	
 	_compress=true
+	_version=3.10
 	
 	test "${#}" -eq 0
 	test -d ./.outputs
@@ -92,7 +93,7 @@
 	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
 	find "${_bundle_sources}/" -exec touch -t "${_touch_timestamp}" -- {} +
 	
-	python2.7 -u -O -O -B -E -S -s -R -m compileall -q -- "${_bundle_sources}"
+	"python${_version}" -u -O -O -B -E -S -s -R -m compileall -q -b -- "${_bundle_sources}"
 	
 	if test "${_compress}" == true ; then
 		find "${_bundle_sources}/" -xtype f -name '*.py' -delete
@@ -138,7 +139,7 @@
 		)
 	
 	cat -- \
-			<( printf '#!/usr/bin/env -S python2.7 %s\n' "${_python_arguments[*]}" ) \
+			<( printf '#!/usr/bin/env -S python%s %s\n' "${_version}" "${_python_arguments[*]}" ) \
 			"${_bundle_zip}.tmp.1" \
 		> "${_bundle_zip}.tmp.2" \
 	#

@@ -1,4 +1,4 @@
-#!/usr/bin/env -S python2 -u -O -O -B -E -S -s -R
+#!/usr/bin/env -S python3 -u -O -O -B -E -S -s -R
 
 from __future__ import absolute_import
 from __future__ import unicode_literals
