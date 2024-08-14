@@ -40,9 +40,9 @@ class Handler (object) :
 		
 		elif _code == 9 : # Tab
 			return self.handle_key_tab (_shell)
-		elif _code == 10 : # Enter
-			return self.handle_key_enter (_shell)
-		elif _code == 13 : # Enter
+		elif _code == curses.KEY_BTAB :
+			return self.handle_key_tab_backward (_shell)
+		elif (_code == curses.KEY_ENTER) or (_code == 10) or (_code == 13) :
 			return self.handle_key_enter (_shell)
 		elif _code == 27 : # Escape
 			return self.handle_key_escape (_shell)
@@ -82,6 +82,9 @@ class Handler (object) :
 		elif (_code >= curses.KEY_F0) and (_code <= curses.KEY_F63) :
 			return self.handle_key_function (_shell, _code - curses.KEY_F0)
 		
+		elif _code == curses.KEY_RESIZE :
+			return True
+		
 		else :
 			return self.handle_key_unknown (_shell, "[code][%d]" % (_code))
 		
@@ -92,6 +95,9 @@ class Handler (object) :
 	
 	def handle_key_tab (self, _shell) :
 		return self.handle_key_special (_shell, "Tab")
+	
+	def handle_key_tab_backward (self, _shell) :
+		return self.handle_key_special (_shell, "TabBackward")
 	
 	def handle_key_enter (self, _shell) :
 		return self.handle_key_special (_shell, "Enter")

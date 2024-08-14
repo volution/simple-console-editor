@@ -391,6 +391,9 @@ class Shell (object) :
 					_input = 0
 				_buffer = list (_inputs[_input])
 				_buffer_position = len (_buffer)
+			elif (_code == curses.KEY_RESIZE) :
+				_buffer_string = ""
+				break
 			else :
 				curses.beep ()
 		return _buffer_string
