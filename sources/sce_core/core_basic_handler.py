@@ -36,13 +36,32 @@ class BasicHandler (Handler) :
 		return True
 	
 	def handle_key_home (self, _shell) :
-		_shell.get_view () .get_cursor () .set_column (0)
+		_view = _shell.get_view ()
+		_cursor = _view.get_cursor ()
+		_line = _cursor.get_line ()
+		_line_string = _view.select_real_string (_line)
+		_line_length = len (_line_string)
+		_line_offset = _line_length - len (_line_string.lstrip (" \t"))
+		_line_visual = _view.select_visual_column (_line, _line_offset)
+		if _line_visual == _cursor.get_column () :
+			_cursor.set_column (0)
+		else :
+			_cursor.set_column (_line_visual)
 		return True
 	
 	def handle_key_end (self, _shell) :
 		_view = _shell.get_view ()
 		_cursor = _view.get_cursor ()
-		_cursor.set_column (_view.select_visual_length (_cursor.get_line ()))
+		_visual_length = _view.select_visual_length (_cursor.get_line ())
+		_line = _cursor.get_line ()
+		_line_string = _view.select_real_string (_line)
+		_line_length = len (_line_string)
+		_line_offset = _line_length - len (_line_string.rstrip (" \t"))
+		_line_visual = _view.select_visual_column (_line, _line_length - _line_offset)
+		if (_line_visual == _cursor.get_column ()) or (_line_visual == 0) :
+			_cursor.set_column (_visual_length)
+		else :
+			_cursor.set_column (_line_visual)
 		return True
 	
 	def handle_key_page_up (self, _shell) :
