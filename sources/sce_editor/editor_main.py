@@ -114,6 +114,7 @@ def _initialize (_terminal) :
 	_handler.register_command ("gl", go_line_command)
 	_handler.register_command ("gs", go_string_command)
 	_handler.register_command ("gr", go_regexp_command)
+	_handler.register_command ("gst", go_select_token_command)
 	_handler.register_command ("jump", jump_command)
 	_handler.register_command ("js", jump_set_command)
 	
@@ -134,6 +135,7 @@ def _initialize (_terminal) :
 	_handler.register_command ("save", save_command)
 	
 	_handler.register_control ("T", paste_command)
+	_handler.register_control ("F", go_select_token_command)
 	_handler.register_command ("paste", paste_command)
 	
 	_handler.register_command ("load", load_command)

@@ -18,6 +18,7 @@ __all__ = [
 		"go_line_command",
 		"go_string_command",
 		"go_regexp_command",
+		"go_select_token_command",
 		
 		"replace_command",
 		
@@ -889,6 +890,64 @@ def go_regexp_command (_shell, _arguments) :
 	if go_command (_shell, ["r", _pattern]) is None :
 		return None
 	return True
+
+
+def go_select_token_command (_shell, _arguments) :
+	if len (_arguments) != 0 :
+		_shell.notify ("go-select-token: wrong syntax: go-select-token")
+		return None
+	_view = _shell.get_view ()
+	_lines = _view.get_lines ()
+	_options = set ()
+	_patterns = [
+			re.compile ("\\w{3,}"),
+			re.compile ("[$%@&][({[]?\\w+"),
+			re.compile ("(?:\\w+\\.)+\\w+"),
+			re.compile ("/?(?:(:?\\w|[-%])+/)+(:?\\w|[-%])+/?"),
+			re.compile ("\"(:?(:?[^\\\\\"]+)|(:?[\\\\][\\\\\"])|(:?[\\\\][^\\\\\"]))+\""),
+			re.compile ("\'(:?(:?[^\\\\\']+)|(:?[\\\\][\\\\\'])|(:?[\\\\][^\\\\\']))+\'"),
+		]
+	for _current_line in xrange_ (0, _lines) :
+		_current_string = _view.select_real_string (_current_line)
+		for _pattern in _patterns :
+			for _option in _pattern.finditer (_current_string) :
+				_options.add (_option.group (0))
+	_options = list (_options)
+	_options.sort ()
+	_system_arguments = ["sce-select"]
+	_shell._curses_close ()
+	try :
+		_process = subprocess.Popen (
+				_system_arguments, shell = False, env = None,
+				stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = None,
+				bufsize = 131072, close_fds = True, universal_newlines = False)
+	except Exception as _error :
+		_shell._curses_open ()
+		_shell.notify ("go-select-token: spawn failed; aborting.  //  %s", _error)
+		return None
+	_shell._curses_open ()
+	try :
+		_stream = codecs.EncodedFile (_process.stdin, "utf-8", "utf-8", "replace")
+		for _option in _options :
+			_string = _option + "\n"
+			_string = _string.encode ("utf-8")
+			_stream.write (_string)
+		_stream.close ()
+		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
+		_lines = _stream.readlines ()
+		_lines = [_line.decode ("utf-8") .rstrip ("\n\r") for _line in _lines]
+		_stream.close ()
+		_error = _process.wait ()
+	except Exception as _error :
+		_shell.notify ("paste: input failed; aborting.  //  %s", _error)
+		return None
+	if _error != 0 :
+		_shell.notify ("go-select-token: command failed (non zero exit code); ignoring.")
+		return None
+	if len (_lines) != 1 :
+		_shell.notify ("go-select-token: command failed (non zero exit code); ignoring.")
+		return None
+	return go_string_command (_shell, [_lines[0]])
 
 
 _replace_arguments = None
