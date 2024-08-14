@@ -127,6 +127,9 @@ class View (sce_core.View) :
 			self._cache[_cache_key] = _cache_value
 		return _visual_length
 	
+	def select_has_tagged (self) :
+		return self._mark_enabled
+	
 	def select_is_tagged (self, _line) :
 		if not self._mark_enabled :
 			return False
@@ -233,7 +236,9 @@ class View (sce_core.View) :
 		_length = self.compute_visual_length (_string)
 		_column = 0
 		_code = 0
-		_h_code = ord ("-")
+		_tt_code = ord (".")
+		_tm_code = ord (" ")
+		_th_code = ord (" ")
 		_l_code = ord ("<")
 		_g_code = ord (">")
 		_e_code = ord ("!")
@@ -270,18 +275,37 @@ class View (sce_core.View) :
 			_code = ord (_character)
 			if _code == 9 :
 				_delta = (((_column // _tab_columns) + 1) * _tab_columns) - _column
+				_tt_wrote = False
 				if ((_column + _delta) > _head_column) and (_column <= _tail_column) :
 					if _last_mode != -2 :
 						_buffer.append (-2)
 						_last_mode = -2
 					if (_column >= _head_column) and ((_column + _delta) <= _tail_column) :
-						_buffer.extend ([_h_code] * (_delta - 1))
+						_tt_amount = _delta - 1
+						_tt_wrote = _tt_wrote or (_tt_amount > 0)
+						if _tt_amount >= 1 :
+							_buffer.extend ([_tt_code])
+						if _tt_amount >= 2 :
+							_buffer.extend ([_tm_code] * (_tt_amount - 1))
 					else :
 						if _column < _head_column :
-							_buffer.extend ([_h_code] * (_column + _delta - _head_column - 1))
+							_tt_amount = _column + _delta - _head_column - 1
+							_tt_wrote = _tt_wrote or (_tt_amount > 0)
+							if _tt_amount >= 1 :
+								_buffer.extend ([_tt_code])
+							if _tt_amount >= 2 :
+								_buffer.extend ([_tm_code] * (_tt_amount - 1))
 						if _column + _delta > _tail_column :
-							_buffer.extend ([_h_code] * (_tail_column - _column))
-					_buffer.append (_g_code)
+							_tt_amount = _tail_column - _column
+							_tt_wrote = _tt_wrote or (_tt_amount > 0)
+							if _tt_amount >= 1 :
+								_buffer.extend ([_tt_code])
+							if _tt_amount >= 2 :
+								_buffer.extend ([_tm_code] * (_tt_amount - 1))
+					if _tt_wrote :
+						_buffer.append (_th_code)
+					else :
+						_buffer.append (_tt_code)
 				_column += _delta
 			else :
 				if (_column >= _head_column) and (_column <= _tail_column) :

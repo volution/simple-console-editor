@@ -77,20 +77,51 @@ class Shell (object) :
 		
 		curses.start_color ()
 		curses.use_default_colors ()
-		curses.init_pair (1, curses.COLOR_WHITE, -1)
-		curses.init_pair (2, curses.COLOR_BLUE, -1)
-		curses.init_pair (3, curses.COLOR_RED, -1)
-		curses.init_pair (4, curses.COLOR_MAGENTA, -1)
-		curses.init_pair (5, curses.COLOR_GREEN, -1)
-		curses.init_pair (6, curses.COLOR_YELLOW, -1)
-		curses.init_pair (7, curses.COLOR_RED, -1)
-		self._color_text = curses.color_pair (1) | curses.A_NORMAL
-		self._color_markup = curses.color_pair (2) | curses.A_NORMAL
-		self._color_error = curses.color_pair (3) | curses.A_BOLD
+		
+		if True :
+			_default_foreground = -1
+			_default_background = -1
+		else :
+			_default_foreground = curses.COLOR_WHITE
+			_default_background = curses.COLOR_BLACK
+		
+		_focus_foreground_1 = curses.COLOR_BLACK
+		_focus_foreground_2 = curses.COLOR_BLACK
+		_focus_background = curses.COLOR_YELLOW
+		
+		curses.init_pair (0, curses.COLOR_BLACK, _default_background)
+		curses.init_pair (1, curses.COLOR_WHITE, _default_background)
+		curses.init_pair (2, curses.COLOR_BLUE, _default_background)
+		curses.init_pair (3, curses.COLOR_RED, _default_background)
+		curses.init_pair (4, curses.COLOR_MAGENTA, _default_background)
+		curses.init_pair (5, curses.COLOR_GREEN, _default_background)
+		curses.init_pair (6, curses.COLOR_YELLOW, _default_background)
+		curses.init_pair (7, curses.COLOR_RED, _default_background)
+		
+		curses.init_pair (8, _default_foreground, _default_background)
+		
+		curses.init_pair (9, _focus_foreground_1, _focus_background)
+		curses.init_pair (10, _focus_foreground_2, _focus_background)
+		curses.init_pair (11, _default_foreground, _default_background)
+		
+		curses.init_pair (12, curses.COLOR_WHITE, _focus_background)
+		curses.init_pair (13, curses.COLOR_WHITE, _focus_background)
+		curses.init_pair (14, curses.COLOR_YELLOW, _default_background)
+		
+		curses.init_pair (15, curses.COLOR_BLACK, curses.COLOR_RED)
+		
+		self._color_background = curses.color_pair (8) | curses.A_NORMAL
+		self._color_text = curses.color_pair (9) | curses.A_NORMAL
+		self._color_text_cur = curses.color_pair (10) | curses.A_NORMAL
+		self._color_text_dim = curses.color_pair (11) | curses.A_DIM
+		self._color_markup = curses.color_pair (12) | curses.A_DIM
+		self._color_markup_cur = curses.color_pair (13) | curses.A_DIM
+		self._color_markup_dim = curses.color_pair (14) | curses.A_DIM
+		self._color_error = curses.color_pair (15) | curses.A_NORMAL
 		self._color_message = curses.color_pair (4) | curses.A_NORMAL
 		self._color_input = curses.color_pair (5) | curses.A_NORMAL
-		self._color_highlight_1 = curses.color_pair (6) | curses.A_BOLD
-		self._color_highlight_2 = curses.color_pair (7) | curses.A_BOLD
+		self._color_highlight_1 = curses.color_pair (6) | curses.A_NORMAL
+		self._color_highlight_2 = curses.color_pair (7) | curses.A_NORMAL
 		
 		curses.noecho ()
 		curses.nonl ()
@@ -118,10 +149,18 @@ class Shell (object) :
 		curses.doupdate ()
 		
 		del self._window
+		del self._color_background
 		del self._color_text
+		del self._color_text_cur
+		del self._color_text_dim
 		del self._color_markup
+		del self._color_markup_cur
+		del self._color_markup_dim
+		del self._color_error
 		del self._color_message
 		del self._color_input
+		del self._color_highlight_1
+		del self._color_highlight_2
 		
 		curses.echo ()
 		curses.nl ()
@@ -362,12 +401,18 @@ class Shell (object) :
 		(_window_lines, _window_columns) = self._window.getmaxyx ()
 		
 		_color_text = self._color_text
+		_color_text_cur = self._color_text_cur
+		_color_text_dim = self._color_text_dim
 		_color_markup = self._color_markup
+		_color_markup_cur = self._color_markup_cur
+		_color_markup_dim = self._color_markup_dim
 		_color_error = self._color_error
 		_color_message = self._color_message
 		_color_highlight_1 = self._color_highlight_1
 		_color_highlight_2 = self._color_highlight_2
+		_color_background = self._color_background
 		
+		_window.bkgd (' ', _color_background)
 		_window.erase ()
 		
 		_max_lines = _window_lines
@@ -405,13 +450,21 @@ class Shell (object) :
 		
 		_messages = self._messages
 		
+		_has_tagged = _view.select_has_tagged ()
+		
 		for i in xrange_ (0, _max_lines) :
 			_window.move (i, 0)
 			_line = _head_line + i
+			_line_is_current = _line == _cursor_line
+			_line_in_scroll = _line >= 0 and _line < _lines
+			_line_in_focus = _line_in_scroll and (abs (_line - _cursor_line) <= 5)
+			_line_in_tagged = _line_in_scroll and _view.select_is_tagged (_line)
+			_line_is_dimmed = not (_line_in_focus if not _has_tagged else _line_in_tagged)
 			_column = 0
-			if _line >= 0 and _line < _lines :
-				_window.attrset (_color_markup)
-				if _view.select_is_tagged (_line) :
+			_window.attrset (_color_background)
+			if _line_in_scroll :
+				if _line_in_tagged :
+					_window.attrset (_color_markup)
 					_window.insstr (i, _column, "|")
 					_column += 1
 				else :
@@ -423,9 +476,21 @@ class Shell (object) :
 						_window.insstr (i, _column, _code.encode ("utf-8"))
 						_column += len (_code)
 					elif _code == -1 :
-						_window.attrset (_color_text)
+						if not _line_is_dimmed :
+							if _line_is_current :
+								_window.attrset (_color_text_cur)
+							else :
+								_window.attrset (_color_text)
+						else :
+							_window.attrset (_color_text_dim)
 					elif _code == -2 :
-						_window.attrset (_color_markup)
+						if not _line_is_dimmed :
+							if _line_is_current :
+								_window.attrset (_color_markup_cur)
+							else :
+								_window.attrset (_color_markup)
+						else :
+							_window.attrset (_color_markup_dim)
 					elif _code == -3 :
 						_window.attrset (_color_error)
 					elif _code == -4 :
@@ -436,29 +501,49 @@ class Shell (object) :
 						_window.insstr (i, _column, "?")
 						_column += 1
 			else :
-				_window.attrset (_color_markup)
+				_window.attrset (_color_markup_dim)
 				if True :
 					if _line == 0 :
 						_window.insstr (i, 0, "#")
+						_column += 1
 					elif (_line == -1 or _line == _lines) and _lines > 0 :
 						_window.insstr (i, 0, "~~~~~~~~")
+						_column += 8
 					else :
 						_window.insstr (i, 0, "~")
+						_column += 1
 				else :
 					if _line == _head_line and _line == _tail_line :
 						_window.insstr (i, 0, "><")
+						_column += 2
 					elif _line == 0 :
 						_window.insstr (i, 0, "#")
+						_column += 1
 					elif _line == _head_line :
 						_window.insstr (i, 0, ">>")
+						_column += 2
 					elif _line == _tail_line :
 						_window.insstr (i, 0, "<<")
+						_column += 2
 					elif (_line == -1 or _line == _lines) and _lines > 0 :
 						_window.insstr (i, 0, "~~~~~~~~")
+						_column += 8
 					elif _line < 0 :
 						_window.insstr (i, 0, ">")
+						_column += 1
 					else :
 						_window.insstr (i, 0, "<")
+						_column += 1
+			if True :
+				if not _line_is_dimmed :
+					if _line_is_current :
+						_window.attrset (_color_text_cur)
+					else :
+						_window.attrset (_color_text)
+				else :
+					_window.attrset (_color_text_dim)
+				for _column in xrange_ (_column, _max_columns) :
+					_window.insstr (i, _column, " ")
 		
 		if self._messages_touched is not False :
 			_message_index = 0

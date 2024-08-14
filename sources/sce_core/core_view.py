@@ -47,6 +47,9 @@ class View (object) :
 	def select_visual_length (self, _line) :
 		return len (self.select_real_string (_line))
 	
+	def select_has_tagged (self) :
+		return False
+	
 	def select_is_tagged (self, _line) :
 		return False
 	
