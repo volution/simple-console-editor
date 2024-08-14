@@ -31,7 +31,7 @@
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	
 	_compress=true
-	_version=3.10
+	_version=3.11
 	
 	test "${#}" -eq 0
 	test -d ./.outputs
