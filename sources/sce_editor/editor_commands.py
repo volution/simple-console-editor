@@ -904,8 +904,8 @@ def go_select_token_command (_shell, _arguments) :
 			re.compile ("[$%@&][({[]?\\w+"),
 			re.compile ("(?:\\w+\\.)+\\w+"),
 			re.compile ("/?(?:(:?\\w|[-%])+/)+(:?\\w|[-%])+/?"),
-			re.compile ("\"(:?(:?[^\\\\\"]+)|(:?[\\\\][\\\\\"])|(:?[\\\\][^\\\\\"]))+\""),
-			re.compile ("\'(:?(:?[^\\\\\']+)|(:?[\\\\][\\\\\'])|(:?[\\\\][^\\\\\']))+\'"),
+			re.compile ("\"(:?(:?[^\\\\\"])|(:?[\\\\][\\\\\"])|(:?[\\\\][^\\\\\"]))+\""),
+			re.compile ("\'(:?(:?[^\\\\\'])|(:?[\\\\][\\\\\'])|(:?[\\\\][^\\\\\']))+\'"),
 		]
 	for _current_line in xrange_ (0, _lines) :
 		_current_string = _view.select_real_string (_current_line)
