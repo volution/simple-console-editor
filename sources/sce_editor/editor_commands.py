@@ -666,16 +666,24 @@ _open_path = None
 
 def open_command (_shell, _arguments) :
 	global _open_path
-	if len (_arguments) != 1 :
+	if len (_arguments) not in (1, 2, 3) :
 		_shell.notify ("open: wrong syntax: open <file>")
 		return None
 	_path = _arguments[0]
+	if len (_arguments) == 3 :
+		_go_arguments = (_arguments[1], _arguments[2])
+	elif len (_arguments) == 2 :
+		_go_arguments = ("l", _arguments[1])
+	else :
+		_go_arguments = None
 	if load_command (_shell, ["r", _path]) is None :
 		return None
 	_open_path = _path
 	_shell.get_view () .get_scroll () .reset_touched ()
 	fpos_get_command (_shell, [])
 	_shell.notify_no_tty ("open: succeeded %s", _open_path)
+	if _go_arguments is not None :
+		go_command (_shell, _go_arguments)
 	return True
 
 
@@ -787,15 +795,32 @@ def go_command (_shell, _arguments) :
 		_shell.notify ("go: wrong syntax: go l|s|r <argument>")
 		return None
 	elif _arguments[0] == "l" :
-		_target_line = _arguments[1]
+		_target = _arguments[1].split (":")
+		if len (_target) == 1 :
+			_target_line = _target[0]
+			_target_column = ""
+		elif len (_target) == 2 :
+			_target_line = _target[0]
+			_target_column = _target[1]
+		else :
+			_shell.notify ("go: wrong line syntax; aborting.")
+			return None
 		try :
-			_target_line = int (_target_line)
-			_target_line -= 1
+			if _target_line != "" :
+				_target_line = int (_target_line)
+				_target_line -= 1
+			else :
+				_target_line = None
+			if _target_column != "" :
+				_target_column = int (_target_column)
+				_target_column -= 1
+			else :
+				_target_column = None
 		except Exception as _error :
 			_shell.notify ("go: wrong line syntax; aborting.  //  %s", _error)
 			return None
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
-				_go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line)
+				_go_match_line_and_column (_cursor_line, _cursor_column, _current_line, _string, _target_line, _target_column)
 	elif _arguments[0] == "s" :
 		_pattern = _arguments[1]
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
@@ -838,9 +863,17 @@ def _go_search (_shell, _matcher) :
 	return False
 
 
-def _go_match_line (_cursor_line, _cursor_column, _current_line, _string, _target_line) :
+def _go_match_line_and_column (_cursor_line, _cursor_column, _current_line, _string, _target_line, _target_column) :
+	if _target_line is None :
+		_target_line = _current_line
 	if _current_line == _target_line :
-		return _cursor_column
+		if _target_column is not None :
+			if (_cursor_line == _current_line) and (_cursor_column == _target_column) :
+				return -1
+			else :
+				return _target_column
+		else :
+			return _cursor_column
 	else :
 		return -1
 
