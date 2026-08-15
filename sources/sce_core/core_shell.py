@@ -175,9 +175,17 @@ class Shell (object) :
 		return None
 	
 	def scan (self) :
+		
+		def _getch_loop (_window) :
+			while True :
+				_code = _window.getch ()
+				if _code == -1 :
+					continue
+				return _code
+		
 		_window = self._window
 		_code = _window.getch ()
-		if _code < 0 :
+		if _code == -1 :
 			pass
 		elif _code == 27 :
 			_window.nodelay (True)
@@ -205,18 +213,18 @@ class Shell (object) :
 			_code = None
 		elif (_code >= 194) and (_code < 224) :
 			_code_1 = _code
-			_code_2 = _window.getch ()
+			_code_2 = _getch_loop (_window)
 			_code = (bytechr_ (_code_1) + bytechr_ (_code_2)) .decode ("utf-8")
 		elif (_code >= 224) and (_code < 240) :
 			_code_1 = _code
-			_code_2 = _window.getch ()
-			_code_3 = _window.getch ()
+			_code_2 = _getch_loop (_window)
+			_code_3 = _getch_loop (_window)
 			_code = (bytechr_ (_code_1) + bytechr_ (_code_2) + bytechr_ (_code_3)) .decode ("utf-8")
 		elif (_code >= 240) and (_code < 245) :
 			_code_1 = _code
-			_code_2 = _window.getch ()
-			_code_3 = _window.getch ()
-			_code_4 = _window.getch ()
+			_code_2 = _getch_loop (_window)
+			_code_3 = _getch_loop (_window)
+			_code_4 = _getch_loop (_window)
 			_code = (bytechr_ (_code_1) + bytechr_ (_code_2) + bytechr_ (_code_3) + bytechr_ (_code_4)) .decode ("utf-8")
 		elif (_code >= 245) and (_code < 248) :
 			_code = None
