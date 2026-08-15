@@ -17,6 +17,9 @@
 :: sources / run / python / 3.6 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.6 editor "${@}"
 :: sources / run / python / 3.6 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.6 pager "${@}"
 
+:: sources / run / python / 3.7 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.7 editor "${@}"
+:: sources / run / python / 3.7 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.7 pager "${@}"
+
 :: sources / run / python / 3.8 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.8 editor "${@}"
 :: sources / run / python / 3.8 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.8 pager "${@}"
 
