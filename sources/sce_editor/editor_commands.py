@@ -717,6 +717,7 @@ def fpos_get_command (_shell, _arguments) :
 	_path = os.path.realpath (_open_path)
 	if len (_arguments) != 0 :
 		_shell.notify ("fpos-get: wrong syntax: fpos-get")
+		return None
 	_dict = _fpos_load (_shell)
 	if _path in _dict :
 		_line = _dict[_path]
@@ -736,6 +737,7 @@ def fpos_set_command (_shell, _arguments) :
 	_path = os.path.realpath (_open_path)
 	if len (_arguments) != 0 :
 		_shell.notify ("fpos-set: wrong syntax: fpos-set")
+		return None
 	_dict = _fpos_load (_shell)
 	_line = _shell.get_view () .get_cursor () .get_line ()
 	_dict[_path] = _line
@@ -834,6 +836,7 @@ def go_command (_shell, _arguments) :
 			_pattern = re.compile (_pattern)
 		except Exception as _error :
 			_shell.notify ("go: wrong pattern syntax; aborting.  //  %s", _error)
+			return None
 		_matcher = lambda _cursor_line, _cursor_column, _current_line, _string : \
 				_go_match_regexp (_cursor_line, _cursor_column, _current_line, _string, _pattern)
 	else :
