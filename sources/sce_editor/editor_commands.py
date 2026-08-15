@@ -756,17 +756,16 @@ def _fpos_load (_shell) :
 		return dict ()
 	_dict = None
 	try :
-		_globals = {"__builtins__" : {}}
-		_dict = eval (_data, _globals, _globals)
+		_dict = json.loads (_data)
 	except Exception as _error :
-		_shell.notify ("fpos-load: eval failed; ignoring.  //  %s", _error)
+		_shell.notify ("fpos-load: json failed; ignoring.  //  %s", _error)
 	if _dict is None :
 		return dict ()
 	return _dict
 
 def _fpos_store (_shell, _dict) :
 	global _fpos_path
-	_data = repr (_dict)
+	_data = json.dumps (_dict)
 	try :
 		_stream = None
 		_stream = codecs.open (_fpos_path, "w", "utf-8", "replace")
