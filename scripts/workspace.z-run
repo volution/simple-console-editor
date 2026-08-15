@@ -99,3 +99,52 @@
 !!
 
 
+
+
+--<< workbench / python / *
+	test "${#}" -eq 1 ; _python_version="${1}" ; shift -- 1
+	
+	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
+	test -d "${_outputs}"
+	
+	case "${_python_version}" in
+		
+		( 2.7 )
+			if test -e "${_outputs}/python/python2.7" ; then
+				_python_executable="${_outputs}/python/python2.7"
+			else
+				_python_executable="$( type -P -- python2.7 )"
+			fi
+		;;
+		
+		( 3.* )
+			if test "${_python_version}" == 3.x ; then
+				_python_version='3'
+			fi
+			if test -e "${_outputs}/python/python${_python_version}" ; then
+				_python_executable="${_outputs}/python/python${_python_version}"
+			else
+				_python_executable="$( type -P -- "python${_python_version}" )"
+			fi
+		;;
+		
+		( * )
+			printf -- '[ee]  invalid python version `%s`;  aborting!\n' "${_python_version}" >&2
+			exit -- 1
+		;;
+		
+	esac
+	
+	test -x "${_python_executable}"
+	_python_executable="$( exec -- readlink -e -- "${_python_executable}" )"
+	
+	_python_interpreter="python${_python_version}"
+	
+	printf -- '%s %s %s\n' \
+			"${_python_version}" \
+			"${_python_interpreter}" \
+			"${_python_executable}" \
+	#
+!!
+
+

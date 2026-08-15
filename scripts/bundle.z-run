@@ -8,21 +8,32 @@
 
 
 
-:: bundle / run / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' editor "${@}"
-:: bundle / run / pager :: exec -- "${ZRUN[@]}" ':: bundle / run / *' pager "${@}"
+:: bundle / run / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 3.6 editor "${@}"
+:: bundle / run / pager :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 3.6 pager "${@}"
 
-:: bundle / build / editor :: exec -- "${ZRUN[@]}" ':: bundle / build / *' editor "${@}"
-:: bundle / build / pager :: exec -- "${ZRUN[@]}" ':: bundle / build / *' pager "${@}"
+:: bundle / build / editor :: exec -- "${ZRUN[@]}" ':: bundle / build / *' 3.6 editor "${@}"
+:: bundle / build / pager :: exec -- "${ZRUN[@]}" ':: bundle / build / *' 3.6 pager "${@}"
 
 
 
 
 --<< bundle / run / *
+	
+	test "${#}" -ge 1 ; _python_version="${1}" ; shift -- 1
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
-	"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
+	"${ZRUN[@]}" ':: bundle / build / *' "${_python_version}" "${_main}"
+	
+	read -r -- _python_version _python_interpreter _python_executable \
+		< <( exec "${ZRUN}" ':: workbench / python / *' "${_python_version}" ) \
+	#
+	test -x "${_python_executable}"
+	
 	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
 	test -d "${_outputs}"
-	exec -- "${_outputs}/${_main}--bundle.zip" "${@}"
+	
+	export -- PATH="${PATH}:$( exec -- dirname -- "${_python_executable}" )"
+	
+	exec -- "${_outputs}/${_main}--bundle--${_python_version}.zip" "${@}"
 !!
 
 
@@ -30,10 +41,18 @@
 
 --<< bundle / build / *
 	
+	test "${#}" -ge 1 ; _python_version="${1}" ; shift -- 1
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
+	test "${#}" -eq 0
+	test -f "./sources/exec_${_main}.py"
 	
-	_compress=true
-	_version=3.11
+	read -r -- _python_version _python_interpreter _python_executable \
+		< <( exec "${ZRUN}" ':: workbench / python / *' "${_python_version}" ) \
+	#
+	test -x "${_python_executable}"
+	
+	_compress=false
+	_strip=true
 	
 	test "${#}" -eq 0
 	test -f "./sources/exec_${_main}.py"
@@ -43,8 +62,8 @@
 	
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
-	_bundle_sources="$( readlink -m -- "${_outputs}/${_main}--bundle.sources" )"
-	_bundle_zip="$( readlink -m -- "${_outputs}/${_main}--bundle.zip" )"
+	_bundle_sources="$( readlink -m -- "${_outputs}/${_main}--bundle--${_python_version}.sources" )"
+	_bundle_zip="$( readlink -m -- "${_outputs}/${_main}--bundle--${_python_version}.zip" )"
 	
 	if test -e "${_bundle_zip}" ; then
 		mv -T -- "${_bundle_zip}" "${_bundle_zip}.old"
@@ -97,9 +116,59 @@
 	_touch_timestamp="${_touch_timestamp:0:12}.${_touch_timestamp:12:14}"
 	find "${_bundle_sources}/" -exec touch -t "${_touch_timestamp}" -- {} +
 	
-	"python${_version}" -u -O -O -B -E -S -s -R -m compileall -q -b -- "${_bundle_sources}"
+	_python_compiler_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
 	
-	if test "${_compress}" == true ; then
+	_python_interpreter_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
+	
+	case "${_python_version}" in
+		( 2 | 2.* )
+			_python_compileall_arguments=(
+					-q
+				)
+			_python_compiler_arguments+=(
+					-R # hash randomization
+				)
+			_python_interpreter_arguments+=(
+					-R # hash randomization
+				)
+		;;
+		( 3 | 3.* )
+			_python_compileall_arguments=(
+					-q
+					-b
+				)
+			_python_compiler_arguments+=(
+					-b # warn about `str` and `bytes` mixes
+				)
+			_python_interpreter_arguments+=(
+					-b # warn about `str` and `bytes` mixes
+				)
+		;;
+		( * )
+			printf -- '[ee]  invalid python version `%s`;  aborting!\n' "${_python_version}" >&2
+			exit -- 1
+		;;
+	esac
+	
+	"${_python_executable}" "${_python_compiler_arguments[@]}" -m compileall "${_python_compileall_arguments[@]}" -- "${_bundle_sources}"
+	
+	if test "${_strip}" == true ; then
 		find "${_bundle_sources}/" -xtype f -name '*.py' -delete
 	fi
 	
@@ -132,18 +201,8 @@
 			-@ \
 	#
 	
-	_python_arguments=(
-			-u # unbuffered `stdin` and `stdout`
-			-O -O # optimizations enabled
-			-B # disable writing `*.py[oc]`
-			-E # ignore `PYTHON*` environment variables
-			-S # disable `sys.path` manipulation
-			-s # disable user-site
-			-R # hash randomization
-		)
-	
 	cat -- \
-			<( printf '#!/usr/bin/env -S python%s %s\n' "${_version}" "${_python_arguments[*]}" ) \
+			<( printf '#!/usr/bin/env -S %s %s\n' "${_python_interpreter}" "${_python_interpreter_arguments[*]}" ) \
 			"${_bundle_zip}.tmp.1" \
 		> "${_bundle_zip}.tmp.2" \
 	#
@@ -164,4 +223,5 @@
 		rm -- "${_bundle_zip}.new"
 	fi
 !!
+
 

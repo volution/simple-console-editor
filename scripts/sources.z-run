@@ -8,47 +8,73 @@
 
 
 
-++:: sources / run / python2 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 editor "${@}"
-:: sources / run / python2 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python2 pager "${@}"
+++:: sources / run / python / 2.7 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 2.7 editor "${@}"
+:: sources / run / python / 2.7 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 2.7 pager "${@}"
 
-++:: sources / run / python3 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 editor "${@}"
-:: sources / run / python3 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' python3 pager "${@}"
+++:: sources / run / python / 3.x / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.x editor "${@}"
+:: sources / run / python / 3.x / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.x pager "${@}"
+
+:: sources / run / python / 3.6 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.6 editor "${@}"
+:: sources / run / python / 3.6 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.6 pager "${@}"
+
+:: sources / run / python / 3.8 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.8 editor "${@}"
+:: sources / run / python / 3.8 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.8 pager "${@}"
+
+:: sources / run / python / 3.9 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.9 editor "${@}"
+:: sources / run / python / 3.9 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.9 pager "${@}"
+
+:: sources / run / python / 3.10 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.10 editor "${@}"
+:: sources / run / python / 3.10 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.10 pager "${@}"
+
+:: sources / run / python / 3.11 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.11 editor "${@}"
+:: sources / run / python / 3.11 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.11 pager "${@}"
+
+:: sources / run / python / 3.12 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.12 editor "${@}"
+:: sources / run / python / 3.12 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.12 pager "${@}"
+
+:: sources / run / python / 3.13 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.13 editor "${@}"
+:: sources / run / python / 3.13 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.13 pager "${@}"
+
+:: sources / run / python / 3.14 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.14 editor "${@}"
+:: sources / run / python / 3.14 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 3.14 pager "${@}"
 
 
 
 
 --<< sources / run / *
-	test "${#}" -ge 1 ; _python="${1}" ; shift -- 1
+	
+	test "${#}" -ge 1 ; _python_version="${1}" ; shift -- 1
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	test -f "./sources/exec_${_main}.py"
 	
-	case "${_python}" in
-		( python2 )
-			_python_executable="$( type -P -- python2.7 )"
-			_python_arguments=(
-					-u # unbuffered `stdin` and `stdout`
-					-O -O # optimizations enabled
-					-B # disable writing `*.py[oc]`
-					-E # ignore `PYTHON*` environment variables
-					-S # disable `sys.path` manipulation
-					-s # disable user-site
+	read -r -- _python_version _python_interpreter _python_executable \
+		< <( exec "${ZRUN}" ':: workbench / python / *' "${_python_version}" ) \
+	#
+	test -x "${_python_executable}"
+	
+	_python_arguments=(
+			-u # unbuffered `stdin` and `stdout`
+			-O -O # optimizations enabled
+			-B # disable writing `*.py[oc]`
+			-E # ignore `PYTHON*` environment variables
+			-S # disable `sys.path` manipulation
+			-s # disable user-site
+			-R # hash randomization
+		)
+	
+	case "${_python_version}" in
+		( 2 | 2.* )
+			_python_arguments+=(
 					-R # hash randomization
 				)
 		;;
-		( python3 )
-			_python_executable="$( type -P -- python3 )"
-			_python_arguments=(
-					-u # unbuffered `stdin` and `stdout`
-					-O -O # optimizations enabled
-					-B # disable writing `*.py[oc]`
-					-E # ignore `PYTHON*` environment variables
-					-S # disable `sys.path` manipulation
-					-s # disable user-site
+		( 3 | 3.* )
+			_python_arguments+=(
 					-b # warn about `str` and `bytes` mixes
 				)
 		;;
 		( * )
-			printf -- '[ee]  invalid python `%s`;  aborting!\n' "${_python}" >&2
+			printf -- '[ee]  invalid python version `%s`;  aborting!\n' "${_python_version}" >&2
 			exit -- 1
 		;;
 	esac
