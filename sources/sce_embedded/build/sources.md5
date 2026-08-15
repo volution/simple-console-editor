@@ -12,7 +12,7 @@ e93a08151ddb5452c7ab132ca5ae3657 *sce_core/__init__.py
 1282a194860e1e749b752c9ee99e689d *sce_core/core_shell.py
 0173d9bb48757f5e502e65dd6d7fd45c *sce_core/core_view.py
 3cb273d592ef365cc62e54bf7c0a2aa7 *sce_editor/__init__.py
-dda86d364af3c33bbd9e963c93dab458 *sce_editor/editor_commands.py
+9cfa87d71f11955c9fae56fd810db866 *sce_editor/editor_commands.py
 6028b904fa996702a1bd17800505a438 *sce_editor/editor_handler.py
 adfc62660b1136710d1c611b94f44874 *sce_editor/editor_main.py
 89284bc7958522de67480f52f36a5719 *sce_editor/editor_scroll.py
