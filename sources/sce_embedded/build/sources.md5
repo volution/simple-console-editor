@@ -9,7 +9,7 @@ e8e54cc8e5b65803af4ba1477cb59a48 *sce_common/common_view.py
 e93a08151ddb5452c7ab132ca5ae3657 *sce_core/__init__.py
 053e7d7c36bd70fb81d794f713b14f06 *sce_core/core_basic_handler.py
 99efc2d666d23e3f354f7fc82353f92b *sce_core/core_handler.py
-1282a194860e1e749b752c9ee99e689d *sce_core/core_shell.py
+ee0ebf8011eabb4d9d2ab6b6a0dfb00c *sce_core/core_shell.py
 0173d9bb48757f5e502e65dd6d7fd45c *sce_core/core_view.py
 3cb273d592ef365cc62e54bf7c0a2aa7 *sce_editor/__init__.py
 9cfa87d71f11955c9fae56fd810db866 *sce_editor/editor_commands.py
