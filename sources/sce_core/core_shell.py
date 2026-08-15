@@ -41,6 +41,10 @@ class Shell (object) :
 	
 	def open (self) :
 		
+		_terminal_type = os.environ.get ("TERM", "")
+		if _terminal_type == "" or _terminal_type == "dumb" :
+			raise Exception ("[de765b6c]  `TERM` is not set, or is set to `dumb`")
+		
 		_terminal_descriptor = self._terminal.fileno ()
 		if not os.isatty (_terminal_descriptor) :
 			return False
@@ -53,7 +57,7 @@ class Shell (object) :
 		if _terminal_descriptor != 2 :
 			os.dup2 (_terminal_descriptor, 2)
 		
-		curses.setupterm (os.environ["TERM"], _terminal_descriptor)
+		curses.setupterm (_terminal_type, _terminal_descriptor)
 		
 		self._curses_open ()
 		
