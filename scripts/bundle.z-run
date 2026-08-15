@@ -123,7 +123,6 @@
 			-E # ignore `PYTHON*` environment variables
 			-S # disable `sys.path` manipulation
 			-s # disable user-site
-			-R # hash randomization
 		)
 	
 	_python_interpreter_arguments=(
@@ -133,7 +132,6 @@
 			-E # ignore `PYTHON*` environment variables
 			-S # disable `sys.path` manipulation
 			-s # disable user-site
-			-R # hash randomization
 		)
 	
 	case "${_python_version}" in
