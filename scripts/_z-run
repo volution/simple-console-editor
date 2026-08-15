@@ -4,6 +4,9 @@
 ::// *
 
 
+&& _/environment.z-run
+
+
 && _/workspace.z-run
 && _/sources.z-run
 && _/bundle.z-run

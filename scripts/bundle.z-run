@@ -20,7 +20,9 @@
 --<< bundle / run / *
 	test "${#}" -ge 1 ; _main="${1}" ; shift -- 1
 	"${ZRUN[@]}" ':: bundle / build / *' "${_main}"
-	exec -- "./.outputs/${_main}--bundle.zip" "${@}"
+	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
+	test -d "${_outputs}"
+	exec -- "${_outputs}/${_main}--bundle.zip" "${@}"
 !!
 
 
@@ -34,13 +36,15 @@
 	_version=3.11
 	
 	test "${#}" -eq 0
-	test -d ./.outputs
 	test -f "./sources/exec_${_main}.py"
+	
+	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
+	test -d "${_outputs}"
 	
 	"${ZRUN[@]}" ':: sources / embedded / hash'
 	
-	_bundle_sources="$( readlink -m -- "./.outputs/${_main}--bundle.sources" )"
-	_bundle_zip="$( readlink -m -- "./.outputs/${_main}--bundle.zip" )"
+	_bundle_sources="$( readlink -m -- "${_outputs}/${_main}--bundle.sources" )"
+	_bundle_zip="$( readlink -m -- "${_outputs}/${_main}--bundle.zip" )"
 	
 	if test -e "${_bundle_zip}" ; then
 		mv -T -- "${_bundle_zip}" "${_bundle_zip}.old"
@@ -71,7 +75,7 @@
 	_build_version="$( exec -- cat -- ./sources/sce_embedded/build/version.txt )"
 	_build_timestamp="$( exec -- cat -- ./sources/sce_embedded/build/timestamp.txt )"
 	_build_sources_hash="$( exec -- cat -- ./sources/sce_embedded/build/sources.hash )"
-	_build_git_hash="$( exec -- cat -- ./.outputs/markers/build-git-hash.txt )"
+	_build_git_hash="$( exec -- cat -- "${_outputs}/markers/build-git-hash.txt" )"
 	
 	sed -r \
 			-e 's#@\{SCE_BUILD_TARGET}#'"${_build_target}"'#' \

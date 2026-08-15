@@ -12,7 +12,6 @@
 	
 	test "${#}" -eq 0
 	
-	"${ZRUN[@]}" ':: workspace / initialize / outputs'
 	"${ZRUN[@]}" ':: workspace / initialize / python'
 !!
 
@@ -23,7 +22,9 @@
 	
 	test "${#}" -eq 0
 	
-	_outputs="$( exec -- readlink -e -- ./.outputs )"
+	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
+	test -d "${_outputs}"
+	
 	_sources="$( exec -- readlink -e -- ./sources )"
 	
 	_markers="${_outputs}/markers"
@@ -38,21 +39,63 @@
 
 
 
-<< workspace / initialize / outputs
+--<< workbench / scratch
 	
 	test "${#}" -eq 0
 	
-	if test ! -d ./.outputs ; then
-		if test -h ./.outputs ; then
-			_outputs_store="$( exec -- readlink -f -- ./.outputs )"
-		else
-			_outputs_store="${TMPDIR:-/tmp}/workspace--${UID}--${RANDOM}-${RANDOM}-${RANDOM}-${RANDOM}"
-		fi
-		mkdir -- "${_outputs_store}"
-		if test ! -e ./.outputs ; then
-			_outputs_store="$( exec -- readlink -e -- "${_outputs_store}" )"
-			ln -s -f -T -- "${_outputs_store}" ./.outputs
-		fi
+	if test -e ./.scratch ; then
+		_scratch="$( exec -- readlink -e -- ./.scratch )"
+	elif test -h ./.scratch ; then
+		_scratch="$( exec -- readlink -f -- ./.scratch )"
+		mkdir -- "${_scratch}"
+	elif test -e "${HOME}/go/.scratch" ; then
+		_scratch="$( exec -- readlink -e -- "${HOME}/go/.scratch" )"
+	elif test -e "${HOME}/.../volatile/workbench/go--scratch" ; then
+		_scratch="$( exec -- readlink -e -- "${HOME}/.../volatile/workbench/go--scratch" )"
+	else
+		_scratch="${TMPDIR:-/tmp}/go--scratch--${UID}"
 	fi
+	
+	_scratch="$( exec -- readlink -e -- "${_scratch}" )"
+	
+	printf -- '%s\n' "${_scratch}"
 !!
+
+
+
+
+--<< workbench / outputs
+	
+	test "${#}" -eq 0
+	
+	_outputs="${__OUTPUTS}"
+	
+	if test ! -e "${_outputs}" -o -h "${_outputs}" ; then
+		
+		_scratch="$( exec -- "${ZRUN}" ':: workbench / scratch' )"
+		_outputs_store="${_scratch}/${UNAME_NODE}--${UNAME_FINGERPRINT}--${ZRUN_WORKSPACE_IDENTIFIER}"
+		if test ! -d "${_outputs_store}" ; then
+			mkdir -- "${_outputs_store}"
+		fi
+		_outputs_store="$( exec -- readlink -e -- "${_outputs_store}" )"
+		
+		ln -s -f -T -- "${_outputs_store}" "${_outputs}"
+	fi
+	
+	test -d "${_outputs}"
+	
+	printf -- '%s\n' "${_outputs}"
+!!
+
+
+
+
+--<< workbench / publish
+	
+	_publish="${__PUBLISH}"
+	test -d "${_publish}"
+	
+	printf -- '%s\n' "${_publish}"
+!!
+
 
