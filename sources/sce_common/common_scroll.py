@@ -134,7 +134,7 @@ class Scroll (object) :
 		self._touched = 0
 	
 	def seal (self) :
-		self._seal = True
+		self._sealed = True
 	
 	def highlights (self, _index) :
 		return None

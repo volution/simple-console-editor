@@ -145,7 +145,7 @@ class Handler (object) :
 		return self.handle_key_special (_shell, "F%d" % (_code))
 	
 	def handle_key_special (self, _shell, _code) :
-		return self.handle_key_unknown (_shell, _key)
+		return self.handle_key_unknown (_shell, _code)
 	
 	def handle_key_unknown (self, _shell, _key) :
 		_shell.notify ("Unhandled key `%s`; ignoring.", _key)
