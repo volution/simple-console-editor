@@ -415,7 +415,7 @@ class Shell (object) :
 		_color_highlight_2 = self._color_highlight_2
 		_color_background = self._color_background
 		
-		_window.bkgd (' ', _color_background)
+		_window.bkgd (32, _color_background)
 		_window.erase ()
 		
 		_max_lines = _window_lines
