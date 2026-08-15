@@ -184,6 +184,7 @@ class Shell (object) :
 			while True :
 				_code = _window.getch ()
 				if _code == -1 :
+					time.sleep (0.01)
 					continue
 				return _code
 		
