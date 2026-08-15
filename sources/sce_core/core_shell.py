@@ -316,8 +316,8 @@ class Shell (object) :
 					_response_trim_left = (_response_max_length - 6) // 2
 					_response_trim_right = (_response_max_length - 6) // 2 + (_response_max_length - 6) % 2
 					if (_response_position - _response_trim_left) < 0 :
-						_response_trim_left -= _response_position - _response_trim_left
 						_response_trim_right += _response_position - _response_trim_left
+						_response_trim_left -= _response_position - _response_trim_left
 					if (_response_position + _response_trim_right) > _response_length :
 						_response_trim_left -= _response_length - (_response_position + _response_trim_right)
 						_response_trim_right += _response_length - (_response_position + _response_trim_right)
