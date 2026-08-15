@@ -50,7 +50,7 @@ JSON to XML,
 all except Java.
 
 The code is written in Python,
-works with both Python 2.7 and 3.6+,
+works with both Python 3.6+ and 2.7,
 and is only a couple of tousand lines long,
 ~3.5k for the current version which includes a browser-like pager.
 However on the down-side the code is quite a mess, but it gets the job done.
@@ -60,6 +60,83 @@ the basic Python runtime and the ``curses`` library.
 
 It can be deployed as a simple single-file standalone executable,
 and works on any POSIX-like system from Linux, to OpenBSD and OSX.
+
+
+
+
+--------
+
+
+
+
+Installation
+============
+
+
+Download prebuilt executables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+The easiest way to install is to download the self-contained
+`Python zippapp <https://docs.python.org/3/library/zipapp.html>`__
+available from the `releases page on GitHub <https://github.com/volution/simple-console-editor/releases>`__.
+
+Each of these files is actually a plain `.zip` archive,
+which contains the byte compiled and optimized variants of the Python sources (i.e. `*.pyo` files),
+with a shebang like ``#!/usr/bin/env -S python3 -u -O -O -B -E -S -s -R -b``.
+Thus, if one makes such a file executable it can be executed like any other script / binary.
+
+**It is very important to make sure that one has matched the** ``python3.x`` **version with the downloaded version**,
+because the ``*.pyo`` files are not compatible between Python major versions.
+If one mismatches them, one will encounter a very confusing Python error like:
+``/usr/bin/python3: can't find '__main__' module in '/tmp/sce'``.
+
+For example if one has installed Python 3.14
+(thus ``python3.14`` is available anywhere on the ``$PATH``)
+-- either on Linux, OSX, FreeBSD, OpenBSD, even on Android (via Termux),
+and most likely any other POSIX compliant system out there --
+one can run the following commands: ::
+
+    curl \
+            -s -S -f -L \
+            -o /tmp/sce \
+            https://github.com/volution/simple-console-editor/releases/download/preview/editor--python-3.14--v0.2.0--preview \
+    #
+
+    chmod a=rx /tmp/sce
+
+    ## NOTE:  To exit, press Ctrl+X (if one hasn't changed anything),
+    ##            or Ctrl+R, then type `exit`, to forget the changes.
+    ##        To save, press Ctrl+S.
+
+    /tmp/sce
+
+    ## NOTE:  To edit an **existing** file.
+    /tmp/sce my-file.txt
+
+    ## NOTE:  To edit a new file (i.e. the file must exist).
+    touch my-file.txt
+    /tmp/sce my-file.txt
+
+Then, if one wants to place it somewhere available on the ``$PATH``: ::
+
+    sudo cp /tmp/sce /usr/local/bin/sce
+
+As mentioned in the previous section, there are no other dependencies outside a bare Python 3.6+ (or even 2.7).
+
+
+Run from sources
+~~~~~~~~~~~~~~~~
+
+
+Alternatively,
+one can just checkout the repository
+(or download the `sources <https://github.com/volution/simple-console-editor/archive/refs/heads/development.zip>`__) from GitHub,
+and run it like any other Python CLI: ::
+
+    python ./sources/exec_editor.py
+
+If one wants to deploy it, one only needs the contents of the ``sources`` folder and nothing else.
 
 
 
