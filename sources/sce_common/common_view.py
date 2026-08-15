@@ -333,7 +333,7 @@ class View (sce_core.View) :
 			_last_code = _code
 			if _column > _tail_column :
 				break
-		if _column <= _tail_column and _column == _length and _last_code == 32 :
+		if _column >= _head_column and _column <= _tail_column and _column == _length and _last_code == 32 :
 			if _last_mode != -3 :
 				_buffer.append (-3)
 				_last_mode = -3
