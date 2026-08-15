@@ -7,7 +7,7 @@ if __name__ == "__main__" :
 	import py23
 	from sce_pager import main
 	main ()
-	raise Exception ("6e701fee")
+	raise Exception ("[6e701fee]")
 else :
-	raise Exception ("dcbee9f0")
+	raise Exception ("[dcbee9f0]")
 

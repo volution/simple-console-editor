@@ -43,12 +43,15 @@ def main (_main) :
 		sys.exit (0)
 	elif _error is False :
 		sys.exit (1)
-	elif isinstance (_error, tuple) and (len (_error) == 2) :
-		_transcript_stream.write ("[ee]  failed!\n")
-		_transcript_stream.write ("[--]  ----------------------------------------\n")
-		for _line in _error[1] :
-			_transcript_stream.write (_line.strip ("\n\r") + "\n")
-		_transcript_stream.write ("[--]  ----------------------------------------\n")
+	elif isinstance (_error, tuple) and (len (_error) == 2) and (len (_error[1]) > 0) :
+		if _error[1][-1].startswith ("Exception: [") :
+			_transcript_stream.write ("[ee]  failed!  " + _error[1][-1][11:].strip ("\n\r") + "\n")
+		else :
+			_transcript_stream.write ("[ee]  failed!\n")
+			_transcript_stream.write ("[--]  ----------------------------------------\n")
+			for _line in _error[1] :
+				_transcript_stream.write (_line.strip ("\n\r") + "\n")
+			_transcript_stream.write ("[--]  ----------------------------------------\n")
 		sys.exit (1)
 	else :
 		raise Exception ("[86d46dd2]", _error)
