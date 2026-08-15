@@ -31,7 +31,7 @@ class Shell (object) :
 		self._view = _view
 	
 	def get_handler (self) :
-		return self._key_handler
+		return self._handler
 	
 	def set_handler (self, _handler) :
 		self._handler = _handler
