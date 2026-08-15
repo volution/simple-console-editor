@@ -362,7 +362,6 @@ def _sys_command_input (_shell, _mode, _system_arguments) :
 		_shell._curses_open ()
 		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
 		return None
-	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
@@ -374,8 +373,10 @@ def _sys_command_input (_shell, _mode, _system_arguments) :
 		_error_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("sys: input failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
 	if len (_error_lines) != 0 :
@@ -403,7 +404,6 @@ def _sys_command_output (_shell, _system_arguments) :
 		_shell._curses_open ()
 		_shell.notify ("sys: spawn failed; aborting.  //  %s", _error)
 		return None
-	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdin, "utf-8", "utf-8", "replace")
 		for _line in _lines :
@@ -417,8 +417,10 @@ def _sys_command_output (_shell, _system_arguments) :
 		_error_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("sys: output failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
 	if len (_error_lines) != 0 :
@@ -454,7 +456,6 @@ def pipe_command (_shell, _arguments) :
 		_shell._curses_open ()
 		_shell.notify ("pipe: spawn failed; aborting.  //  %s", _error)
 		return None
-	_shell._curses_open ()
 	try :
 		_output_lines = []
 		_error_lines = []
@@ -516,8 +517,10 @@ def pipe_command (_shell, _arguments) :
 			time.sleep (0.01)
 		_lines = _output_lines
 	except Exception as _error:
+		_shell._curses_open ()
 		_shell.notify ("pipe: input failed; aborting.  //  %s", _error)
 		return
+	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("sys: command failed (non zero exit code); ignoring.")
 	if len (_error_lines) != 0 :
@@ -577,7 +580,6 @@ def paste_command (_shell, _arguments) :
 		_shell._curses_open ()
 		_shell.notify ("paste: spawn failed; aborting.  //  %s", _error)
 		return None
-	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdout, "utf-8", "utf-8", "replace")
 		_lines = _stream.readlines ()
@@ -585,8 +587,10 @@ def paste_command (_shell, _arguments) :
 		_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("paste: input failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("paste: command failed (non zero exit code); ignoring.")
 	return _load_file_lines (_shell, "i", _lines)
@@ -957,7 +961,6 @@ def go_select_token_command (_shell, _arguments) :
 		_shell._curses_open ()
 		_shell.notify ("go-select-token: spawn failed; aborting.  //  %s", _error)
 		return None
-	_shell._curses_open ()
 	try :
 		_stream = codecs.EncodedFile (_process.stdin, "utf-8", "utf-8", "replace")
 		for _option in _options :
@@ -971,8 +974,10 @@ def go_select_token_command (_shell, _arguments) :
 		_stream.close ()
 		_error = _process.wait ()
 	except Exception as _error :
+		_shell._curses_open ()
 		_shell.notify ("paste: input failed; aborting.  //  %s", _error)
 		return None
+	_shell._curses_open ()
 	if _error != 0 :
 		_shell.notify ("go-select-token: command failed (non zero exit code); ignoring.")
 		return None
