@@ -82,7 +82,7 @@ The easiest way to install is to download the self-contained
 available from the `releases page on GitHub <https://github.com/volution/simple-console-editor/releases>`__.
 
 Each of these files is actually a plain `.zip` archive,
-which contains the byte compiled and optimized variants of the Python sources (i.e. `*.pyo` files),
+which contains the byte-code compiled and optimized variants of the Python sources (i.e. `*.pyo` files),
 with a shebang like ``#!/usr/bin/env -S python3 -u -O -O -B -E -S -s -R -b``.
 Thus, if one makes such a file executable it can be executed like any other script / binary.
 
@@ -90,6 +90,11 @@ Thus, if one makes such a file executable it can be executed like any other scri
 because the ``*.pyo`` files are not compatible between Python major versions.
 If one mismatches them, one will encounter a very confusing Python error like:
 ``/usr/bin/python3: can't find '__main__' module in '/tmp/sce'``.
+
+Alternatively one can use the ``portable`` variant that contains the uncompiled sources (`*.py`),
+which should work just as fine,
+just that it can take a bit more time to start
+until the Python interpreter does the byte-code compilation.
 
 For example if one has installed Python 3.14
 (thus ``python3.14`` is available anywhere on the ``$PATH``)
