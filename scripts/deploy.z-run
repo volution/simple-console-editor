@@ -8,24 +8,41 @@
 
 
 
-:: deploy / release / python / 3.6 / editor :: exec -- "${ZRUN[@]}" ':: deploy / release' python-3.6 editor "${@}"
-:: deploy / release / python / 3.6 / pager :: exec -- "${ZRUN[@]}" ':: deploy / release' python-3.6 pager "${@}"
+:: deploy / release / python / 3.6 / editor :: exec -- "${ZRUN}" ':: deploy / release' editor python-3.6 "${@}"
+:: deploy / release / python / 3.6 / pager :: exec -- "${ZRUN}" ':: deploy / release' pager python-3.6 "${@}"
 
 
-:: deploy / rsync / python / 3.6 / editor :: exec -- "${ZRUN[@]}" ':: deploy / rsync / *' python-3.6 editor "${@}"
-:: deploy / rsync / python / 3.6 / pager :: exec -- "${ZRUN[@]}" ':: deploy / rsync / *' python-3.6 pager "${@}"
+:: deploy / rsync / python / 3.6 / editor :: exec -- "${ZRUN}" ':: deploy / rsync / *' editor python-3.6 "${@}"
+:: deploy / rsync / python / 3.6 / pager :: exec -- "${ZRUN}" ':: deploy / rsync / *' pager python-3.6 "${@}"
 
 
 
 
 --<< deploy / rsync / *
-	test "${#}" -eq 3 ; _os="${1}" ; _main="${2}" ; _target="${3}" ; shift -- 3
-	"${ZRUN[@]}" ':: deploy / release' "${_os}" "${_main}"
+	
+	test "${#}" -eq 3 ; _main="${1}" ; _variant="${2}" ; _destination="${3}" ; shift -- 3
+	
+	"${ZRUN}" ':: deploy / release' "${_main}" "${_variant}"
+	
 	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
 	test -d "${_outputs}"
-	_source="${_outputs}/${_main}--release--${_os}"
-	printf -- '[ii]  deploying `%s` for `%s` to `%s`...\n' "${_main}" "${_os}" "${_target}" >&2
-	exec -- rsync -i -c -t -p --chmod=0555 -- "${_source}" "${_target}"
+	
+	_output="${_outputs}/${_main}--release--${_variant}"
+	test -f "${_output}"
+	
+	printf -- '[ii]  deploying `%s` for `%s` to `%s`...\n' "${_main}" "${_variant}" "${_destination}" >&2
+	
+	exec -- rsync -i -t -p --chmod=0555 -- "${_output}" "${_destination}"
+!!
+
+
+
+
+<< deploy / publish / no-github
+	
+	export -- __DEPLOY_NOGITHUB=true
+	
+	exec -- "${ZRUN}" ':: deploy / publish' "${@}"
 !!
 
 
@@ -33,11 +50,19 @@
 
 << deploy / publish
 	
+	
 	if test "${#}" -eq 0 ; then
 		_main_0=all
 	else
 		_main_0="${1}"
 		shift -- 1
+	fi
+	
+	if test "${#}" -ge 1 ; then
+		_variant_0="${1}"
+		shift -- 1
+	else
+		_variant_0=all
 	fi
 	
 	test "${#}" -eq 0
@@ -50,7 +75,24 @@
 	test -d "${_publish}"
 	
 	
-	"${ZRUN[@]}" ':: sources / embedded / hash'
+	_minisign='./documentation/releases/minisign'
+	_gpg='./documentation/releases/pgp'
+	
+	_gpg_sign_key="$( exec -- cat -- "${_gpg}/keys/public.txt" )"
+	
+	
+	"${ZRUN}" ':: sources / embedded / hash'
+	
+	
+	if test "${__DEPLOY_NOGITHUB:-}" == true ; then
+		_github_publish=false
+	else
+		_github_publish=true
+	fi
+	
+	
+	_mains=( editor pager )
+	_variants=( portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.7 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 )
 	
 	
 	_build_version="$( exec -- cat -- ./sources/sce_embedded/build/version.txt )"
@@ -62,188 +104,325 @@
 		( * )
 			_build_release=true
 			_build_suffix=''
+			_gpg_sign=true
+			_minisign_sign=true
 		;;
 	esac
 	
 	
+	if test "${__DEPLOY_NOGPGSIGN:-}" == true ; then
+		_gpg_sign=false
+	else
+		_gpg_sign="${_gpg_sign:-false}"
+	fi
+	
+	if test "${__DEPLOY_NOMINSIGN:-}" == true ; then
+		_minisign_sign=false
+	else
+		_minisign_sign="${_minisign_sign:-true}"
+	fi
+	
+	
 	if test "${_build_release}" == true ; then
-		for _main in editor pager ; do
-			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
-				continue
-			fi
-			for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.7 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
-				if test -e "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" ; then
-					printf -- '[ee]  release already exists for `%s` for `%s`!\n' "${_main}" "${_os}" >&2
+		for _main in "${_mains[@]}" ; do
+			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then continue ; fi
+			for _variant in "${_variants[@]}" ; do
+				if test "${_variant_0}" != all -a "${_variant_0}" != "${_variant}" ; then continue ; fi
+				
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" ; then
+					printf -- '[ee]  release already exists for `%s` for `%s`!\n' "${_main}" "${_variant}" >&2
 					exit -- 1
 				fi
+				
 			done
 		done
 	fi
 	
 	
-	if ! git diff --quiet ; then
-		printf -- '[ee]  dirty repository (before build);  aborting!\n' >&2
-		exit -- 1
-	fi
-	if ! git diff --cached --quiet ; then
-		printf -- '[ee]  dirty repository (before build);  aborting!\n' >&2
-		exit -- 1
-	fi
-	
-	
-	printf -- '[ii]  releasing all for `%s`...\n' "${_build_version}${_build_suffix}" >&2
-	
-	"${ZRUN[@]}" ':: deploy / release' all "${_main_0}"
-	
-	
-	if ! git diff --quiet ; then
-		printf -- '[ee]  dirty repository (after build);  aborting!\n' >&2
-		exit -- 1
-	fi
-	if ! git diff --cached --quiet ; then
-		printf -- '[ee]  dirty repository (after build);  aborting!\n' >&2
-		exit -- 1
+	if test "${_github_publish}" == true ; then
+		
+		if ! git diff --quiet ; then
+			printf -- '[ee]  dirty repository (before build);  aborting!\n' >&2
+			exit -- 1
+		fi
+		if ! git diff --cached --quiet ; then
+			printf -- '[ee]  dirty repository (before build);  aborting!\n' >&2
+			exit -- 1
+		fi
 	fi
 	
 	
-	printf -- '[ii]  tagging and pushing for `%s`...\n' "${_build_version}${_build_suffix}" >&2
+	printf -- '[--]\n' >&2
+	printf -- '[ii]  releasing `%s` for `%s` for `%s`...\n' "${_main_0}" "${_variant_0}" "${_build_version}${_build_suffix}" >&2
 	printf -- '[--]\n' >&2
 	
-	if test "${_build_release}" == true ; then
-		git tag --sign -m "[release]  Release \`v${_build_version}\`." -- "v${_build_version}" HEAD
-	else
-		git tag --sign -m "[preview]  Preview \`v${_build_version}\`." --force -- preview HEAD
-	fi
-	
-	"${ZRUN[@]}" ':: github / push'
+	"${ZRUN}" ':: deploy / release' "${_main_0}" "${_variant_0}"
 	
 	printf -- '[--]\n' >&2
 	
 	
-	printf -- '[ii]  publishing all for `%s`...\n' "${_build_version}${_build_suffix}" >&2
+	if test "${_github_publish}" == true ; then
+			
+		if ! git diff --quiet ; then
+			printf -- '[ee]  dirty repository (after build);  aborting!\n' >&2
+			exit -- 1
+		fi
+		if ! git diff --cached --quiet ; then
+			printf -- '[ee]  dirty repository (after build);  aborting!\n' >&2
+			exit -- 1
+		fi
+	fi
 	
-	for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
-		for _main in editor pager ; do
+	
+	printf -- '[--]\n' >&2
+	printf -- '[ii]  publishing `%s` for `%s` for `%s`...\n' "${_main_0}" "${_variant_0}" "${_build_version}${_build_suffix}" >&2
+	printf -- '[--]\n' >&2
+	
+	for _main in "${_mains[@]}" ; do
+		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then continue ; fi
+		for _variant in "${_variants[@]}" ; do
+			if test "${_variant_0}" != all -a "${_variant_0}" != "${_variant}" ; then continue ; fi
 			
-			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
-				continue
-			fi
+			printf -- '[ii]  publishing `%s` for `%s` for `%s`...\n' "${_main}" "${_variant}" "${_build_version}${_build_suffix}" >&2
 			
-			printf -- '[ii]  publishing `%s` for `%s` for `%s`...\n' "${_main}" "${_os}" "${_build_version}${_build_suffix}" >&2
-			printf -- '[--]\n' >&2
-			
-			rsync -i -c -t -p --chmod=0555 -- \
-					"${_outputs}/${_main}--release--${_os}" \
-					"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" \
+			rsync -i -t -p --chmod=0555 -- \
+					"${_outputs}/${_main}--release--${_variant}" \
+					"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
 			#
 			
-			if test -e "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" ; then
-				if ! gpg2 --verify -- \
-						"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" \
-						< /dev/null > /dev/null 2> /dev/null \
-				; then
-					rm -- "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc"
+			if test "${_gpg_sign}" == true ; then
+				
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" ; then
+					if ! \
+							gpg --verify -- \
+									"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" \
+									"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+								< /dev/null > /dev/null 2> /dev/null \
+					; then
+						rm -- "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc"
+					fi
+				fi
+				
+				if test ! -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" ; then
+					printf -- '[ii]  signing `%s` for `%s` for `%s` (with GnuPG)...\n' "${_main}" "${_variant}" "${_build_version}${_build_suffix}" >&2
+					for _retry in 1 2 3 4 ; do
+						if \
+								gpg --sign --detach-sign --armor \
+										--default-key "${_gpg_sign_key}" \
+										--output "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" \
+										-- "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+									< /dev/null > /dev/null 2> /dev/null \
+						; then break ; fi
+					done
+				fi
+				
+				gpg --verify -- \
+						"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" \
+						"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+					< /dev/null > /dev/null 2> /dev/null \
+				#
+				
+			else
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" ; then
+					rm -- "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc"
 				fi
 			fi
 			
-			if test ! -e "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" ; then
-				for _retry in 1 2 3 4 ; do
-					if gpg2 --sign --detach-sign --armor \
-							--default-key 58FC2194FCC2478399CB220C5A974037A6FD8839 \
-							--output "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" \
-							-- "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" \
-					; then break ; fi
-				done
-			fi
-			
-			gpg2 --verify \
-					-- "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" \
-			#
-			
-			if test "${_build_release}" == true ; then
-				ln -s -T -f -- "./${_main}--${_os}--v${_build_version}${_build_suffix}" "${_publish}/${_os}/${_main}${_build_suffix}"
-				ln -s -T -f -- "./${_main}--${_os}--v${_build_version}${_build_suffix}.asc" "${_publish}/${_os}/${_main}${_build_suffix}.asc"
-			fi
-			
-			printf -- '[--]\n' >&2
-		done
-	done
-	
-	
-	printf -- '[ii]  publishing all for `%s` (on GitHub)...\n' "${_build_version}${_build_suffix}" >&2
-	
-	for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
-		for _main in editor pager ; do
-			
-			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
-				continue
-			fi
-			
-			printf -- '[ii]  publishing `%s` for `%s` for `%s` (on GitHub)...\n' "${_main}" "${_os}" "${_build_version}${_build_suffix}" >&2
-			
-			if test "${_build_release}" == true ; then
-				gh release upload --clobber -- "v${_build_version}" \
-						"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" \
-						"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" \
+			if test "${_minisign_sign}" == true ; then
+				
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" ; then
+					if ! \
+							minisign -V \
+									-p "${_minisign}/keys/public.pub" \
+									-x "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" \
+									-m "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+								< /dev/null > /dev/null 2> /dev/null \
+					; then
+						rm -- "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig"
+					fi
+				fi
+				
+				if test ! -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" ; then
+					printf -- '[ii]  signing `%s` for `%s` for `%s` (with minisign)...\n' "${_main}" "${_variant}" "${_build_version}${_build_suffix}" >&2
+					for _retry in 1 2 3 4 ; do
+						if \
+								minisign -S \
+										-t "${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+										-s <( exec -- gpg --decrypt < "${_minisign}/keys/private.asc" 2> /dev/null ) \
+										-x "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" \
+										-m "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+									< /dev/null > /dev/null 2> /dev/null \
+						; then break ; fi
+					done
+				fi
+				
+				minisign -V \
+						-p "${_minisign}/keys/public.pub" \
+						-x "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" \
+						-m "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}" \
+					< /dev/null > /dev/null 2> /dev/null \
 				#
+				
 			else
-				gh release upload --clobber -- preview \
-						"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" \
-						"${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}.asc" \
-				#
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" ; then
+					rm -- "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig"
+				fi
+			fi
+			
+			if test "${_build_release}" == true ; then
+				
+				ln -s -T -f -- "./${_main}--${_variant}--v${_build_version}${_build_suffix}" "${_publish}/${_variant}/${_main}${_build_suffix}"
+				
+				if test -e "${_publish}/${_variant}/${_main}${_build_suffix}.asc" ; then
+					rm -- "${_publish}/${_variant}/${_main}${_build_suffix}.asc"
+				fi
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" ; then
+					ln -s -T -f -- "./${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" "${_publish}/${_variant}/${_main}${_build_suffix}.asc"
+				fi
+				
+				if test -e "${_publish}/${_variant}/${_main}${_build_suffix}.sig" ; then
+					rm -- "${_publish}/${_variant}/${_main}${_build_suffix}.sig"
+				fi
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" ; then
+					ln -s -T -f -- "./${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" "${_publish}/${_variant}/${_main}${_build_suffix}.sig"
+				fi
 			fi
 			
 		done
 	done
+	
+	printf -- '[--]\n' >&2
+	
+	
+	if test "${_github_publish}" == true ; then
+		
+		printf -- '[--]\n' >&2
+		printf -- '[ii]  tagging and pushing for `%s` (on GitHub)...\n' "${_build_version}${_build_suffix}" >&2
+		
+		if test "${_build_release}" == true ; then
+			git tag --sign -m "[release]  Release \`v${_build_version}\`." -- "v${_build_version}" HEAD
+		else
+			git tag --sign -m "[preview]  Preview \`v${_build_version}\`." --force -- preview HEAD
+		fi
+		
+		"${ZRUN}" ':: github / push'
+		
+		printf -- '[--]\n' >&2
+	fi
+	
+	
+	if test "${_github_publish}" == true ; then
+		
+		printf -- '[--]\n' >&2
+		printf -- '[ii]  publishing `%s` for `%s` for `%s` (on GitHub)...\n' "${_main_0}" "${_variant_0}" "${_build_version}${_build_suffix}" >&2
+		printf -- '[--]\n' >&2
+		
+		_gh_release_files=()
+		
+		for _main in "${_mains[@]}" ; do
+			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then continue ; fi
+			for _variant in "${_variants[@]}" ; do
+				if test "${_variant_0}" != all -a "${_variant_0}" != "${_variant}" ; then continue ; fi
+				
+				printf -- '[ii]  publishing `%s` for `%s` for `%s` (on GitHub)...\n' "${_main}" "${_variant}" "${_build_version}${_build_suffix}" >&2
+				
+				_gh_release_files+=(
+						"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}"
+					)
+				
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc" ; then
+					_gh_release_files+=(
+							"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.asc"
+						)
+				fi
+				
+				if test -e "${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig" ; then
+					_gh_release_files+=(
+							"${_publish}/${_variant}/${_main}--${_variant}--v${_build_version}${_build_suffix}.sig"
+						)
+				fi
+				
+			done
+		done
+		
+		if test "${_build_release}" == true ; then
+			gh release upload --clobber -- "v${_build_version}" \
+					"${_gh_release_files[@]}" \
+			#
+		else
+			gh release upload --clobber -- preview \
+					"${_gh_release_files[@]}" \
+			#
+		fi
+		
+		printf -- '[--]\n' >&2
+	fi
 !!
 
 
 
 
 << deploy / release
-	if test "${#}" -ge 1 ; then
-		_os_0="${1}"
-		shift -- 1
-	else
-		_os_0='all'
-	fi
+	
 	if test "${#}" -ge 1 ; then
 		_main_0="${1}"
 		shift -- 1
 	else
 		_main_0=all
 	fi
+	
+	if test "${#}" -ge 1 ; then
+		_variant_0="${1}"
+		shift -- 1
+	else
+		_variant_0='all'
+	fi
+	
 	test "${#}" -eq 0
+	
 	if test "${__DEPLOY_NORELEASE:-}" == true ; then
 		exit -- 0
 	fi
+	
+	
+	"${ZRUN}" ':: sources / embedded / hash'
+	
+	
+	_mains=( editor pager )
+	_variants=( portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.7 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 )
+	
+	
 	_outputs="$( exec -- "${ZRUN}" ':: workbench / outputs' )"
 	test -d "${_outputs}"
-	for _main in editor pager ; do
-		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
-			continue
-		fi
-		for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
-			if test "${_os_0}" != all -a "${_os_0}" != "${_os}" ; then
-				continue
-			fi
-			case "${_os}" in
+	
+	
+	for _main in "${_mains[@]}" ; do
+		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then continue ; fi
+		for _variant in "${_variants[@]}" ; do
+			if test "${_variant_0}" != all -a "${_variant_0}" != "${_variant}" ; then continue ; fi
+			
+			case "${_variant}" in
 				( portable | python-* )
-					if test "${_os}" == portable ; then
+					if test "${_variant}" == portable ; then
 						_python_version=any
 					else
-						_python_version="${_os#python-}"
+						_python_version="${_variant#python-}"
 					fi
-					"${ZRUN[@]}" ':: bundle / build / *' "${_python_version}" "${_main}"
-					cp -p -T -- \
-							"${_outputs}/${_main}--bundle--${_python_version}.zip" \
-							"${_outputs}/${_main}--release--${_os}" \
-					#
 				;;
 				( * )
-					exit -- 1
+					false -- 79c842e4
 				;;
 			esac
+			
+			printf -- '[ii]  releasing `%s` for `%s`...\n' "${_main}" "${_variant}" >&2
+			
+			"${ZRUN}" ':: bundle / build / *' "${_python_version}" "${_main}"
+			
+			cp -p -T -- \
+					"${_outputs}/${_main}--bundle--${_python_version}.zip" \
+					"${_outputs}/${_main}--release--${_variant}" \
+			#
+			
 		done
 	done
 !!
