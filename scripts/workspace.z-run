@@ -109,6 +109,14 @@
 	
 	case "${_python_version}" in
 		
+		( any )
+			if test -e "${_outputs}/python/python" ; then
+				_python_executable="${_outputs}/python/python"
+			else
+				_python_executable="$( type -P -- python )"
+			fi
+		;;
+		
 		( 2.7 )
 			if test -e "${_outputs}/python/python2.7" ; then
 				_python_executable="${_outputs}/python/python2.7"
@@ -138,7 +146,11 @@
 	test -x "${_python_executable}"
 	_python_executable="$( exec -- readlink -e -- "${_python_executable}" )"
 	
-	_python_interpreter="python${_python_version}"
+	if test "${_python_version}" == any ; then
+		_python_interpreter='python'
+	else
+		_python_interpreter="python${_python_version}"
+	fi
 	
 	printf -- '%s %s %s\n' \
 			"${_python_version}" \

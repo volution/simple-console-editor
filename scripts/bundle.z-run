@@ -8,11 +8,9 @@
 
 
 
-:: bundle / run / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 3.6 editor "${@}"
-:: bundle / run / pager :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 3.6 pager "${@}"
-
-:: bundle / build / editor :: exec -- "${ZRUN[@]}" ':: bundle / build / *' 3.6 editor "${@}"
-:: bundle / build / pager :: exec -- "${ZRUN[@]}" ':: bundle / build / *' 3.6 pager "${@}"
+:: bundle / run / python / any / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' any editor "${@}"
+:: bundle / run / python / 2.7 / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 2.7 editor "${@}"
+:: bundle / run / python / 3.6 / editor :: exec -- "${ZRUN[@]}" ':: bundle / run / *' 3.6 editor "${@}"
 
 
 
@@ -135,7 +133,12 @@
 		)
 	
 	case "${_python_version}" in
+		( any )
+			_python_compileall_enabled=false
+			_strip=false
+		;;
 		( 2 | 2.* )
+			_python_compileall_enabled=true
 			_python_compileall_arguments=(
 					-q
 				)
@@ -147,6 +150,7 @@
 				)
 		;;
 		( 3 | 3.* )
+			_python_compileall_enabled=true
 			_python_compileall_arguments=(
 					-q
 					-b
@@ -164,7 +168,9 @@
 		;;
 	esac
 	
-	"${_python_executable}" "${_python_compiler_arguments[@]}" -m compileall "${_python_compileall_arguments[@]}" -- "${_bundle_sources}"
+	if test "${_python_compileall_enabled}" == true ; then
+		"${_python_executable}" "${_python_compiler_arguments[@]}" -m compileall "${_python_compileall_arguments[@]}" -- "${_bundle_sources}"
+	fi
 	
 	if test "${_strip}" == true ; then
 		find "${_bundle_sources}/" -xtype f -name '*.py' -delete

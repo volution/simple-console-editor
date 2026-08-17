@@ -71,7 +71,7 @@
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
 				continue
 			fi
-			for _os in python-2.7 python-3.6 python-3.7 python-3.8 python-3.7 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
+			for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.7 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
 				if test -e "${_publish}/${_os}/${_main}--${_os}--v${_build_version}${_build_suffix}" ; then
 					printf -- '[ee]  release already exists for `%s` for `%s`!\n' "${_main}" "${_os}" >&2
 					exit -- 1
@@ -122,7 +122,7 @@
 	
 	printf -- '[ii]  publishing all for `%s`...\n' "${_build_version}${_build_suffix}" >&2
 	
-	for _os in python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
+	for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
 		for _main in editor pager ; do
 			
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
@@ -172,7 +172,7 @@
 	
 	printf -- '[ii]  publishing all for `%s` (on GitHub)...\n' "${_build_version}${_build_suffix}" >&2
 	
-	for _os in python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
+	for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
 		for _main in editor pager ; do
 			
 			if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
@@ -223,13 +223,17 @@
 		if test "${_main_0}" != all -a "${_main_0}" != "${_main}" ; then
 			continue
 		fi
-		for _os in python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
+		for _os in portable python-2.7 python-3.6 python-3.7 python-3.8 python-3.9 python-3.10 python-3.11 python-3.12 python-3.13 python-3.14 ; do
 			if test "${_os_0}" != all -a "${_os_0}" != "${_os}" ; then
 				continue
 			fi
 			case "${_os}" in
-				( python-* )
-					_python_version="${_os#python-}"
+				( portable | python-* )
+					if test "${_os}" == portable ; then
+						_python_version=any
+					else
+						_python_version="${_os#python-}"
+					fi
 					"${ZRUN[@]}" ':: bundle / build / *' "${_python_version}" "${_main}"
 					cp -p -T -- \
 							"${_outputs}/${_main}--bundle--${_python_version}.zip" \

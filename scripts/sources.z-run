@@ -8,6 +8,9 @@
 
 
 
+++:: sources / run / python / any / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' any editor "${@}"
+:: sources / run / python / any / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' any pager "${@}"
+
 ++:: sources / run / python / 2.7 / editor :: exec -- "${ZRUN[@]}" ':: sources / run / *' 2.7 editor "${@}"
 :: sources / run / python / 2.7 / pager :: exec -- "${ZRUN[@]}" ':: sources / run / *' 2.7 pager "${@}"
 
@@ -66,6 +69,8 @@
 		)
 	
 	case "${_python_version}" in
+		( any )
+		;;
 		( 2 | 2.* )
 			_python_arguments+=(
 					-R # hash randomization
