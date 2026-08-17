@@ -169,7 +169,15 @@
 	esac
 	
 	if test "${_python_compileall_enabled}" == true ; then
-		"${_python_executable}" "${_python_compiler_arguments[@]}" -m compileall "${_python_compileall_arguments[@]}" -- "${_bundle_sources}"
+		env -i \
+				SOURCE_DATE_EPOCH=946684800 \
+			"${_python_executable}" \
+					"${_python_compiler_arguments[@]}" \
+				-m compileall \
+					"${_python_compileall_arguments[@]}" \
+				-- \
+					"${_bundle_sources}" \
+		#
 	fi
 	
 	if test "${_strip}" == true ; then
@@ -196,6 +204,8 @@
 		find . -xtype f -print \
 	| LC_ALL=C sort \
 	| execline-cd "${_bundle_sources}" \
+		env -i \
+				SOURCE_DATE_EPOCH=946684800 \
 		zip \
 			"${_zip_level}" \
 			-q \
