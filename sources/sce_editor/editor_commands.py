@@ -1102,7 +1102,7 @@ def store_fd_command (_shell, _arguments, _output) :
 		return None
 	try :
 		_stream = None
-		_stream = codecs.EncodedFile (os.fdopen (_output, "ab"), "utf-8", "utf-8", "replace")
+		_stream = codecs.EncodedFile (os.fdopen (_output, "wb"), "utf-8", "utf-8", "replace")
 		_view = _shell.get_view ()
 		_lines = _view.get_lines ()
 		for _line in xrange_ (0, _lines) :
